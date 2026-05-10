@@ -1,0 +1,28 @@
+[build-system]
+requires = ["setuptools>=69", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "last-nine-rl"
+version = "0.1.0"
+description = "Week 1 SAC reliability instrumentation for ADLR Project 15."
+requires-python = ">=3.11"
+dependencies = [
+    "gymnasium>=1.2",
+    "matplotlib>=3.8",
+    "numpy>=2.0",
+    "tensorboard>=2.11",
+    "torch>=2.1",
+    "tyro>=0.5",
+]
+
+[project.optional-dependencies]
+dm-control = ["shimmy[dm-control]>=2.0.1"]
+test = ["pytest>=8"]
+
+[tool.setuptools.packages.find]
+where = ["src"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+pythonpath = ["src"]

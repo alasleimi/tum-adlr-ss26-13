@@ -1,0 +1,10 @@
+﻿{
+    "pid":  63332,
+    "script":  "C:\\Users\\Ala\\Desktop\\Project 15\\reports\\pendulum_investigation_20260509\\run_pendulum_investigation.ps1",
+    "stdout":  "C:\\Users\\Ala\\Desktop\\Project 15\\reports\\pendulum_investigation_20260509\\logs\\runner2_stdout.log",
+    "stderr":  "C:\\Users\\Ala\\Desktop\\Project 15\\reports\\pendulum_investigation_20260509\\logs\\runner2_stderr.log",
+    "started_local":  "2026-05-09T18:33:36.1194323+02:00",
+    "run_root":  "runs\\pendulum_investigation_20260509",
+    "report_root":  "reports\\pendulum_investigation_20260509",
+    "previous_failed_pid":  32504
+}

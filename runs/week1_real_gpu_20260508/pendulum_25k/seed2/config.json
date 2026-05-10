@@ -1,0 +1,55 @@
+{
+  "env": {
+    "env_id": "Pendulum-v1",
+    "max_episode_steps": null
+  },
+  "eval": {
+    "deterministic": true,
+    "episodes": 20,
+    "every_steps": 5000,
+    "seed_base": 100000,
+    "seeds": null
+  },
+  "name": "week1_pendulum_sac",
+  "reliability": {
+    "collapse_return_threshold": -1000.0,
+    "dormant_relative_threshold": 0.1,
+    "near_upright_abs_velocity_threshold": 1.0,
+    "near_upright_cos_threshold": 0.95,
+    "strict_return_thresholds": [
+      -250.0,
+      -200.0,
+      -150.0,
+      -100.0
+    ],
+    "success_max_not_near_upright_streak": 50,
+    "success_near_upright_fraction_threshold": 0.8,
+    "success_return_threshold": -200.0
+  },
+  "sac": {
+    "batch_size": 256,
+    "buffer_size": 100000,
+    "device": "cuda",
+    "gamma": 0.99,
+    "learning_starts": 5000,
+    "policy_frequency": 2,
+    "policy_lr": 0.0003,
+    "q_lr": 0.001,
+    "target_network_frequency": 1,
+    "tau": 0.005,
+    "total_steps": 25000,
+    "updates_per_step": 1
+  },
+  "seed": 2,
+  "telemetry": {
+    "diagnostics_interval_steps": 5000,
+    "log_interval_steps": 1000,
+    "overwrite": true,
+    "replay_inspection_interval_steps": 5000,
+    "run_root": "runs",
+    "save_model": true,
+    "save_replay": false,
+    "tensorboard": true,
+    "write_eval_returns_csv": true
+  }
+}
