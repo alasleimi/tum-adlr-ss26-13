@@ -10,7 +10,7 @@ The 25k and 100k runs were useful diagnostics, but they were underpowered for th
 - The fixed eval suite exposed a consistent hard-start failure pattern: starts near the downward position with small or opposing angular velocity stay below the `-200` return threshold.
 - The compute budget was too small for a scale claim. The proposal explicitly says to vary interaction budget, critic width/depth, and update-to-data ratio.
 - The current CleanRL baseline has fixed `256 x 256` networks, so width/depth sweeps require a separate architecture-configurable variant rather than hidden config knobs.
-- Return thresholds still need oracle or near-oracle calibration. The hand-coded Pendulum controller is a sanity reference, not proof of optimality.
+- Return thresholds need oracle or near-oracle calibration. Pendulum now has an approximate finite-horizon DP calibration; the hand-coded energy controller remains only a sanity reference.
 
 ## Required Graphs
 
@@ -48,6 +48,6 @@ Reliability claims need more:
 
 - Add checkpoint loading and post-hoc evaluation so large final eval sets do not slow every training checkpoint.
 - Add an architecture-configurable SAC variant before claiming width/depth scaling.
-- Add oracle or near-oracle Pendulum calibration, preferably numerical dynamic programming, MPC, or another model-based controller over the real Gymnasium dynamics.
+- Extend the Pendulum DP calibration into standard reporting: DP-feasible success, DP regret, and sensitivity checks for any changed threshold.
 - Add video or rollout rendering for the hardest eval seeds.
 - Add a scale-sweep report that compares run groups by budget/UTD/architecture.

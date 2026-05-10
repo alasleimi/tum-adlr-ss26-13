@@ -69,6 +69,7 @@ Detailed result writeups live under `docs/`:
 - Week 1 design: [docs/week1_design.md](docs/week1_design.md)
 - CleanRL audit: [docs/cleanrl_audit.md](docs/cleanrl_audit.md)
 - 100k Pendulum result summary with plots: [docs/pendulum_100k_results.md](docs/pendulum_100k_results.md)
+- Pendulum dynamic-programming calibration: [docs/pendulum_dp_calibration.md](docs/pendulum_dp_calibration.md)
 - 500k Pendulum partial result summary: [docs/pendulum_500k_partial_results.md](docs/pendulum_500k_partial_results.md)
 - Experiment log: [docs/experiment_log.md](docs/experiment_log.md)
 
@@ -121,7 +122,7 @@ The current operational success criteria are:
 - Strict success: return success, near-upright fraction `>= 0.8`, and maximum not-near-upright streak `<= 50`.
 - Threshold ladder: `-250`, `-200`, `-150`, `-100`.
 
-Important caveat: `-200` is not an oracle-derived feasibility threshold. The repo includes an energy-shaping plus local-PD reference controller for calibration, but future work should add a near-oracle planner or dynamic-programming calibration for Pendulum initial states.
+Important caveat: `-200` is not feasible from every reset-support initial state. The repo now includes an approximate finite-horizon dynamic-programming calibration for Pendulum initial states. See [docs/pendulum_dp_calibration.md](docs/pendulum_dp_calibration.md).
 
 ## Running Training
 
@@ -194,6 +195,22 @@ python -m last_nine_rl.pendulum_grid `
   --velocity-bins 41 `
   --velocity-limit 1.0 `
   --device cpu
+```
+
+Approximate finite-horizon dynamic-programming calibration joined to the 100k checkpoint grid:
+
+```powershell
+python -m last_nine_rl.pendulum_dp `
+  --out reports/recheck_pendulum_100k/dp_reset_support_241x161x81 `
+  --sac-grid reports/pendulum_investigation_20260509/pendulum_grid_100k_reset_support_61x41/pendulum_grid_summary.csv `
+  --horizon 200 `
+  --theta-bins 241 `
+  --velocity-bins 161 `
+  --action-bins 81 `
+  --eval-theta-bins 61 `
+  --eval-velocity-bins 41 `
+  --eval-velocity-limit 1.0 `
+  --save-solution
 ```
 
 ## Aggregation And Reports

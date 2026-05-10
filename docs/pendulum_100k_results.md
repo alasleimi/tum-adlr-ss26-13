@@ -9,6 +9,7 @@ This result is complete for the Week 1 baseline:
 - 5/5 training seeds completed.
 - All five final checkpoints were post-hoc evaluated on 1000 fixed eval seeds.
 - Exact initial-condition maps were generated from the saved checkpoints.
+- Approximate finite-horizon dynamic-programming calibration was generated for the same reset-support grid.
 - Large artifacts and plots are committed through Git LFS.
 
 ## Experimental Setup
@@ -55,7 +56,7 @@ Operational success metrics:
 - Strict success: return success, near-upright fraction `>= 0.8`, and max not-near-upright streak `<= 50`.
 - Threshold ladder: `-250`, `-200`, `-150`, `-100`.
 
-The `-200` threshold is a strict operational criterion, not an oracle feasibility claim. The energy-shaping controller below is a calibration reference, not a proof that every initial condition can reach `-200`.
+The `-200` threshold is a strict operational criterion, not an oracle feasibility claim. The dynamic-programming calibration below shows that this threshold is not feasible from every reset-support initial state.
 
 ## Statistical Reporting
 
@@ -209,6 +210,70 @@ Region summaries treat each cell-by-training-seed rollout as a trial and report 
 
 Interpretation: the SAC policy reliably solves mid-angle starts and reliably fails near downward starts under the reset distribution. The reliability gap is therefore not simply average instability; it is a localized hard-start failure.
 
+## Dynamic-Programming Calibration
+
+Detailed writeup: `docs/pendulum_dp_calibration.md`
+
+Primary output: `reports/pendulum_investigation_20260509/pendulum_dp_100k_reset_support_241x161x81/pendulum_dp_summary.json`
+
+Method:
+
+- Finite-horizon DP for Gymnasium `Pendulum-v1`, horizon `200`.
+- State grid: `241` theta bins by `161` angular-velocity bins over `theta_dot in [-8, 8]`.
+- Action grid: `81` torque bins over `[-2, 2]`.
+- Value interpolation: bilinear in theta and angular velocity.
+- Evaluation grid: same 61 by 41 reset-support initial-state grid used for the SAC checkpoint map.
+- Sensitivity check: finer `361 x 241 x 101` DP grid.
+
+DP policy return map:
+
+![DP policy return map](../reports/pendulum_investigation_20260509/pendulum_dp_100k_reset_support_241x161x81/dp_policy_return_map.png)
+
+DP return-feasible map under `return >= -200`:
+
+![DP return success map](../reports/pendulum_investigation_20260509/pendulum_dp_100k_reset_support_241x161x81/dp_return_success_map.png)
+
+SAC regret to DP:
+
+![SAC regret to DP map](../reports/pendulum_investigation_20260509/pendulum_dp_100k_reset_support_241x161x81/sac_regret_to_dp_map.png)
+
+SAC failure rate on DP-feasible starts:
+
+![SAC failure on DP feasible map](../reports/pendulum_investigation_20260509/pendulum_dp_100k_reset_support_241x161x81/sac_failure_on_dp_feasible_map.png)
+
+SAC strict failure rate on DP-strict-feasible starts:
+
+![SAC strict failure on DP strict feasible map](../reports/pendulum_investigation_20260509/pendulum_dp_100k_reset_support_241x161x81/sac_strict_failure_on_dp_strict_feasible_map.png)
+
+| Metric | DP calibration | SAC checkpoint grid |
+| --- | ---: | ---: |
+| Return-success cell fraction | `0.6941` | `0.6918` |
+| Strict-success cell fraction | `0.6933` | `0.6692` |
+| DP return-feasible cells | `1736 / 2501` | n/a |
+| DP strict-feasible cells | `1734 / 2501` | n/a |
+| SAC failure rate among DP return-feasible cells | n/a | `0.0033` |
+| SAC strict-failure rate among DP strict-feasible cells | n/a | `0.0348` |
+| Mean SAC regret to DP policy return | n/a | `3.03` return points |
+
+The DP calibration changes the interpretation of the hard-start map. Near downward starts are not solved by SAC, but the DP planner also does not classify them as feasible under `return >= -200`:
+
+| Region | Cells | DP return-feasible cells | DP mean return | SAC return success |
+| --- | ---: | ---: | ---: | ---: |
+| `|theta| >= 150 deg` | `451` | `0` | `-240.94` | `0.0000` |
+| `|theta| >= 150 deg` and `|theta_dot| <= 0.5` | `231` | `0` | `-241.92` | `0.0000` |
+
+Sensitivity check:
+
+| Metric | Primary DP grid | Finer DP check |
+| --- | ---: | ---: |
+| DP return-feasible cells | `1736` | `1736` |
+| DP strict-feasible cells | `1734` | `1734` |
+| Near-down return-feasible cells | `0` | `0` |
+| Mean return, `|theta| >= 150 deg` | `-240.94` | `-239.51` |
+| Mean return, `|theta| >= 150 deg` and `|theta_dot| <= 0.5` | `-241.92` | `-240.77` |
+
+Interpretation: the fixed `-200` threshold overstates SAC failure in the near-downward low-velocity region. For Week 1, the stronger scientific claim is now that 100k SAC nearly matches the DP return-feasible mask, while still leaving a small strict-stabilization gap on DP-strict-feasible cells.
+
 ## Full-State Grid Caveat
 
 The full Pendulum grid over angular velocity `[-8, 8]` looks much better:
@@ -240,6 +305,6 @@ The strict-success decrease is tiny and comes from only three completed seeds, s
 
 ## Conclusion
 
-The 100k CleanRL SAC baseline learns a strong average-return Pendulum policy, but it does not achieve high-reliability success. The main scientific finding is the mismatch between average performance and tail reliability: the policy solves many starts while consistently failing the near-downward low-velocity region.
+The 100k CleanRL SAC baseline learns a strong Pendulum policy under the reset distribution. The dynamic-programming calibration shows that the largest fixed-threshold failure region is not feasible under the `return >= -200` criterion, so the original hard-start map should not be interpreted as a pure RL failure.
 
-The next necessary step is threshold feasibility calibration. A near-oracle Pendulum planner or dynamic-programming calibration should estimate the best achievable return for each initial-condition cell, so success can be evaluated relative to feasible optimal performance rather than only a fixed `-200` threshold.
+The next metric improvement is to report reliability relative to DP feasibility or DP regret, not only the fixed `-200` threshold. Under that view, the main remaining 100k Pendulum gap is the strict-stabilization failure rate of about `3.5%` on DP-strict-feasible cells.

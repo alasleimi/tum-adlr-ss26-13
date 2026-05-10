@@ -1,5 +1,37 @@
 # Experiment Log
 
+## 2026-05-10 Pendulum DP Feasibility Calibration
+
+Status: completed.
+
+Purpose:
+- Check whether the fixed Pendulum success threshold `return >= -200` is feasible from the hard initial states found in the 100k checkpoint map.
+- Join a finite-horizon dynamic-programming calibration to the existing 100k SAC checkpoint grid without retraining.
+
+Command:
+- `python -m last_nine_rl.pendulum_dp --out reports/pendulum_investigation_20260509/pendulum_dp_100k_reset_support_241x161x81 --sac-grid reports/pendulum_investigation_20260509/pendulum_grid_100k_reset_support_61x41/pendulum_grid_summary.csv --horizon 200 --theta-bins 241 --velocity-bins 161 --action-bins 81 --eval-theta-bins 61 --eval-velocity-bins 41 --eval-velocity-limit 1.0 --save-solution`
+
+Sensitivity check:
+- `python -m last_nine_rl.pendulum_dp --out reports/pendulum_investigation_20260509/pendulum_dp_100k_reset_support_361x241x101_check --sac-grid reports/pendulum_investigation_20260509/pendulum_grid_100k_reset_support_61x41/pendulum_grid_summary.csv --horizon 200 --theta-bins 361 --velocity-bins 241 --action-bins 101 --eval-theta-bins 61 --eval-velocity-bins 41 --eval-velocity-limit 1.0`
+
+Primary results:
+- DP return-feasible cells: 1736/2501 = 0.6941.
+- DP strict-feasible cells: 1734/2501 = 0.6933.
+- SAC 100k return-success cell fraction on the same grid: 0.6918.
+- SAC 100k strict-success cell fraction on the same grid: 0.6692.
+- SAC failure rate among DP return-feasible cells: 0.0033.
+- SAC strict-failure rate among DP strict-feasible cells: 0.0348.
+- Region `|theta| >= 150 degrees`: DP return-feasible cells 0/451, DP mean return -240.94.
+- Region `|theta| >= 150 degrees` and `|theta_dot| <= 0.5`: DP return-feasible cells 0/231, DP mean return -241.92.
+
+Sensitivity result:
+- The finer 361 by 241 state grid with 101 actions produced the same feasible-cell counts: 1736 return-feasible cells, 1734 strict-feasible cells, and zero near-down feasible cells.
+
+Interpretation:
+- The original near-down SAC failure map should not be read as pure RL failure under the fixed `-200` threshold. Approximate DP also fails that region under the same threshold.
+- The better Week 1 conclusion is that SAC nearly matches the DP return-feasible mask, while a small strict-stabilization gap remains on DP-strict-feasible cells.
+- Detailed writeup: `docs/pendulum_dp_calibration.md`.
+
 ## 2026-05-09 Pendulum Reliability Investigation
 
 Status: running.
