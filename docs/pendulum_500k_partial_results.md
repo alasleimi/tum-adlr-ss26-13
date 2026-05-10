@@ -29,6 +29,8 @@ Not complete at the time this page was written:
 
 Therefore all numbers below are **partial** and are reported only to decide whether the ongoing run is showing evidence of improvement.
 
+Review note: this page intentionally avoids final 500k claims. All reported comparisons include 95% intervals and uncorrected paired tests where applicable. The comparison plot includes error bars; no 500k initial-state map is shown because the condition is not complete.
+
 ## Parameter Changes Relative To 100k
 
 The 500k UTD1 condition keeps the CleanRL SAC algorithmic defaults and changes the interaction budget and buffer size:
@@ -84,14 +86,16 @@ The fair early comparison is paired by training seed for the completed seeds `0,
 
 | Metric | 100k seeds 0-2 | 500k seeds 0-2 | 500k minus 100k | Paired t-test |
 | --- | ---: | ---: | ---: | ---: |
-| Mean return | approximately `-139.9915` | `-139.6041 +/- 1.7413` | `+0.3874`, 95% CI `[-1.0583, +1.8331]` | `p = 0.3681` |
-| Return success | approximately `0.7027` | `0.7023 +/- 0.0029` | `-0.0003`, 95% CI `[-0.0018, +0.0011]` | `p = 0.4226` |
-| Strict success | approximately `0.6833` | `0.6773 +/- 0.0117` | `-0.0060`, 95% CI `[-0.0103, -0.0017]` | `p = 0.0267` |
+| Mean return | `-139.9915 +/- 0.3524` | `-139.6041 +/- 1.7413` | `+0.3874`, 95% CI `[-1.0583, +1.8331]` | paired t-test, uncorrected `p = 0.3681` |
+| Return success | `0.7027 +/- 0.0014` | `0.7023 +/- 0.0029` | `-0.0003`, 95% CI `[-0.0018, +0.0011]` | paired t-test, uncorrected `p = 0.4226` |
+| Strict success | `0.6833 +/- 0.0160` | `0.6773 +/- 0.0117` | `-0.0060`, 95% CI `[-0.0103, -0.0017]` | paired t-test, uncorrected `p = 0.0267` |
+
+![Pendulum partial 500k paired differences with intervals](../reports/pendulum_investigation_20260509/paired_500k_minus_100k_seed0_2_ci.png)
 
 Interpretation:
 
 - There is no evidence that 500k UTD1 improves return success over 100k on completed seeds.
-- The strict-success difference is slightly negative and statistically significant in this very small paired sample, but the effect size is only 0.6 percentage points and the condition is incomplete. Treat it as a caution, not as a final conclusion.
+- The strict-success difference is slightly negative and statistically significant in this very small paired sample before any multiple-comparison correction, but the effect size is only 0.6 percentage points and the condition is incomplete. Treat it as a caution, not as a final conclusion.
 - A final 500k claim requires completed seeds 0-4 plus the same post-hoc 1000-episode eval and an exact reset-support grid.
 
 ## Missing Before Final 500k Result

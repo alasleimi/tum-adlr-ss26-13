@@ -66,6 +66,8 @@ Two uncertainty views are reported:
 
 Comparisons involving the energy-shaping controller are marked exploratory because it is a single deterministic controller, not a distribution over training seeds.
 
+Review note: plots that were generated before this review pass, such as learning curves and heatmaps, are treated as diagnostic visualizations. Formal uncertainty is reported in the interval plots and tables in this document. Heatmaps do not draw cellwise confidence intervals; the region table below reports Wilson intervals for the main initial-state regions.
+
 ## Post-Hoc Reliability
 
 Source files:
@@ -144,13 +146,13 @@ SAC is much better than the hand-designed controller at avoiding the very bad ta
 
 ![Pendulum 100k learning curves](../reports/week1_real_gpu_20260509/pendulum_100k_compare/learning_curves.png)
 
-The five seeds converge to a stable partial solution. Mean return improves substantially from random initialization, but final success rates plateau well below reliable control.
+The five seeds converge to a stable partial solution. This diagnostic plot shows individual seed traces and cross-seed spread, not a formal confidence band. The final-checkpoint seed-level intervals are reported in the post-hoc reliability table above.
 
 ## Reliability Nines
 
 ![Pendulum 100k reliability nines](../reports/week1_real_gpu_20260509/pendulum_100k_compare/reliability_nines.png)
 
-The "nines" view makes the failure-rate problem explicit. A 30% failure rate is about 0.5 nines, not close to the project goal of pushing reliability into the tail. The plot uses per-checkpoint eval episodes; the post-hoc table above gives the tighter final-checkpoint estimate.
+The "nines" view makes the failure-rate problem explicit. A 30% failure rate is about 0.5 nines, not close to the project goal of pushing reliability into the tail. This is a diagnostic learning-curve plot; the post-hoc Wilson and seed-level intervals above are the inferential final-checkpoint estimates.
 
 ## Fixed Eval Seeds
 
@@ -158,7 +160,7 @@ The "nines" view makes the failure-rate problem explicit. A 30% failure rate is 
 
 ![Pendulum 100k final eval strict success heatmap](../reports/week1_real_gpu_20260509/pendulum_100k_compare/final_eval_strict_success_heatmap.png)
 
-Failures are concentrated on the same fixed evaluation seeds across training seeds. That is evidence for a structured initial-state failure mode rather than independent random noise.
+Failures are concentrated on the same fixed evaluation seeds across training seeds. These heatmaps show raw final-eval outcomes, without separate error bars per cell. The repeated failure pattern is diagnostic evidence for a structured initial-state failure mode rather than independent random noise.
 
 ## Initial-State Maps
 
@@ -166,7 +168,7 @@ The fixed-seed scatter first revealed the hard-start pattern:
 
 ![Pendulum 100k final eval initial-state scatter](../reports/week1_real_gpu_20260509/pendulum_100k_compare/pendulum_initial_state_map.png)
 
-The exact reset-support grid below evaluates the saved policies from exact initial states, not only from sampled reset seeds.
+The scatter is diagnostic and uses the fixed eval seeds. The exact reset-support grid below evaluates the saved policies from exact initial states, not only from sampled reset seeds, and the region table supplies uncertainty for the main regions.
 
 Source: `reports/pendulum_investigation_20260509/pendulum_grid_100k_reset_support_61x41/pendulum_grid_summary.json`
 
@@ -195,6 +197,8 @@ Near-upright fraction map:
 ![Pendulum reset-support near-upright fraction map](../reports/pendulum_investigation_20260509/pendulum_grid_100k_reset_support_61x41/near_upright_fraction_map.png)
 
 Region summaries treat each cell-by-training-seed rollout as a trial and report Wilson intervals. Because adjacent initial-condition cells are correlated, use these intervals as descriptive diagnostics, not as independent-cell hypothesis tests.
+
+![Pendulum reset-support region success with intervals](../reports/pendulum_investigation_20260509/reset_support_region_success_ci.png)
 
 | Region | Cells | Seed trials | Return success Wilson 95% | Strict success Wilson 95% |
 | --- | ---: | ---: | ---: | ---: |
@@ -228,9 +232,9 @@ The partial 500k UTD1 result is tracked separately in `docs/pendulum_500k_partia
 
 | Metric | 500k minus 100k, seeds 0-2 | Paired t-test |
 | --- | ---: | ---: |
-| Mean return | `+0.3874`, 95% CI `[-1.0583, +1.8331]` | `p = 0.3681` |
-| Return success | `-0.0003`, 95% CI `[-0.0018, +0.0011]` | `p = 0.4226` |
-| Strict success | `-0.0060`, 95% CI `[-0.0103, -0.0017]` | `p = 0.0267` |
+| Mean return | `+0.3874`, 95% CI `[-1.0583, +1.8331]` | paired t-test, uncorrected `p = 0.3681` |
+| Return success | `-0.0003`, 95% CI `[-0.0018, +0.0011]` | paired t-test, uncorrected `p = 0.4226` |
+| Strict success | `-0.0060`, 95% CI `[-0.0103, -0.0017]` | paired t-test, uncorrected `p = 0.0267` |
 
 The strict-success decrease is tiny and comes from only three completed seeds, so it should be treated as a warning sign rather than a settled conclusion.
 
