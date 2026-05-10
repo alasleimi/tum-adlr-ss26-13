@@ -1,6 +1,15 @@
 # Pendulum 100k Results
 
-This page summarizes the 100000-environment-step CleanRL SAC baseline on `Pendulum-v1`.
+This page summarizes the 100000-environment-step CleanRL SAC baseline on Gymnasium `Pendulum-v1`.
+
+## Status
+
+This result is complete for the Week 1 baseline:
+
+- 5/5 training seeds completed.
+- All five final checkpoints were post-hoc evaluated on 1000 fixed eval seeds.
+- Exact initial-condition maps were generated from the saved checkpoints.
+- Large artifacts and plots are committed through Git LFS.
 
 ## Experimental Setup
 
@@ -46,39 +55,90 @@ Operational success metrics:
 - Strict success: return success, near-upright fraction `>= 0.8`, and max not-near-upright streak `<= 50`.
 - Threshold ladder: `-250`, `-200`, `-150`, `-100`.
 
-The `-200` threshold is a strict operational criterion, not an oracle feasibility claim. The energy-shaping reference controller reaches `return >= -200` on 68/100 calibration seeds, so future work should calibrate against a stronger near-oracle controller or planner.
+The `-200` threshold is a strict operational criterion, not an oracle feasibility claim. The energy-shaping controller below is a calibration reference, not a proof that every initial condition can reach `-200`.
+
+## Statistical Reporting
+
+Two uncertainty views are reported:
+
+- **Seed-level intervals**: mean across training seeds plus a 95% t interval. This is the primary uncertainty estimate for SAC because training seed is the experimental unit.
+- **Pooled episode Wilson intervals**: binomial Wilson interval over all evaluated episodes. These are useful for operational failure rates, but the same eval seeds are reused across training seeds, so they should not replace seed-level uncertainty.
+
+Comparisons involving the energy-shaping controller are marked exploratory because it is a single deterministic controller, not a distribution over training seeds.
 
 ## Post-Hoc Reliability
 
-Source: `reports/pendulum_investigation_20260509/posthoc_100k_1000eps/posthoc_eval_summary.json`
+Source files:
+
+- `reports/pendulum_investigation_20260509/posthoc_100k_1000eps/posthoc_eval_summary.json`
+- `reports/pendulum_investigation_20260509/analysis_stats.json`
 
 | Metric | Value |
 | --- | ---: |
 | Training seeds | `5` |
 | Eval episodes per seed | `1000` |
 | Pooled eval episodes | `5000` |
-| Mean seed mean return | `-140.6066` |
-| Worst seed mean return | `-142.7925` |
-| Mean seed return success | `0.7012` |
-| Mean seed strict success | `0.6734` |
+| Mean seed mean return | `-140.6066 +/- 1.5295` |
+| Mean seed return success | `0.7012 +/- 0.0027` |
+| Mean seed strict success | `0.6734 +/- 0.0247` |
 | Pooled return successes | `3506 / 5000` |
 | Pooled strict successes | `3367 / 5000` |
-| Pooled return success | `0.7012` |
-| Pooled strict success | `0.6734` |
 | Pooled return success Wilson 95% | `[0.6884, 0.7137]` |
 | Pooled strict success Wilson 95% | `[0.6603, 0.6863]` |
 | Collapse rate | `0.0` |
 
-Threshold ladder:
-
-| Return threshold | Fraction passing |
-| --- | ---: |
-| `>= -250` | `0.9686` |
-| `>= -200` | `0.7012` |
-| `>= -150` | `0.7012` |
-| `>= -100` | `0.1230` |
-
 Interpretation: the policy is not collapsing, but it is far from high-reliability. About 30% of evaluation starts remain failures under the `-200` return threshold.
+
+## Energy-Shaping Baseline
+
+Controller:
+
+- Source: `src/last_nine_rl/reference.py`
+- Type: energy-shaping swing-up plus local PD near upright
+- Eval seeds: 1000 fixed eval seeds, seed base `200000`, matching the SAC post-hoc eval distribution
+- Output: `reports/pendulum_investigation_20260509/pendulum_reference_1000_seed200000.json`
+
+Energy-shaping formula:
+
+```text
+E = 0.5 * theta_dot^2 + a * cos(theta)
+E* = a
+u = -k * (E - E*) * theta_dot
+```
+
+Near upright it switches to:
+
+```text
+u = -Kp * theta - Kd * theta_dot
+```
+
+Matched 1000-seed result:
+
+| Metric | Energy shaping |
+| --- | ---: |
+| Mean return | `-151.0905 +/- 5.3816` |
+| Return success | `701 / 1000 = 0.7010`, Wilson `[0.6719, 0.7286]` |
+| Strict success | `701 / 1000 = 0.7010`, Wilson `[0.6719, 0.7286]` |
+| Collapse rate | `0.0` |
+
+SAC 100k and energy shaping have nearly identical return success on this matched eval distribution. The energy controller has slightly higher strict success than the average SAC checkpoint, but an exploratory pooled two-proportion test gives `p = 0.0882` for strict success. Because SAC uses repeated eval seeds across five trained policies and energy shaping is one deterministic controller, this test is descriptive rather than definitive.
+
+![Pendulum success comparison with intervals](../reports/pendulum_investigation_20260509/success_comparison_100k_500k_energy.png)
+
+## Threshold Ladder
+
+The threshold ladder is important because the conclusion depends on how strict the success threshold is.
+
+![Pendulum threshold ladder with CI](../reports/pendulum_investigation_20260509/threshold_ladder_100k_energy_ci.png)
+
+| Return threshold | SAC 100k pooled | Energy shaping |
+| --- | ---: | ---: |
+| `>= -250` | `0.9686`, Wilson `[0.9634, 0.9731]` | `0.8710`, Wilson `[0.8488, 0.8904]` |
+| `>= -200` | `0.7012`, Wilson `[0.6884, 0.7137]` | `0.7010`, Wilson `[0.6719, 0.7286]` |
+| `>= -150` | `0.7012`, Wilson `[0.6884, 0.7137]` | `0.7010`, Wilson `[0.6719, 0.7286]` |
+| `>= -100` | `0.1230`, Wilson `[0.1142, 0.1324]` | `0.1100`, Wilson `[0.0921, 0.1309]` |
+
+SAC is much better than the hand-designed controller at avoiding the very bad tail below `-250`, but both methods have essentially the same pass rate at `-200` and `-150`.
 
 ## Learning Curves
 
@@ -90,13 +150,7 @@ The five seeds converge to a stable partial solution. Mean return improves subst
 
 ![Pendulum 100k reliability nines](../reports/week1_real_gpu_20260509/pendulum_100k_compare/reliability_nines.png)
 
-The "nines" view makes the failure-rate problem explicit. A 30% failure rate is about 0.5 nines, not close to the project goal of pushing reliability into the tail.
-
-## Threshold Ladder
-
-![Pendulum 100k threshold ladder](../reports/week1_real_gpu_20260509/pendulum_100k_compare/threshold_ladder.png)
-
-The threshold ladder shows that most episodes are above `-250`, about 70% are above `-200`/`-150`, and only about 12% clear `-100`. This means the exact threshold matters, and a single binary success definition can hide important structure.
+The "nines" view makes the failure-rate problem explicit. A 30% failure rate is about 0.5 nines, not close to the project goal of pushing reliability into the tail. The plot uses per-checkpoint eval episodes; the post-hoc table above gives the tighter final-checkpoint estimate.
 
 ## Fixed Eval Seeds
 
@@ -106,13 +160,13 @@ The threshold ladder shows that most episodes are above `-250`, about 70% are ab
 
 Failures are concentrated on the same fixed evaluation seeds across training seeds. That is evidence for a structured initial-state failure mode rather than independent random noise.
 
-## Initial-State Scatter
+## Initial-State Maps
+
+The fixed-seed scatter first revealed the hard-start pattern:
 
 ![Pendulum 100k final eval initial-state scatter](../reports/week1_real_gpu_20260509/pendulum_100k_compare/pendulum_initial_state_map.png)
 
-The fixed-seed scatter suggested that downward starts are hard, especially near `theta = +/-pi` with small angular velocity.
-
-## Exact Reset-Support Grid
+The exact reset-support grid below evaluates the saved policies from exact initial states, not only from sampled reset seeds.
 
 Source: `reports/pendulum_investigation_20260509/pendulum_grid_100k_reset_support_61x41/pendulum_grid_summary.json`
 
@@ -123,16 +177,6 @@ Grid:
 - Angular-velocity range: `[-1, 1]`, matching Gymnasium Pendulum's reset support.
 - Initial-condition cells: `2501`
 - Training seeds per cell: `5`
-
-Summary:
-
-| Grid metric | Value |
-| --- | ---: |
-| Mean cell return success | `0.6918` |
-| Mean cell strict success | `0.6692` |
-| Cells where all five seeds return-succeed | `0.6905` |
-| Cells where all five seeds strict-succeed | `0.6385` |
-| Cells where any training seed strict-succeeds | `0.6817` |
 
 Return success map:
 
@@ -150,14 +194,14 @@ Near-upright fraction map:
 
 ![Pendulum reset-support near-upright fraction map](../reports/pendulum_investigation_20260509/pendulum_grid_100k_reset_support_61x41/near_upright_fraction_map.png)
 
-Important region summaries:
+Region summaries treat each cell-by-training-seed rollout as a trial and report Wilson intervals. Because adjacent initial-condition cells are correlated, use these intervals as descriptive diagnostics, not as independent-cell hypothesis tests.
 
-| Region | Cells | Mean return success | Mean strict success |
-| --- | ---: | ---: | ---: |
-| All reset support | `2501` | `0.6918` | `0.6692` |
-| `|theta| >= 150 deg` | `451` | `0.0` | `0.0` |
-| `|theta| >= 150 deg` and `|theta_dot| <= 0.5` | `231` | `0.0` | `0.0` |
-| `60 deg <= |theta| <= 120 deg` | `820` | `1.0` | `1.0` |
+| Region | Cells | Seed trials | Return success Wilson 95% | Strict success Wilson 95% |
+| --- | ---: | ---: | ---: | ---: |
+| All reset support | `2501` | `12505` | `0.6918 [0.6837, 0.6998]` | `0.6692 [0.6609, 0.6774]` |
+| `|theta| >= 150 deg` | `451` | `2255` | `0.0000 [0.0000, 0.0017]` | `0.0000 [0.0000, 0.0017]` |
+| `|theta| >= 150 deg` and `|theta_dot| <= 0.5` | `231` | `1155` | `0.0000 [0.0000, 0.0033]` | `0.0000 [0.0000, 0.0033]` |
+| `60 deg <= |theta| <= 120 deg` | `820` | `4100` | `1.0000 [0.9991, 1.0000]` | `1.0000 [0.9991, 1.0000]` |
 
 Interpretation: the SAC policy reliably solves mid-angle starts and reliably fails near downward starts under the reset distribution. The reliability gap is therefore not simply average instability; it is a localized hard-start failure.
 
@@ -178,14 +222,17 @@ High angular velocity often makes swing-up easier because the pendulum already h
 
 The infrastructure logs replay coverage, action saturation, dormant units, effective ranks, parameter norms, gradient norms, and actual optimizer update norms. The current result does not point to a missing terminal-state or CleanRL implementation bug; see `docs/cleanrl_audit.md`.
 
-## 500k Follow-Up So Far
+## Relation To 500k Partial Run
 
-Partial 500k UTD1 result, completed seeds 0-2:
+The partial 500k UTD1 result is tracked separately in `docs/pendulum_500k_partial_results.md`. It is incomplete and should not be quoted as the final 500k condition. For the completed seeds 0-2, paired comparisons against their 100k counterparts show no practical improvement:
 
-- Post-hoc return success: `0.7023`
-- Post-hoc strict success: `0.6773`
+| Metric | 500k minus 100k, seeds 0-2 | Paired t-test |
+| --- | ---: | ---: |
+| Mean return | `+0.3874`, 95% CI `[-1.0583, +1.8331]` | `p = 0.3681` |
+| Return success | `-0.0003`, 95% CI `[-0.0018, +0.0011]` | `p = 0.4226` |
+| Strict success | `-0.0060`, 95% CI `[-0.0103, -0.0017]` | `p = 0.0267` |
 
-This is not materially better than the 100k result. The longer sweep is still running locally and should be committed separately after completion.
+The strict-success decrease is tiny and comes from only three completed seeds, so it should be treated as a warning sign rather than a settled conclusion.
 
 ## Conclusion
 

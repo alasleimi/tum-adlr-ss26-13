@@ -69,6 +69,7 @@ Detailed result writeups live under `docs/`:
 - Week 1 design: [docs/week1_design.md](docs/week1_design.md)
 - CleanRL audit: [docs/cleanrl_audit.md](docs/cleanrl_audit.md)
 - 100k Pendulum result summary with plots: [docs/pendulum_100k_results.md](docs/pendulum_100k_results.md)
+- 500k Pendulum partial result summary: [docs/pendulum_500k_partial_results.md](docs/pendulum_500k_partial_results.md)
 - Experiment log: [docs/experiment_log.md](docs/experiment_log.md)
 
 The short version of the 100k Pendulum result is that CleanRL SAC reaches good average return but not high reliability. The detailed analysis, including the initial-condition maps, is in [docs/pendulum_100k_results.md](docs/pendulum_100k_results.md).
