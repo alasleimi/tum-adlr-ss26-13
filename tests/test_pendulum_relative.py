@@ -41,6 +41,11 @@ def test_relative_success_uses_higher_return_as_better():
     assert rows[0]["near_dp_return_eps"] == 0.0
     assert rows[0]["beats_controller_return"] == 1.0
     assert rows[0]["beats_best_known_return"] == 0.0
+    assert rows[0]["signed_gap_to_dp"] == 10.0
+    assert rows[0]["regret_to_dp"] == 10.0
+    assert rows[0]["signed_gap_to_controller"] == -20.0
+    assert rows[0]["regret_to_controller"] == 0.0
+    assert rows[0]["advantage_over_controller"] == 20.0
 
 
 def test_relative_success_epsilon_margin():

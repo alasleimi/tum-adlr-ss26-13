@@ -36,7 +36,9 @@
       &quot;dp_policy_strict_success_rate&quot;: 0.6933226709316274,
       &quot;dp_strict_feasible_cells&quot;: 1734,
       &quot;sac_failure_rate_among_dp_feasible_cells&quot;: 0.003341013824884793,
-      &quot;sac_mean_regret_to_dp_policy&quot;: 3.0297884006024183,
+      &quot;sac_mean_advantage_over_dp_policy&quot;: 0.07566104994522797,
+      &quot;sac_mean_regret_to_dp_policy&quot;: 3.1054494505476464,
+      &quot;sac_mean_signed_gap_to_dp_policy&quot;: 3.0297884006024183,
       &quot;sac_return_success_rate&quot;: 0.6918032786885246,
       &quot;sac_strict_failure_rate_among_dp_strict_feasible_cells&quot;: 0.03483275663206459,
       &quot;sac_strict_success_rate&quot;: 0.6691723310675729
@@ -49,7 +51,9 @@
       &quot;dp_policy_strict_success_rate&quot;: 1.0,
       &quot;dp_strict_feasible_cells&quot;: 820,
       &quot;sac_failure_rate_among_dp_feasible_cells&quot;: 0.0,
+      &quot;sac_mean_advantage_over_dp_policy&quot;: 0.0,
       &quot;sac_mean_regret_to_dp_policy&quot;: 1.2266530774550546,
+      &quot;sac_mean_signed_gap_to_dp_policy&quot;: 1.2266530774550546,
       &quot;sac_return_success_rate&quot;: 1.0,
       &quot;sac_strict_failure_rate_among_dp_strict_feasible_cells&quot;: 0.0,
       &quot;sac_strict_success_rate&quot;: 1.0
@@ -62,7 +66,9 @@
       &quot;dp_policy_strict_success_rate&quot;: 0.0,
       &quot;dp_strict_feasible_cells&quot;: 0,
       &quot;sac_failure_rate_among_dp_feasible_cells&quot;: null,
-      &quot;sac_mean_regret_to_dp_policy&quot;: 7.514202964386557,
+      &quot;sac_mean_advantage_over_dp_policy&quot;: 0.12776578992130644,
+      &quot;sac_mean_regret_to_dp_policy&quot;: 7.641968754307864,
+      &quot;sac_mean_signed_gap_to_dp_policy&quot;: 7.514202964386557,
       &quot;sac_return_success_rate&quot;: 0.0,
       &quot;sac_strict_failure_rate_among_dp_strict_feasible_cells&quot;: null,
       &quot;sac_strict_success_rate&quot;: 0.0
@@ -75,7 +81,9 @@
       &quot;dp_policy_strict_success_rate&quot;: 0.0,
       &quot;dp_strict_feasible_cells&quot;: 0,
       &quot;sac_failure_rate_among_dp_feasible_cells&quot;: null,
-      &quot;sac_mean_regret_to_dp_policy&quot;: 10.600783445096898,
+      &quot;sac_mean_advantage_over_dp_policy&quot;: 0.0023927428138397692,
+      &quot;sac_mean_regret_to_dp_policy&quot;: 10.603176187910737,
+      &quot;sac_mean_signed_gap_to_dp_policy&quot;: 10.600783445096898,
       &quot;sac_return_success_rate&quot;: 0.0,
       &quot;sac_strict_failure_rate_among_dp_strict_feasible_cells&quot;: null,
       &quot;sac_strict_success_rate&quot;: 0.0
@@ -89,9 +97,13 @@
     &quot;sac_cell_mean_return_success_rate&quot;: 0.6918032786885246,
     &quot;sac_cell_mean_strict_success_rate&quot;: 0.6691723310675729,
     &quot;sac_failure_rate_among_dp_feasible_cells&quot;: 0.003341013824884793,
-    &quot;sac_mean_regret_to_dp_policy&quot;: 3.0297884006024183,
+    &quot;sac_mean_advantage_over_dp_policy&quot;: 0.07566104994522797,
+    &quot;sac_mean_regret_to_dp_policy&quot;: 3.1054494505476464,
+    &quot;sac_mean_signed_gap_to_dp_policy&quot;: 3.0297884006024183,
     &quot;sac_median_regret_to_dp_policy&quot;: 1.6419087100270247,
+    &quot;sac_median_signed_gap_to_dp_policy&quot;: 1.6419087100270247,
     &quot;sac_p95_regret_to_dp_policy&quot;: 5.52670589325237,
+    &quot;sac_p95_signed_gap_to_dp_policy&quot;: 5.52670589325237,
     &quot;sac_strict_failure_rate_among_dp_strict_feasible_cells&quot;: 0.03483275663206459
   },
   &quot;sac_grid_path&quot;: &quot;reports\\pendulum_investigation_20260509\\pendulum_grid_100k_reset_support_61x41\\pendulum_grid_summary.csv&quot;,
@@ -102,6 +114,7 @@
 <section><h2>dp_return_success_map.png</h2><img src='dp_return_success_map.png' style='max-width:100%;height:auto'></section>
 <section><h2>dp_strict_success_map.png</h2><img src='dp_strict_success_map.png' style='max-width:100%;height:auto'></section>
 <section><h2>sac_regret_to_dp_map.png</h2><img src='sac_regret_to_dp_map.png' style='max-width:100%;height:auto'></section>
+<section><h2>sac_signed_gap_to_dp_map.png</h2><img src='sac_signed_gap_to_dp_map.png' style='max-width:100%;height:auto'></section>
 <section><h2>sac_failure_on_dp_feasible_map.png</h2><img src='sac_failure_on_dp_feasible_map.png' style='max-width:100%;height:auto'></section>
 <section><h2>sac_strict_failure_on_dp_strict_feasible_map.png</h2><img src='sac_strict_failure_on_dp_strict_feasible_map.png' style='max-width:100%;height:auto'></section>
 <section><h2>sac_vs_dp_return_scatter.png</h2><img src='sac_vs_dp_return_scatter.png' style='max-width:100%;height:auto'></section>

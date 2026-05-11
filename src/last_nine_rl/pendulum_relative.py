@@ -12,6 +12,7 @@ import matplotlib
 import numpy as np
 
 matplotlib.use("Agg")
+import matplotlib.colors as mcolors
 import matplotlib.pyplot as plt
 
 from last_nine_rl.config import ReliabilityConfig
@@ -227,6 +228,9 @@ def enrich_rollouts(
         dp_return = float(dp["dp_policy_return"])
         controller_return = float(controller["controller_return"])
         best_known_return = max(dp_return, controller_return)
+        gap_to_dp = dp_return - sac_return
+        gap_to_controller = controller_return - sac_return
+        gap_to_best_known = best_known_return - sac_return
         task_success = float(float(row["stability_success"]) > 0.5 and float(row["streak_success"]) > 0.5)
         enriched.append(
             {
@@ -249,9 +253,15 @@ def enrich_rollouts(
                 "near_controller_return_eps": float(sac_return >= controller_return - epsilon_return),
                 "beats_best_known_return": float(sac_return >= best_known_return),
                 "near_best_known_return_eps": float(sac_return >= best_known_return - epsilon_return),
-                "regret_to_dp": float(dp_return - sac_return),
-                "regret_to_controller": float(controller_return - sac_return),
-                "regret_to_best_known": float(best_known_return - sac_return),
+                "signed_gap_to_dp": float(gap_to_dp),
+                "signed_gap_to_controller": float(gap_to_controller),
+                "signed_gap_to_best_known": float(gap_to_best_known),
+                "regret_to_dp": float(max(0.0, gap_to_dp)),
+                "regret_to_controller": float(max(0.0, gap_to_controller)),
+                "regret_to_best_known": float(max(0.0, gap_to_best_known)),
+                "advantage_over_dp": float(max(0.0, -gap_to_dp)),
+                "advantage_over_controller": float(max(0.0, -gap_to_controller)),
+                "advantage_over_best_known": float(max(0.0, -gap_to_best_known)),
             }
         )
     return enriched
@@ -284,6 +294,20 @@ def summarize_cells(
                 "mean_regret_to_dp": float(np.mean([float(row["regret_to_dp"]) for row in cell_rows])),
                 "mean_regret_to_controller": float(np.mean([float(row["regret_to_controller"]) for row in cell_rows])),
                 "mean_regret_to_best_known": float(np.mean([float(row["regret_to_best_known"]) for row in cell_rows])),
+                "mean_signed_gap_to_dp": float(np.mean([float(row["signed_gap_to_dp"]) for row in cell_rows])),
+                "mean_signed_gap_to_controller": float(
+                    np.mean([float(row["signed_gap_to_controller"]) for row in cell_rows])
+                ),
+                "mean_signed_gap_to_best_known": float(
+                    np.mean([float(row["signed_gap_to_best_known"]) for row in cell_rows])
+                ),
+                "mean_advantage_over_dp": float(np.mean([float(row["advantage_over_dp"]) for row in cell_rows])),
+                "mean_advantage_over_controller": float(
+                    np.mean([float(row["advantage_over_controller"]) for row in cell_rows])
+                ),
+                "mean_advantage_over_best_known": float(
+                    np.mean([float(row["advantage_over_best_known"]) for row in cell_rows])
+                ),
             }
             for key, _label in CRITERIA:
                 out[f"{key}_rate"] = float(np.mean([float(row[key]) for row in cell_rows]))
@@ -399,9 +423,9 @@ def write_figures(
             )
         )
     for key, title, cmap in (
-        ("mean_regret_to_dp", f"{condition_label}: regret to DP", "magma"),
-        ("mean_regret_to_controller", f"{condition_label}: regret to controller", "magma"),
-        ("mean_regret_to_best_known", f"{condition_label}: regret to best known", "magma"),
+        ("mean_regret_to_dp", f"{condition_label}: nonnegative shortfall to DP", "magma"),
+        ("mean_regret_to_controller", f"{condition_label}: nonnegative shortfall to controller", "magma"),
+        ("mean_regret_to_best_known", f"{condition_label}: nonnegative shortfall to best known", "magma"),
     ):
         figures.append(
             plot_heatmap(
@@ -410,7 +434,24 @@ def write_figures(
                 velocity_values=velocity_values,
                 title=title,
                 path=output_dir / f"{key}_map.png",
+                vmin=0.0,
                 cmap=cmap,
+            )
+        )
+    for key, title in (
+        ("mean_signed_gap_to_dp", f"{condition_label}: signed gap to DP"),
+        ("mean_signed_gap_to_controller", f"{condition_label}: signed gap to controller"),
+        ("mean_signed_gap_to_best_known", f"{condition_label}: signed gap to best known"),
+    ):
+        figures.append(
+            plot_heatmap(
+                values=matrix_for(cell_rows, key, theta_values, velocity_values),
+                theta_values=theta_values,
+                velocity_values=velocity_values,
+                title=title,
+                path=output_dir / f"{key}_map.png",
+                cmap="coolwarm",
+                center_zero=True,
             )
         )
     return figures
@@ -448,6 +489,7 @@ def plot_heatmap(
     vmin: float | None = None,
     vmax: float | None = None,
     cmap: str = "viridis",
+    center_zero: bool = False,
 ) -> Path:
     fig, ax = plt.subplots(figsize=(10, 6))
     extent = [
@@ -456,6 +498,13 @@ def plot_heatmap(
         float(velocity_values[0]),
         float(velocity_values[-1]),
     ]
+    norm = None
+    if center_zero:
+        finite = values[np.isfinite(values)]
+        max_abs = float(np.max(np.abs(finite))) if finite.size else 1.0
+        if max_abs <= 0.0:
+            max_abs = 1.0
+        norm = mcolors.TwoSlopeNorm(vmin=-max_abs, vcenter=0.0, vmax=max_abs)
     image = ax.imshow(
         values,
         origin="lower",
@@ -464,6 +513,7 @@ def plot_heatmap(
         extent=extent,
         vmin=vmin,
         vmax=vmax,
+        norm=norm,
         cmap=cmap,
     )
     ax.set_title(title)

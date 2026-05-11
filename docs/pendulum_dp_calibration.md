@@ -41,7 +41,8 @@ Primary output: `reports/pendulum_investigation_20260509/pendulum_dp_100k_reset_
 | Strict-threshold-feasible cells | `1734 / 2501` | n/a |
 | SAC failure rate among DP fixed-threshold-feasible cells | n/a | `0.0033` |
 | SAC strict-threshold failure rate among DP strict-threshold-feasible cells | n/a | `0.0348` |
-| Mean SAC regret to DP policy return | n/a | `3.03` return points |
+| Mean SAC nonnegative shortfall to DP policy return | n/a | `3.11` return points |
+| Mean SAC signed gap to DP policy return | n/a | `3.03` return points |
 
 The fixed `-200` threshold is not feasible everywhere. Under the DP calibration, the same fraction of reset-support cells is feasible as the SAC policy passes by fixed threshold. This is evidence that `-200` should be treated as a diagnostic threshold, not as the main Pendulum success criterion.
 
@@ -55,9 +56,13 @@ DP fixed-threshold-feasible cells:
 
 ![DP return success map](../reports/pendulum_investigation_20260509/pendulum_dp_100k_reset_support_241x161x81/dp_return_success_map.png)
 
-SAC regret to DP:
+SAC nonnegative shortfall to DP:
 
 ![SAC regret to DP map](../reports/pendulum_investigation_20260509/pendulum_dp_100k_reset_support_241x161x81/sac_regret_to_dp_map.png)
+
+SAC signed gap to DP, where negative values mean SAC outperformed the approximate DP rollout:
+
+![SAC signed gap to DP map](../reports/pendulum_investigation_20260509/pendulum_dp_100k_reset_support_241x161x81/sac_signed_gap_to_dp_map.png)
 
 SAC failure rate on DP fixed-threshold-feasible starts:
 

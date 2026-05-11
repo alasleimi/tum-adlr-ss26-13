@@ -238,9 +238,13 @@ DP fixed-threshold-feasible map under `return >= -200`:
 
 ![DP return success map](../reports/pendulum_investigation_20260509/pendulum_dp_100k_reset_support_241x161x81/dp_return_success_map.png)
 
-SAC regret to DP:
+SAC nonnegative shortfall to DP:
 
 ![SAC regret to DP map](../reports/pendulum_investigation_20260509/pendulum_dp_100k_reset_support_241x161x81/sac_regret_to_dp_map.png)
+
+SAC signed gap to DP, where negative values mean SAC outperformed the approximate DP rollout:
+
+![SAC signed gap to DP map](../reports/pendulum_investigation_20260509/pendulum_dp_100k_reset_support_241x161x81/sac_signed_gap_to_dp_map.png)
 
 SAC failure rate on DP-feasible starts:
 
@@ -258,7 +262,8 @@ SAC strict failure rate on DP-strict-feasible starts:
 | DP strict-threshold-feasible cells | `1734 / 2501` | n/a |
 | SAC failure rate among DP fixed-threshold-feasible cells | n/a | `0.0033` |
 | SAC strict-threshold failure rate among DP strict-threshold-feasible cells | n/a | `0.0348` |
-| Mean SAC regret to DP policy return | n/a | `3.03` return points |
+| Mean SAC nonnegative shortfall to DP policy return | n/a | `3.11` return points |
+| Mean SAC signed gap to DP policy return | n/a | `3.03` return points |
 
 The DP calibration changes the interpretation of the hard-start map. Near downward starts are not solved by SAC, but the DP planner also does not classify them as feasible under `return >= -200`:
 

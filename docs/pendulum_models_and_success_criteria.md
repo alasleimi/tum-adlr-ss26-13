@@ -110,6 +110,15 @@ The `-200` threshold is not a principled Pendulum success definition. It is usef
 
 The `5` return-point margin is a reporting tolerance for model/discretization noise and small rollout differences. Exact "beats DP" is still reported, but it should not be the only DP-relative metric.
 
+For heatmaps, `regret` is reported as nonnegative shortfall:
+
+```text
+regret_to_reference = max(0, reference_return - SAC_return)
+signed_gap_to_reference = reference_return - SAC_return
+```
+
+Negative signed gaps mean SAC outperformed the reference on that rollout or initial-state cell. This can happen because DP is approximate and because the controller is not optimal.
+
 ## Statistical Reporting
 
 For SAC, the primary uncertainty unit is the training seed. The reports therefore show seed-mean rates with 95% t intervals. Pooled Wilson intervals are also reported for cell-by-seed trial rates, but adjacent initial-state cells are correlated, so these are descriptive rather than independent-cell hypothesis tests.

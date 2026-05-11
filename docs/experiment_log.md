@@ -8,6 +8,7 @@ Purpose:
 - Update the 500k UTD1 condition now that all five seeds completed.
 - Add task-only, DP-relative, controller-relative, and best-known-baseline-relative success metrics for both 100k and 500k.
 - Reframe `return >= -200` as a legacy diagnostic threshold, not the main Pendulum success definition.
+- Fix the regret-map convention: `regret` now means nonnegative shortfall `max(0, reference_return - SAC_return)`, while signed return gaps are stored and plotted separately.
 
 Completed 500k UTD1 artifacts:
 - Runs: `runs/pendulum_investigation_20260509/pendulum_500k_utd1_buffer500k`, seeds 0-4.
@@ -39,6 +40,7 @@ Interpretation:
 - The fixed-threshold diagnostic is essentially unchanged from 100k to 500k.
 - 500k is closer to the DP/controller references, especially on exact beats-DP and beats-best-known metrics.
 - The robust near-DP and near-best-known metrics are high for both conditions; their paired intervals are wide because the 100k seed-level rates have one low outlier.
+- The regret-map verification found no state-grid join mismatch: DP, controller, 100k SAC, and 500k SAC all share the same 2501 reset-support cells.
 - Detailed writeups: `docs/pendulum_500k_results.md`, `docs/pendulum_relative_success_results.md`, and `docs/pendulum_models_and_success_criteria.md`.
 
 ## 2026-05-10 Pendulum DP Feasibility Calibration

@@ -67,6 +67,7 @@ Large artifacts are tracked with Git LFS, including `*.pt`, TensorBoard event fi
 Detailed result writeups live under `docs/`:
 
 - Week 1 design: [docs/week1_design.md](docs/week1_design.md)
+- Week 1 remaining work: [docs/week1_remaining.md](docs/week1_remaining.md)
 - CleanRL audit: [docs/cleanrl_audit.md](docs/cleanrl_audit.md)
 - 100k Pendulum result summary with plots: [docs/pendulum_100k_results.md](docs/pendulum_100k_results.md)
 - 500k Pendulum UTD1 result summary: [docs/pendulum_500k_results.md](docs/pendulum_500k_results.md)

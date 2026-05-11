@@ -14,6 +14,7 @@ import matplotlib
 import numpy as np
 
 matplotlib.use("Agg")
+import matplotlib.colors as mcolors
 import matplotlib.pyplot as plt
 
 from last_nine_rl.config import ReliabilityConfig
@@ -447,24 +448,35 @@ def join_sac_grid(
         raise ValueError(f"DP grid has {len(dp_rows)} rows but SAC grid has {len(sac_rows)} rows.")
     joined: list[dict[str, Any]] = []
     for dp_row, sac_row in zip(dp_rows, sac_rows, strict=True):
+        theta = float(dp_row["theta"])
+        theta_dot = float(dp_row["theta_dot"])
         if not (
-            math.isclose(float(dp_row["theta"]), float(sac_row["theta"]), abs_tol=1e-10)
-            and math.isclose(float(dp_row["theta_dot"]), float(sac_row["theta_dot"]), abs_tol=1e-10)
+            math.isclose(theta, float(sac_row["theta"]), abs_tol=1e-10)
+            and math.isclose(theta_dot, float(sac_row["theta_dot"]), abs_tol=1e-10)
         ):
             raise ValueError("DP and SAC grids are not ordered on the same initial states.")
         sac_mean_return = float(sac_row["mean_return"])
         sac_return_success_rate = float(sac_row["return_success_rate"])
         sac_strict_success_rate = float(sac_row["strict_success_rate"])
         dp_policy_return = float(dp_row["dp_policy_return"])
+        signed_gap = dp_policy_return - sac_mean_return
         dp_feasible = float(dp_row["dp_policy_return_success"])
         dp_strict_feasible = float(dp_row["dp_policy_strict_success"])
         joined.append(
             {
                 **dp_row,
+                "theta": theta,
+                "theta_degrees": float(dp_row["theta_degrees"]),
+                "theta_dot": theta_dot,
+                "dp_policy_return": dp_policy_return,
+                "dp_policy_return_success": dp_feasible,
+                "dp_policy_strict_success": dp_strict_feasible,
                 "sac_mean_return": sac_mean_return,
                 "sac_return_success_rate": sac_return_success_rate,
                 "sac_strict_success_rate": sac_strict_success_rate,
-                "sac_mean_regret_to_dp_policy": dp_policy_return - sac_mean_return,
+                "sac_signed_gap_to_dp_policy": signed_gap,
+                "sac_mean_regret_to_dp_policy": max(0.0, signed_gap),
+                "sac_advantage_over_dp_policy": max(0.0, -signed_gap),
                 "sac_failure_rate_on_dp_feasible": dp_feasible * (1.0 - sac_return_success_rate),
                 "sac_strict_failure_rate_on_dp_strict_feasible": dp_strict_feasible * (1.0 - sac_strict_success_rate),
                 "sac_all_seed_failure_on_dp_feasible": float(dp_feasible and sac_return_success_rate == 0.0),
@@ -511,8 +523,10 @@ def summarize_report(
         sac_return_success = np.asarray([row["sac_return_success_rate"] for row in comparison_rows], dtype=np.float64)
         sac_strict_success = np.asarray([row["sac_strict_success_rate"] for row in comparison_rows], dtype=np.float64)
         regret = np.asarray([row["sac_mean_regret_to_dp_policy"] for row in comparison_rows], dtype=np.float64)
-        feasible = np.asarray([row["dp_policy_return_success"] for row in comparison_rows], dtype=bool)
-        strict_feasible = np.asarray([row["dp_policy_strict_success"] for row in comparison_rows], dtype=bool)
+        signed_gap = np.asarray([row["sac_signed_gap_to_dp_policy"] for row in comparison_rows], dtype=np.float64)
+        advantage = np.asarray([row["sac_advantage_over_dp_policy"] for row in comparison_rows], dtype=np.float64)
+        feasible = np.asarray([float(row["dp_policy_return_success"]) > 0.5 for row in comparison_rows], dtype=bool)
+        strict_feasible = np.asarray([float(row["dp_policy_strict_success"]) > 0.5 for row in comparison_rows], dtype=bool)
         sac_failure_on_feasible = np.asarray(
             [row["sac_failure_rate_on_dp_feasible"] for row in comparison_rows],
             dtype=np.float64,
@@ -527,6 +541,10 @@ def summarize_report(
             "sac_mean_regret_to_dp_policy": float(np.mean(regret)),
             "sac_median_regret_to_dp_policy": float(np.median(regret)),
             "sac_p95_regret_to_dp_policy": float(np.quantile(regret, 0.95)),
+            "sac_mean_signed_gap_to_dp_policy": float(np.mean(signed_gap)),
+            "sac_median_signed_gap_to_dp_policy": float(np.median(signed_gap)),
+            "sac_p95_signed_gap_to_dp_policy": float(np.quantile(signed_gap, 0.95)),
+            "sac_mean_advantage_over_dp_policy": float(np.mean(advantage)),
             "dp_feasible_cells": int(np.sum(feasible)),
             "dp_strict_feasible_cells": int(np.sum(strict_feasible)),
             "sac_failure_rate_among_dp_feasible_cells": float(np.mean(sac_failure_on_feasible[feasible]))
@@ -538,7 +556,13 @@ def summarize_report(
             if np.any(strict_feasible)
             else None,
             "sac_all_seed_failure_fraction_among_dp_feasible_cells": float(
-                np.mean([row["sac_all_seed_failure_on_dp_feasible"] for row in comparison_rows if row["dp_policy_return_success"]])
+                np.mean(
+                    [
+                        row["sac_all_seed_failure_on_dp_feasible"]
+                        for row in comparison_rows
+                        if float(row["dp_policy_return_success"]) > 0.5
+                    ]
+                )
             )
             if np.any(feasible)
             else None,
@@ -547,7 +571,7 @@ def summarize_report(
                     [
                         row["sac_all_seed_strict_failure_on_dp_strict_feasible"]
                         for row in comparison_rows
-                        if row["dp_policy_strict_success"]
+                        if float(row["dp_policy_strict_success"]) > 0.5
                     ]
                 )
             )
@@ -576,19 +600,29 @@ def region_summaries(
             continue
         entry: dict[str, Any] = {
             "cells": len(selected),
-            "dp_policy_return_success_rate": float(np.mean([row["dp_policy_return_success"] for row in selected])),
-            "dp_policy_strict_success_rate": float(np.mean([row["dp_policy_strict_success"] for row in selected])),
-            "dp_policy_return_mean": float(np.mean([row["dp_policy_return"] for row in selected])),
+            "dp_policy_return_success_rate": float(
+                np.mean([float(row["dp_policy_return_success"]) for row in selected])
+            ),
+            "dp_policy_strict_success_rate": float(
+                np.mean([float(row["dp_policy_strict_success"]) for row in selected])
+            ),
+            "dp_policy_return_mean": float(np.mean([float(row["dp_policy_return"]) for row in selected])),
         }
         if comparison_rows is not None:
-            feasible = [row for row in selected if row["dp_policy_return_success"]]
-            strict_feasible = [row for row in selected if row["dp_policy_strict_success"]]
+            feasible = [row for row in selected if float(row["dp_policy_return_success"]) > 0.5]
+            strict_feasible = [row for row in selected if float(row["dp_policy_strict_success"]) > 0.5]
             entry.update(
                 {
                     "sac_return_success_rate": float(np.mean([row["sac_return_success_rate"] for row in selected])),
                     "sac_strict_success_rate": float(np.mean([row["sac_strict_success_rate"] for row in selected])),
                     "sac_mean_regret_to_dp_policy": float(
                         np.mean([row["sac_mean_regret_to_dp_policy"] for row in selected])
+                    ),
+                    "sac_mean_signed_gap_to_dp_policy": float(
+                        np.mean([row["sac_signed_gap_to_dp_policy"] for row in selected])
+                    ),
+                    "sac_mean_advantage_over_dp_policy": float(
+                        np.mean([row["sac_advantage_over_dp_policy"] for row in selected])
                     ),
                     "sac_failure_rate_among_dp_feasible_cells": float(
                         np.mean([row["sac_failure_rate_on_dp_feasible"] for row in feasible])
@@ -650,9 +684,19 @@ def write_report_figures(
                     matrix_for(comparison_rows, "sac_mean_regret_to_dp_policy", theta_values, velocity_values),
                     theta_values,
                     velocity_values,
-                    "SAC Mean Regret To DP Policy",
+                    "SAC Mean Nonnegative Shortfall To DP Policy",
                     output_dir / "sac_regret_to_dp_map.png",
+                    vmin=0.0,
                     cmap="magma",
+                ),
+                plot_heatmap(
+                    matrix_for(comparison_rows, "sac_signed_gap_to_dp_policy", theta_values, velocity_values),
+                    theta_values,
+                    velocity_values,
+                    "SAC Signed Gap To DP Policy",
+                    output_dir / "sac_signed_gap_to_dp_map.png",
+                    cmap="coolwarm",
+                    center_zero=True,
                 ),
                 plot_heatmap(
                     matrix_for(comparison_rows, "sac_failure_rate_on_dp_feasible", theta_values, velocity_values),
@@ -712,6 +756,7 @@ def plot_heatmap(
     vmin: float | None = None,
     vmax: float | None = None,
     cmap: str = "viridis",
+    center_zero: bool = False,
 ) -> Path:
     fig, ax = plt.subplots(figsize=(10, 6))
     extent = [
@@ -720,6 +765,13 @@ def plot_heatmap(
         float(velocity_values[0]),
         float(velocity_values[-1]),
     ]
+    norm = None
+    if center_zero:
+        finite = values[np.isfinite(values)]
+        max_abs = float(np.max(np.abs(finite))) if finite.size else 1.0
+        if max_abs <= 0.0:
+            max_abs = 1.0
+        norm = mcolors.TwoSlopeNorm(vmin=-max_abs, vcenter=0.0, vmax=max_abs)
     image = ax.imshow(
         values,
         origin="lower",
@@ -728,6 +780,7 @@ def plot_heatmap(
         extent=extent,
         vmin=vmin,
         vmax=vmax,
+        norm=norm,
         cmap=cmap,
     )
     ax.set_title(title)

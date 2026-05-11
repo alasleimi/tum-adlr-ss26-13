@@ -19,6 +19,12 @@ Generated outputs:
 - 500k relative report: `reports/pendulum_investigation_20260509/relative_success_500k_utd1`
 - Paired comparison: `reports/pendulum_investigation_20260509/relative_success_comparison_100k_500k`
 
+Regret/shortfall convention:
+
+- `mean_regret_to_*` is now nonnegative shortfall: `max(0, reference_return - SAC_return)`, averaged over training seeds.
+- `mean_signed_gap_to_*` is the signed return gap: `reference_return - SAC_return`. Negative values mean SAC outperformed the reference on that initial state.
+- The state-grid join was checked directly from the source CSVs: DP, controller, 100k SAC, and 500k SAC all contain the same 2501 reset-support cells with no missing or extra keys.
+
 ## Criteria
 
 All relative metrics use returns, where larger is better. `best known` means `max(DP return, energy-controller return)` per initial state.
@@ -107,6 +113,12 @@ Initial-state maps:
 
 ![100k near best known](../reports/pendulum_investigation_20260509/relative_success_100k/near_best_known_return_eps_map.png)
 
+Shortfall and signed-gap diagnostics:
+
+![100k nonnegative shortfall to DP](../reports/pendulum_investigation_20260509/relative_success_100k/mean_regret_to_dp_map.png)
+
+![100k signed gap to DP](../reports/pendulum_investigation_20260509/relative_success_100k/mean_signed_gap_to_dp_map.png)
+
 ## 500k Maps
 
 Overall success rates:
@@ -132,6 +144,12 @@ Initial-state maps:
 ![500k beats best known](../reports/pendulum_investigation_20260509/relative_success_500k_utd1/beats_best_known_return_map.png)
 
 ![500k near best known](../reports/pendulum_investigation_20260509/relative_success_500k_utd1/near_best_known_return_eps_map.png)
+
+Shortfall and signed-gap diagnostics:
+
+![500k nonnegative shortfall to DP](../reports/pendulum_investigation_20260509/relative_success_500k_utd1/mean_regret_to_dp_map.png)
+
+![500k signed gap to DP](../reports/pendulum_investigation_20260509/relative_success_500k_utd1/mean_signed_gap_to_dp_map.png)
 
 ## Interpretation
 
