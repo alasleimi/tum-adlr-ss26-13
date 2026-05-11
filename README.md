@@ -69,11 +69,13 @@ Detailed result writeups live under `docs/`:
 - Week 1 design: [docs/week1_design.md](docs/week1_design.md)
 - CleanRL audit: [docs/cleanrl_audit.md](docs/cleanrl_audit.md)
 - 100k Pendulum result summary with plots: [docs/pendulum_100k_results.md](docs/pendulum_100k_results.md)
+- 500k Pendulum UTD1 result summary: [docs/pendulum_500k_results.md](docs/pendulum_500k_results.md)
 - Pendulum dynamic-programming calibration: [docs/pendulum_dp_calibration.md](docs/pendulum_dp_calibration.md)
-- 500k Pendulum partial result summary: [docs/pendulum_500k_partial_results.md](docs/pendulum_500k_partial_results.md)
+- Pendulum model equations and success criteria: [docs/pendulum_models_and_success_criteria.md](docs/pendulum_models_and_success_criteria.md)
+- Pendulum relative success results: [docs/pendulum_relative_success_results.md](docs/pendulum_relative_success_results.md)
 - Experiment log: [docs/experiment_log.md](docs/experiment_log.md)
 
-The short version of the 100k Pendulum result is that CleanRL SAC reaches good average return but not high reliability. The detailed analysis, including the initial-condition maps, is in [docs/pendulum_100k_results.md](docs/pendulum_100k_results.md).
+The short version of the Pendulum result is that the legacy `return >= -200` diagnostic barely changes from 100k to 500k, but 500k is closer to the DP/controller references under relative metrics. The detailed analysis is in [docs/pendulum_relative_success_results.md](docs/pendulum_relative_success_results.md).
 
 ## Baseline Parameters
 
@@ -110,19 +112,24 @@ The longer 500k investigation keeps the same SAC parameters and changes:
 | During-training eval interval | `25000` | `100000` |
 | During-training eval episodes | `50` | `20` |
 
-The current partial 500k result does not materially improve reliability over 100k. See `docs/experiment_log.md`.
+The completed 500k UTD1 result does not materially improve the legacy fixed-threshold diagnostic over 100k, but it improves exact DP-relative and best-known-relative rates. See [docs/pendulum_500k_results.md](docs/pendulum_500k_results.md).
 
 ## Success Criteria
 
 Pendulum return is the sum of Gymnasium rewards over a 200-step episode. A larger return is better and the best possible return is near `0`.
 
-The current operational success criteria are:
+The current primary Pendulum success criteria are:
 
-- Return success: episode return `>= -200`.
-- Strict success: return success, near-upright fraction `>= 0.8`, and maximum not-near-upright streak `<= 50`.
+- Task-only success: near-upright fraction `>= 0.8` and max not-upright streak `<= 50`, without using return.
+- Relative success: SAC return compared with DP, the energy-shaping controller, and `max(DP, controller)`.
+
+Legacy return-threshold diagnostics are still reported for continuity:
+
+- Diagnostic fixed threshold: episode return `>= -200`.
+- Diagnostic strict threshold: fixed threshold plus task-only success.
 - Threshold ladder: `-250`, `-200`, `-150`, `-100`.
 
-Important caveat: `-200` is not feasible from every reset-support initial state. The repo now includes an approximate finite-horizon dynamic-programming calibration for Pendulum initial states. See [docs/pendulum_dp_calibration.md](docs/pendulum_dp_calibration.md).
+Important caveat: `-200` is not treated as a scientific success oracle because it is not feasible from every reset-support initial state. The repo includes approximate finite-horizon dynamic-programming calibration and an energy-shaping controller baseline for Pendulum initial states. See [docs/pendulum_models_and_success_criteria.md](docs/pendulum_models_and_success_criteria.md).
 
 ## Running Training
 

@@ -16,16 +16,16 @@ The 25k and 100k runs were useful diagnostics, but they were underpowered for th
 
 Every main result should include these plots:
 
-- Cross-seed learning curves: mean return, worst return, return success, strict success.
-- Reliability nines curves: empirical and Wilson-lower-bound `-log10(failure rate)` for return success and strict success.
+- Cross-seed learning curves: mean return, worst return, diagnostic threshold-pass rate, task success, and strict threshold-pass rate.
+- Reliability nines curves: empirical and Wilson-lower-bound `-log10(failure rate)` for task success and reference-relative success; legacy threshold-pass nines are kept as diagnostics.
 - Threshold ladder: fraction of eval episodes above each return threshold over training.
-- Final eval heatmaps: training seed by fixed eval seed for return and strict success, with eval seeds sorted by difficulty.
-- Initial-state map for Pendulum: initial `theta, theta_dot` colored by final mean return and strict success rate.
+- Final eval heatmaps: training seed by fixed eval seed for return, task success, and diagnostic strict-threshold rate, with eval seeds sorted by difficulty.
+- Initial-state map for Pendulum: initial `theta, theta_dot` colored by final mean return, task success, and reference-relative rates.
 - Replay coverage vs evaluation success: replay near-upright transition fraction against strict eval success.
 - Optimization health curves: critic/actor losses, `alpha`, parameter norms, gradient norms, and actual optimizer update norm ratios.
 - Representation health curves: dormant fractions and effective-rank fractions for actor and critics.
 - Final return distribution: per-episode returns, p05/p10/worst, and seed-level bootstrap intervals.
-- Scale curves: budget, update-to-data ratio, width, and depth versus worst-seed return and strict success.
+- Scale curves: budget, update-to-data ratio, width, and depth versus worst-seed return, task success, and reference-relative success.
 
 The new `python -m last_nine_rl.compare` command generates the first six aggregate plots from existing run telemetry.
 

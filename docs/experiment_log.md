@@ -1,5 +1,46 @@
 # Experiment Log
 
+## 2026-05-11 Completed 500k UTD1 And Relative Success Metrics
+
+Status: completed.
+
+Purpose:
+- Update the 500k UTD1 condition now that all five seeds completed.
+- Add task-only, DP-relative, controller-relative, and best-known-baseline-relative success metrics for both 100k and 500k.
+- Reframe `return >= -200` as a legacy diagnostic threshold, not the main Pendulum success definition.
+
+Completed 500k UTD1 artifacts:
+- Runs: `runs/pendulum_investigation_20260509/pendulum_500k_utd1_buffer500k`, seeds 0-4.
+- Aggregate: `reports/pendulum_investigation_20260509/pendulum_500k_utd1_buffer500k/aggregate.json`.
+- Post-hoc eval: `reports/pendulum_investigation_20260509/pendulum_500k_utd1_buffer500k/posthoc_1000eps/posthoc_eval_summary.json`.
+- Reset-support grid: `reports/pendulum_investigation_20260509/pendulum_500k_utd1_buffer500k/grid_reset_support_61x41`.
+
+500k post-hoc diagnostics:
+- Mean seed mean return: -139.3497.
+- Mean seed fixed-threshold diagnostic: 0.7028.
+- Mean seed strict-threshold diagnostic: 0.6802.
+- Pooled fixed-threshold diagnostic: 3514/5000 = 0.7028, Wilson 95% [0.6900, 0.7153].
+- Pooled strict-threshold diagnostic: 3401/5000 = 0.6802, Wilson 95% [0.6671, 0.6930].
+
+Relative-success commands:
+- 100k: `python -m last_nine_rl.pendulum_relative --condition-label "Pendulum SAC 100k" --sac-rollouts reports/pendulum_investigation_20260509/pendulum_grid_100k_reset_support_61x41/pendulum_grid_rollouts.csv --dp-grid reports/pendulum_investigation_20260509/pendulum_dp_100k_reset_support_241x161x81/pendulum_dp_grid.csv --controller-grid reports/pendulum_investigation_20260509/pendulum_controller_reset_support_61x41/controller_grid.csv --out reports/pendulum_investigation_20260509/relative_success_100k --epsilon-return 5.0`
+- 500k: `python -m last_nine_rl.pendulum_relative --condition-label "Pendulum SAC 500k UTD1" --sac-rollouts reports/pendulum_investigation_20260509/pendulum_500k_utd1_buffer500k/grid_reset_support_61x41/pendulum_grid_rollouts.csv --dp-grid reports/pendulum_investigation_20260509/pendulum_dp_100k_reset_support_241x161x81/pendulum_dp_grid.csv --controller-grid reports/pendulum_investigation_20260509/pendulum_controller_reset_support_61x41/controller_grid.csv --out reports/pendulum_investigation_20260509/relative_success_500k_utd1 --epsilon-return 5.0`
+
+Key paired 500k minus 100k results over the reset-support grid:
+- Fixed-threshold diagnostic: +0.0009, 95% CI [-0.0007, +0.0024], uncorrected paired p = 0.1894.
+- Task-only success: +0.0268, 95% CI [-0.0873, +0.1409], uncorrected paired p = 0.5499.
+- Strict-threshold diagnostic: +0.0056, 95% CI [-0.0192, +0.0304], uncorrected paired p = 0.5645.
+- Beats DP: +0.0500, 95% CI [+0.0090, +0.0909], uncorrected paired p = 0.0275.
+- Near DP within 5 return points: +0.0741, 95% CI [-0.0815, +0.2296], uncorrected paired p = 0.2567.
+- Beats best known `max(DP, controller)`: +0.0509, 95% CI [+0.0087, +0.0931], uncorrected paired p = 0.0287.
+- Near best known within 5 return points: +0.0742, 95% CI [-0.0812, +0.2296], uncorrected paired p = 0.2555.
+
+Interpretation:
+- The fixed-threshold diagnostic is essentially unchanged from 100k to 500k.
+- 500k is closer to the DP/controller references, especially on exact beats-DP and beats-best-known metrics.
+- The robust near-DP and near-best-known metrics are high for both conditions; their paired intervals are wide because the 100k seed-level rates have one low outlier.
+- Detailed writeups: `docs/pendulum_500k_results.md`, `docs/pendulum_relative_success_results.md`, and `docs/pendulum_models_and_success_criteria.md`.
+
 ## 2026-05-10 Pendulum DP Feasibility Calibration
 
 Status: completed.

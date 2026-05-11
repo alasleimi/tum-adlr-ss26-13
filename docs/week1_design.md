@@ -41,8 +41,9 @@ Training is not judged by mean return alone. Each run logs:
 - Episode return and episode length.
 - Evaluation mean, median, standard deviation, best, and worst return.
 - Evaluation return percentiles: p05, p10, p25, p75, p90, p95.
-- Evaluation success rate: fraction of evaluation episodes with return at or above the configured success threshold.
-- Strict success rate: return success plus near-upright fraction and maximum not-near-upright streak. Return-only success remains the primary comparable metric; strict success is the conservative "nines" metric.
+- Evaluation threshold-pass rate: fraction of evaluation episodes with return at or above the configured diagnostic threshold.
+- Task success rate: near-upright fraction plus maximum not-near-upright streak, without using return.
+- Strict threshold-pass rate: diagnostic threshold pass plus task success. This is retained for continuity, but it is not the primary Pendulum success definition.
 - Wilson 95% confidence interval for evaluation success rate.
 - Collapse rate: fraction of evaluation episodes at or below the configured collapse threshold.
 - Per-episode evaluation table with fixed seed, return, length, near-upright fraction, minimum step reward, and longest not-near-upright streak.

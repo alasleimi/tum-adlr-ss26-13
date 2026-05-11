@@ -1,6 +1,8 @@
 # Pendulum Dynamic-Programming Calibration
 
-This page records the finite-horizon dynamic-programming calibration added after the initial 100k SAC result. It answers a specific question: whether the fixed Pendulum success threshold `return >= -200` is feasible from every reset-support initial state.
+This page records the finite-horizon dynamic-programming calibration added after the initial 100k SAC result. It answers a specific question: whether the legacy fixed Pendulum threshold `return >= -200` is feasible from every reset-support initial state.
+
+The exact dynamics, DP approximation, energy-shaping controller equations, and relative-success criteria are specified in `docs/pendulum_models_and_success_criteria.md`.
 
 ## Method
 
@@ -33,15 +35,15 @@ Primary output: `reports/pendulum_investigation_20260509/pendulum_dp_100k_reset_
 | Metric | DP calibration | SAC 100k checkpoint grid |
 | --- | ---: | ---: |
 | Reset-support cells | `2501` | `2501` |
-| Return-success cell fraction | `0.6941` | `0.6918` |
-| Strict-success cell fraction | `0.6933` | `0.6692` |
-| Return-feasible cells | `1736 / 2501` | n/a |
-| Strict-feasible cells | `1734 / 2501` | n/a |
-| SAC failure rate among DP return-feasible cells | n/a | `0.0033` |
-| SAC strict-failure rate among DP strict-feasible cells | n/a | `0.0348` |
+| Fixed-threshold cell fraction | `0.6941` | `0.6918` |
+| Strict-threshold cell fraction | `0.6933` | `0.6692` |
+| Fixed-threshold-feasible cells | `1736 / 2501` | n/a |
+| Strict-threshold-feasible cells | `1734 / 2501` | n/a |
+| SAC failure rate among DP fixed-threshold-feasible cells | n/a | `0.0033` |
+| SAC strict-threshold failure rate among DP strict-threshold-feasible cells | n/a | `0.0348` |
 | Mean SAC regret to DP policy return | n/a | `3.03` return points |
 
-The fixed `-200` threshold is not feasible everywhere. Under the DP calibration, the same fraction of reset-support cells is feasible as the SAC policy actually solves by return threshold. The main remaining SAC gap is stricter stabilization: among DP strict-feasible cells, SAC has about `3.5%` strict failure.
+The fixed `-200` threshold is not feasible everywhere. Under the DP calibration, the same fraction of reset-support cells is feasible as the SAC policy passes by fixed threshold. This is evidence that `-200` should be treated as a diagnostic threshold, not as the main Pendulum success criterion.
 
 ## Initial-State Evidence
 
@@ -49,7 +51,7 @@ DP policy return:
 
 ![DP policy return map](../reports/pendulum_investigation_20260509/pendulum_dp_100k_reset_support_241x161x81/dp_policy_return_map.png)
 
-DP return-feasible cells:
+DP fixed-threshold-feasible cells:
 
 ![DP return success map](../reports/pendulum_investigation_20260509/pendulum_dp_100k_reset_support_241x161x81/dp_return_success_map.png)
 
@@ -57,11 +59,11 @@ SAC regret to DP:
 
 ![SAC regret to DP map](../reports/pendulum_investigation_20260509/pendulum_dp_100k_reset_support_241x161x81/sac_regret_to_dp_map.png)
 
-SAC failure rate on DP return-feasible starts:
+SAC failure rate on DP fixed-threshold-feasible starts:
 
 ![SAC failure on DP feasible map](../reports/pendulum_investigation_20260509/pendulum_dp_100k_reset_support_241x161x81/sac_failure_on_dp_feasible_map.png)
 
-SAC strict failure rate on DP strict-feasible starts:
+SAC strict-threshold failure rate on DP strict-threshold-feasible starts:
 
 ![SAC strict failure on DP strict feasible map](../reports/pendulum_investigation_20260509/pendulum_dp_100k_reset_support_241x161x81/sac_strict_failure_on_dp_strict_feasible_map.png)
 
@@ -69,7 +71,7 @@ SAC strict failure rate on DP strict-feasible starts:
 
 The previous SAC map showed complete failure near the downward low-velocity region. DP changes the interpretation:
 
-| Region | Cells | DP return-feasible cells | DP mean return | SAC return success |
+| Region | Cells | DP fixed-threshold-feasible cells | DP mean return | SAC fixed-threshold rate |
 | --- | ---: | ---: | ---: | ---: |
 | `|theta| >= 150 deg` | `451` | `0` | `-240.94` | `0.0000` |
 | `|theta| >= 150 deg` and `|theta_dot| <= 0.5` | `231` | `0` | `-241.92` | `0.0000` |
@@ -88,9 +90,9 @@ Key comparison:
 
 | Metric | Primary grid | Finer check |
 | --- | ---: | ---: |
-| DP return-feasible cells | `1736` | `1736` |
-| DP strict-feasible cells | `1734` | `1734` |
-| Near-down return-feasible cells | `0` | `0` |
+| DP fixed-threshold-feasible cells | `1736` | `1736` |
+| DP strict-threshold-feasible cells | `1734` | `1734` |
+| Near-down fixed-threshold-feasible cells | `0` | `0` |
 | Mean return, `|theta| >= 150 deg` | `-240.94` | `-239.51` |
 | Mean return, `|theta| >= 150 deg` and `|theta_dot| <= 0.5` | `-241.92` | `-240.77` |
 
@@ -100,4 +102,4 @@ The exact return values move by about 1 to 1.5 points in the hard region, but th
 
 This is an approximate finite-horizon planner, not a mathematical proof of optimality. The conclusion is strong enough for Week 1 calibration because the feasible mask is stable under a finer discretization check and because the near-down region is far below `-200` on average.
 
-For later project phases, success should be reported both as the original fixed-threshold metric and as a DP-normalized metric, such as regret to DP value or success relative to the DP-feasible mask.
+For later project phases, success should be reported as task-state success plus DP/controller-relative metrics. The original fixed-threshold quantity should remain a reproducibility diagnostic and threshold-ladder point.
