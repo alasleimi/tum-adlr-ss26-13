@@ -1,5 +1,33 @@
 # Experiment Log
 
+## 2026-05-12 Replay Diagnostics And Baseline Hypothesis Check
+
+Status: completed.
+
+Purpose:
+- Check whether new remote commits needed to be integrated before continuing. `git fetch origin main` found no divergence: `HEAD...origin/main` was `0 0`.
+- Inspect the Pendulum replay telemetry across 100k UTD1, completed 500k UTD1, and the partial 250k UTD2 condition.
+- Separate a replay-coverage hypothesis from a representation/plasticity hypothesis before starting SimbaV2-related changes.
+
+Artifacts:
+- Report: `reports/pendulum_investigation_20260509/replay_diagnostics_comparison/index.html`.
+- Snapshot CSV: `reports/pendulum_investigation_20260509/replay_diagnostics_comparison/replay_diagnostics_snapshot.csv`.
+- Timeseries CSV: `reports/pendulum_investigation_20260509/replay_diagnostics_comparison/replay_diagnostics_timeseries.csv`.
+- Writeup: `docs/pendulum_replay_diagnostics.md`.
+
+Replay diagnostics:
+- 100k UTD1 complete seeds: 0-4. Final replay near-upright transition fraction 0.7948, 95% seed-level CI [0.7875, 0.8021].
+- 500k UTD1 complete seeds: 0-4. Final replay near-upright transition fraction 0.8471, 95% seed-level CI [0.8453, 0.8490].
+- 250k UTD2 partial complete seeds: 0-1. Seed 2 stopped near 76000 steps and is listed as incomplete.
+- Replay action saturation stays low, roughly 7-8%, so the Pendulum issue is not obviously an action-clipping artifact.
+- Raw `replay_final.npz` files were not available for the completed 100k and 500k runs because `telemetry.save_replay=false`; future diagnostic runs can now pass `--save-replay`.
+
+Interpretation:
+- The current evidence argues against "the replay buffer never contains successful states" as the main failure mode.
+- Longer training improves replay coverage and replay reward, but it does not improve the built-in fixed-eval strict diagnostic.
+- Representation health degrades with longer training: Q1/Q2 layer1 dormant fractions rise from about 0.46/0.48 at 100k to about 0.77/0.78 at 500k, while actor update norm ratios fall by more than half.
+- The strongest next hypothesis is a plasticity/value-estimation issue, which is a reasonable bridge to SimbaV2 ablations. The 250k UTD2 condition still needs completion or explicit exclusion before it can support a main result.
+
 ## 2026-05-11 Completed 500k UTD1 And Relative Success Metrics
 
 Status: completed.

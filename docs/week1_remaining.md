@@ -9,6 +9,7 @@ This checklist is the current boundary between the Week 1 baseline milestone and
 - Pendulum 100k and 500k UTD1 five-seed datasets.
 - Pendulum post-hoc 1000-episode evals, reset-support initial-condition maps, DP calibration, energy-controller baseline, and relative success metrics.
 - Regret-map convention fixed: `regret` now means nonnegative shortfall, with signed return gaps plotted separately.
+- Replay/representation diagnostic comparison for 100k UTD1, 500k UTD1, and the partial 250k UTD2 condition.
 
 ## Still Needed For A Strong Week 1 Package
 
@@ -31,7 +32,11 @@ This checklist is the current boundary between the Week 1 baseline milestone and
    - Ask humans to inspect TensorBoard traces, initial-state maps, and representative failed rollouts.
    - Add short notes for any visually obvious failure mode: wrong swing direction, late stabilization, action saturation, or critic/actor instability.
 
-5. Keep DP and controller caveats explicit.
+5. Preserve raw replay arrays in the next diagnostic runs.
+   - The completed 100k and 500k runs logged replay summaries but did not save `replay_final.npz`.
+   - Use `--save-replay` for future scale or SimbaV2 runs where storage is acceptable, so replay coverage and sampling can be mapped by state, not only summarized globally.
+
+6. Keep DP and controller caveats explicit.
    - DP is an approximate finite-horizon calibration, not an oracle proof.
    - The controller is a reference baseline, not an optimal policy.
    - Main Pendulum success should remain task-only and reference-relative; `return >= -200` should remain diagnostic-only.

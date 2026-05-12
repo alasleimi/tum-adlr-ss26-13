@@ -74,6 +74,7 @@ Detailed result writeups live under `docs/`:
 - Pendulum dynamic-programming calibration: [docs/pendulum_dp_calibration.md](docs/pendulum_dp_calibration.md)
 - Pendulum model equations and success criteria: [docs/pendulum_models_and_success_criteria.md](docs/pendulum_models_and_success_criteria.md)
 - Pendulum relative success results: [docs/pendulum_relative_success_results.md](docs/pendulum_relative_success_results.md)
+- Pendulum replay and representation diagnostics: [docs/pendulum_replay_diagnostics.md](docs/pendulum_replay_diagnostics.md)
 - Experiment log: [docs/experiment_log.md](docs/experiment_log.md)
 
 The short version of the Pendulum result is that the legacy `return >= -200` diagnostic barely changes from 100k to 500k, but 500k is closer to the DP/controller references under relative metrics. The detailed analysis is in [docs/pendulum_relative_success_results.md](docs/pendulum_relative_success_results.md).
@@ -114,6 +115,8 @@ The longer 500k investigation keeps the same SAC parameters and changes:
 | During-training eval episodes | `50` | `20` |
 
 The completed 500k UTD1 result does not materially improve the legacy fixed-threshold diagnostic over 100k, but it improves exact DP-relative and best-known-relative rates. See [docs/pendulum_500k_results.md](docs/pendulum_500k_results.md).
+
+Replay diagnostics show that the longer runs contain more near-upright replay and better replay rewards, while critic dormant fractions increase and actor update ratios shrink. See [docs/pendulum_replay_diagnostics.md](docs/pendulum_replay_diagnostics.md).
 
 ## Success Criteria
 
@@ -160,6 +163,8 @@ python -m last_nine_rl.train `
   --run-dir runs/smoke_pendulum `
   --overwrite
 ```
+
+Add `--save-replay` when a run should preserve `replay_final.npz` for state-conditioned replay-buffer inspection. The main 100k and 500k datasets logged replay summaries but did not save the raw replay arrays.
 
 Each run writes:
 
