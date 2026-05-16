@@ -30,7 +30,7 @@ def test_train_writes_complete_telemetry_and_uses_fixed_eval_seeds(tmp_path):
             tensorboard=True,
             write_eval_returns_csv=True,
             overwrite=False,
-            save_replay=False,
+            save_replay=True,
             save_model=True,
         ),
     )
@@ -41,6 +41,7 @@ def test_train_writes_complete_telemetry_and_uses_fixed_eval_seeds(tmp_path):
     assert (run_dir / "events.jsonl").is_file()
     assert (run_dir / "metrics.csv").is_file()
     assert (run_dir / "eval_episodes.csv").is_file()
+    assert (run_dir / "replay_final.npz").is_file()
     assert (run_dir / "checkpoints" / "final.pt").is_file()
     assert any((run_dir / "tensorboard").glob("events.out.tfevents.*"))
 

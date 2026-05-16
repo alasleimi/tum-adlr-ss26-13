@@ -43,8 +43,8 @@ The only exact-equivalence caveat is the actor-update counter. CleanRL gates act
 
 The low Pendulum reliability is not explained by an obvious CleanRL config or terminal-state bug. The evidence points to a real hard-start failure mode:
 
-- 1000-episode post-hoc eval from the five 100k checkpoints gives mean seed return success `0.7012` and strict success `0.6734`.
-- The dense reset-support map over Gymnasium's actual initial velocity range `[-1, 1]` gives cell mean return success `0.6918` and strict success `0.6692`.
+- 1000-episode post-hoc eval from the five 100k checkpoints gives mean seed fixed-threshold diagnostic `0.7012` and strict-threshold diagnostic `0.6734`.
+- The dense reset-support map over Gymnasium's actual initial velocity range `[-1, 1]` gives cell mean fixed-threshold diagnostic `0.6918` and strict-threshold diagnostic `0.6692`.
 - Failures concentrate near downward starts, especially around `theta = +/-174 to +/-180 degrees` with small or opposing angular velocity.
 - High-velocity states across the full Pendulum state range are much easier, so full-state success maps must not be confused with the reset-distribution reliability.
 

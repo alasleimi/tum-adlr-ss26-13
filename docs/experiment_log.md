@@ -1,5 +1,108 @@
 # Experiment Log
 
+## 2026-05-12 Replay Diagnostics And Baseline Hypothesis Check
+
+Status: completed.
+
+Purpose:
+- Check whether new remote commits needed to be integrated before continuing. `git fetch origin main` found no divergence: `HEAD...origin/main` was `0 0`.
+- Inspect the Pendulum replay telemetry across 100k UTD1, completed 500k UTD1, and the partial 250k UTD2 condition.
+- Separate a replay-coverage hypothesis from a representation/plasticity hypothesis before starting SimbaV2-related changes.
+
+Artifacts:
+- Report: `reports/pendulum_investigation_20260509/replay_diagnostics_comparison/index.html`.
+- Snapshot CSV: `reports/pendulum_investigation_20260509/replay_diagnostics_comparison/replay_diagnostics_snapshot.csv`.
+- Timeseries CSV: `reports/pendulum_investigation_20260509/replay_diagnostics_comparison/replay_diagnostics_timeseries.csv`.
+- Writeup: `docs/pendulum_replay_diagnostics.md`.
+
+Replay diagnostics:
+- 100k UTD1 complete seeds: 0-4. Final replay near-upright transition fraction 0.7948, 95% seed-level CI [0.7875, 0.8021].
+- 500k UTD1 complete seeds: 0-4. Final replay near-upright transition fraction 0.8471, 95% seed-level CI [0.8453, 0.8490].
+- 250k UTD2 partial complete seeds: 0-1. Seed 2 stopped near 76000 steps and is listed as incomplete.
+- Replay action saturation stays low, roughly 7-8%, so the Pendulum issue is not obviously an action-clipping artifact.
+- Raw `replay_final.npz` files were not available for the completed 100k and 500k runs because `telemetry.save_replay=false`; future diagnostic runs can now pass `--save-replay`.
+
+Interpretation:
+- The current evidence argues against "the replay buffer never contains successful states" as the main failure mode.
+- Longer training improves replay coverage and replay reward, but it does not improve the built-in fixed-eval strict diagnostic.
+- Representation health degrades with longer training: Q1/Q2 layer1 dormant fractions rise from about 0.46/0.48 at 100k to about 0.77/0.78 at 500k, while actor update norm ratios fall by more than half.
+- The strongest next hypothesis is a plasticity/value-estimation issue, which is a reasonable bridge to SimbaV2 ablations. The 250k UTD2 condition still needs completion or explicit exclusion before it can support a main result.
+
+## 2026-05-11 Completed 500k UTD1 And Relative Success Metrics
+
+Status: completed.
+
+Purpose:
+- Update the 500k UTD1 condition now that all five seeds completed.
+- Add task-only, DP-relative, controller-relative, and best-known-baseline-relative success metrics for both 100k and 500k.
+- Reframe `return >= -200` as a legacy diagnostic threshold, not the main Pendulum success definition.
+- Fix the regret-map convention: `regret` now means nonnegative shortfall `max(0, reference_return - SAC_return)`, while signed return gaps are stored and plotted separately.
+
+Completed 500k UTD1 artifacts:
+- Runs: `runs/pendulum_investigation_20260509/pendulum_500k_utd1_buffer500k`, seeds 0-4.
+- Aggregate: `reports/pendulum_investigation_20260509/pendulum_500k_utd1_buffer500k/aggregate.json`.
+- Post-hoc eval: `reports/pendulum_investigation_20260509/pendulum_500k_utd1_buffer500k/posthoc_1000eps/posthoc_eval_summary.json`.
+- Reset-support grid: `reports/pendulum_investigation_20260509/pendulum_500k_utd1_buffer500k/grid_reset_support_61x41`.
+
+500k post-hoc diagnostics:
+- Mean seed mean return: -139.3497.
+- Mean seed fixed-threshold diagnostic: 0.7028.
+- Mean seed strict-threshold diagnostic: 0.6802.
+- Pooled fixed-threshold diagnostic: 3514/5000 = 0.7028, Wilson 95% [0.6900, 0.7153].
+- Pooled strict-threshold diagnostic: 3401/5000 = 0.6802, Wilson 95% [0.6671, 0.6930].
+
+Relative-success commands:
+- 100k: `python -m last_nine_rl.pendulum_relative --condition-label "Pendulum SAC 100k" --sac-rollouts reports/pendulum_investigation_20260509/pendulum_grid_100k_reset_support_61x41/pendulum_grid_rollouts.csv --dp-grid reports/pendulum_investigation_20260509/pendulum_dp_100k_reset_support_241x161x81/pendulum_dp_grid.csv --controller-grid reports/pendulum_investigation_20260509/pendulum_controller_reset_support_61x41/controller_grid.csv --out reports/pendulum_investigation_20260509/relative_success_100k --epsilon-return 5.0`
+- 500k: `python -m last_nine_rl.pendulum_relative --condition-label "Pendulum SAC 500k UTD1" --sac-rollouts reports/pendulum_investigation_20260509/pendulum_500k_utd1_buffer500k/grid_reset_support_61x41/pendulum_grid_rollouts.csv --dp-grid reports/pendulum_investigation_20260509/pendulum_dp_100k_reset_support_241x161x81/pendulum_dp_grid.csv --controller-grid reports/pendulum_investigation_20260509/pendulum_controller_reset_support_61x41/controller_grid.csv --out reports/pendulum_investigation_20260509/relative_success_500k_utd1 --epsilon-return 5.0`
+
+Key paired 500k minus 100k results over the reset-support grid:
+- Fixed-threshold diagnostic: +0.0009, 95% CI [-0.0007, +0.0024], uncorrected paired p = 0.1894.
+- Task-only success: +0.0268, 95% CI [-0.0873, +0.1409], uncorrected paired p = 0.5499.
+- Strict-threshold diagnostic: +0.0056, 95% CI [-0.0192, +0.0304], uncorrected paired p = 0.5645.
+- Beats DP: +0.0500, 95% CI [+0.0090, +0.0909], uncorrected paired p = 0.0275.
+- Near DP within 5 return points: +0.0741, 95% CI [-0.0815, +0.2296], uncorrected paired p = 0.2567.
+- Beats best known `max(DP, controller)`: +0.0509, 95% CI [+0.0087, +0.0931], uncorrected paired p = 0.0287.
+- Near best known within 5 return points: +0.0742, 95% CI [-0.0812, +0.2296], uncorrected paired p = 0.2555.
+
+Interpretation:
+- The fixed-threshold diagnostic is essentially unchanged from 100k to 500k.
+- 500k is closer to the DP/controller references, especially on exact beats-DP and beats-best-known metrics.
+- The robust near-DP and near-best-known metrics are high for both conditions; their paired intervals are wide because the 100k seed-level rates have one low outlier.
+- The regret-map verification found no state-grid join mismatch: DP, controller, 100k SAC, and 500k SAC all share the same 2501 reset-support cells.
+- Detailed writeups: `docs/pendulum_500k_results.md`, `docs/pendulum_relative_success_results.md`, and `docs/pendulum_models_and_success_criteria.md`.
+
+## 2026-05-10 Pendulum DP Feasibility Calibration
+
+Status: completed.
+
+Purpose:
+- Check whether the fixed Pendulum success threshold `return >= -200` is feasible from the hard initial states found in the 100k checkpoint map.
+- Join a finite-horizon dynamic-programming calibration to the existing 100k SAC checkpoint grid without retraining.
+
+Command:
+- `python -m last_nine_rl.pendulum_dp --out reports/pendulum_investigation_20260509/pendulum_dp_100k_reset_support_241x161x81 --sac-grid reports/pendulum_investigation_20260509/pendulum_grid_100k_reset_support_61x41/pendulum_grid_summary.csv --horizon 200 --theta-bins 241 --velocity-bins 161 --action-bins 81 --eval-theta-bins 61 --eval-velocity-bins 41 --eval-velocity-limit 1.0 --save-solution`
+
+Sensitivity check:
+- `python -m last_nine_rl.pendulum_dp --out reports/pendulum_investigation_20260509/pendulum_dp_100k_reset_support_361x241x101_check --sac-grid reports/pendulum_investigation_20260509/pendulum_grid_100k_reset_support_61x41/pendulum_grid_summary.csv --horizon 200 --theta-bins 361 --velocity-bins 241 --action-bins 101 --eval-theta-bins 61 --eval-velocity-bins 41 --eval-velocity-limit 1.0`
+
+Primary results:
+- DP return-feasible cells: 1736/2501 = 0.6941.
+- DP strict-feasible cells: 1734/2501 = 0.6933.
+- SAC 100k return-success cell fraction on the same grid: 0.6918.
+- SAC 100k strict-success cell fraction on the same grid: 0.6692.
+- SAC failure rate among DP return-feasible cells: 0.0033.
+- SAC strict-failure rate among DP strict-feasible cells: 0.0348.
+- Region `|theta| >= 150 degrees`: DP return-feasible cells 0/451, DP mean return -240.94.
+- Region `|theta| >= 150 degrees` and `|theta_dot| <= 0.5`: DP return-feasible cells 0/231, DP mean return -241.92.
+
+Sensitivity result:
+- The finer 361 by 241 state grid with 101 actions produced the same feasible-cell counts: 1736 return-feasible cells, 1734 strict-feasible cells, and zero near-down feasible cells.
+
+Interpretation:
+- The original near-down SAC failure map should not be read as pure RL failure under the fixed `-200` threshold. Approximate DP also fails that region under the same threshold.
+- The better Week 1 conclusion is that SAC nearly matches the DP return-feasible mask, while a small strict-stabilization gap remains on DP-strict-feasible cells.
+- Detailed writeup: `docs/pendulum_dp_calibration.md`.
+
 ## 2026-05-09 Pendulum Reliability Investigation
 
 Status: running.

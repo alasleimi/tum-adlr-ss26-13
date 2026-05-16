@@ -51,6 +51,7 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--replay-inspection-interval", type=int, default=None)
     parser.add_argument("--diagnostics-interval", type=int, default=None)
     parser.add_argument("--device", default=None)
+    parser.add_argument("--save-replay", action="store_true", help="Write replay_final.npz at the end of training.")
     parser.add_argument("--overwrite", action="store_true", help="Delete known telemetry files in run-dir before training.")
     return parser.parse_args()
 
@@ -86,6 +87,8 @@ def apply_overrides(config: ExperimentConfig, args: argparse.Namespace) -> None:
         config.telemetry.diagnostics_interval_steps = args.diagnostics_interval
     if args.device is not None:
         config.sac.device = args.device
+    if getattr(args, "save_replay", False):
+        config.telemetry.save_replay = True
     if args.overwrite:
         config.telemetry.overwrite = True
 
