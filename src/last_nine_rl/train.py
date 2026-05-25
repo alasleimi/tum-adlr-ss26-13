@@ -106,6 +106,27 @@ def train(config: ExperimentConfig, run_dir: Path) -> Path:
         obs_dim = int(np.prod(env.observation_space.shape))
         action_dim = int(np.prod(env.action_space.shape))
         agent = SACAgent(obs_dim, env.action_space.low, env.action_space.high, config.sac, device=device)
+        
+        # =====================================================================
+        # 1. SETUP FEATURE NORM TRACKING VIA HOOKS
+        # =====================================================================
+        feature_norms = {}
+        def register_feature_hooks(network: torch.nn.Module, prefix: str):
+            def hook_fn(module, input, output):
+                if isinstance(output, tuple): 
+                    output = output[0]
+                # Store the L2 norm of the layer's output activations
+                feature_norms[f"{prefix}_{name}"] = torch.norm(output.detach(), p=2).item()
+            
+            for name, module in network.named_modules():
+                if len(list(module.children())) == 0: # Targets leaf layers (Linear, LayerNorm, etc.)
+                    module.register_forward_hook(hook_fn)
+
+        # Register hooks for Actor and Critic if they are accessible attributes
+        if hasattr(agent, "actor"): register_feature_hooks(agent.actor, "feat_actor")
+        if hasattr(agent, "critic"): register_feature_hooks(agent.critic, "feat_critic")
+        # =====================================================================
+
         replay = InstrumentedReplayBuffer(
             config.sac.buffer_size,
             env.observation_space,
@@ -185,7 +206,31 @@ def train(config: ExperimentConfig, run_dir: Path) -> Path:
                 for _ in range(config.sac.updates_per_step):
                     batch = replay.sample(config.sac.batch_size)
                     update_step += 1
-                    update_metrics_window.append(agent.update(batch, update_step))
+                    
+                    # Run the forward & backward passes inside the agent
+                    metrics = agent.update(batch, update_step)
+
+                    # =====================================================================
+                    # 2. INJECT FEATURE AND PARAMETER NORMS INTO THE METRICS DICT
+                    # =====================================================================
+                    # Inject captured feature norms
+                    for k, v in feature_norms.items():
+                        metrics[k] = v
+
+                    # Inject parameter (weight) norms for the Actor
+                    if hasattr(agent, "actor"):
+                        for name, param in agent.actor.named_parameters():
+                            if param.requires_grad:
+                                metrics[f"param_actor_{name}"] = torch.norm(param.data, p=2).item()
+                                
+                    # Inject parameter (weight) norms for the Critic
+                    if hasattr(agent, "critic"):
+                        for name, param in agent.critic.named_parameters():
+                            if param.requires_grad:
+                                metrics[f"param_critic_{name}"] = torch.norm(param.data, p=2).item()
+                    # =====================================================================
+
+                    update_metrics_window.append(metrics)
 
             if should_run(global_step, config.telemetry.log_interval_steps):
                 log_update_window(logger, global_step, update_metrics_window)

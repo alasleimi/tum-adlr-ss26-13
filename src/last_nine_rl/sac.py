@@ -75,6 +75,30 @@ class SACAgent:
         self.last_actor_grad_norm = 0.0
         self.last_q_grad_norm = 0.0
 
+        # === NEW TRACKING CODE: Feature Norm Hooks Setup ===
+        self.feature_norms: dict[str, float] = {}
+        self._register_feature_hooks()
+
+    # === NEW TRACKING CODE: Hook Registry Helper ===
+    def _register_feature_hooks(self) -> None:
+        """Registers forward hooks on leaf layers to track output activation norms."""
+        def get_hook(name: str):
+            def hook(module: torch.nn.Module, input: Any, output: Any):
+                if isinstance(output, tuple):
+                    output = output[0]
+                self.feature_norms[name] = torch.norm(output.detach(), p=2).item()
+            return hook
+
+        for name, module in self.actor.named_modules():
+            if len(list(module.children())) == 0:  # Matches leaf layers like Linear
+                module.register_forward_hook(get_hook(f"feat_actor_{name}"))
+        for name, module in self.q1.named_modules():
+            if len(list(module.children())) == 0:
+                module.register_forward_hook(get_hook(f"feat_q1_{name}"))
+        for name, module in self.q2.named_modules():
+            if len(list(module.children())) == 0:
+                module.register_forward_hook(get_hook(f"feat_q2_{name}"))
+
     def act(self, observation: np.ndarray, deterministic: bool = False) -> np.ndarray:
         obs = torch.as_tensor(observation, dtype=torch.float32, device=self.device).unsqueeze(0)
         with torch.no_grad():
@@ -105,8 +129,6 @@ class SACAgent:
         q_params_before = snapshot_parameters(q_params)
         q_param_norm_before = parameter_list_norm(q_params)
         self.last_q_grad_norm = gradient_list_norm(q_params)
-        self.q_optimizer.step()
-        q_update_norm = parameter_delta_norm(q_params_before, q_params)
 
         metrics: dict[str, float] = {
             "q1_loss": float(qf1_loss.detach().cpu()),
@@ -119,6 +141,17 @@ class SACAgent:
             "alpha": float(self.alpha),
             "q_grad_norm": self.last_q_grad_norm,
         }
+
+        # === NEW TRACKING CODE: Q-Network Layer-by-Layer Gradient Norms ===
+        for name, param in self.q1.named_parameters():
+            if param.grad is not None:
+                metrics[f"grad_q1_{name}"] = torch.norm(param.grad.detach(), p=2).item()
+        for name, param in self.q2.named_parameters():
+            if param.grad is not None:
+                metrics[f"grad_q2_{name}"] = torch.norm(param.grad.detach(), p=2).item()
+
+        self.q_optimizer.step()
+        q_update_norm = parameter_delta_norm(q_params_before, q_params)
 
         if update_step % self.cfg.policy_frequency == 0:
             for _ in range(self.cfg.policy_frequency):
@@ -134,6 +167,12 @@ class SACAgent:
                 actor_params_before = snapshot_parameters(actor_params)
                 actor_param_norm_before = parameter_list_norm(actor_params)
                 self.last_actor_grad_norm = gradient_norm(self.actor)
+
+                # === NEW TRACKING CODE: Actor Layer-by-Layer Gradient Norms ===
+                for name, param in self.actor.named_parameters():
+                    if param.grad is not None:
+                        metrics[f"grad_actor_{name}"] = torch.norm(param.grad.detach(), p=2).item()
+
                 self.actor_optimizer.step()
                 actor_update_norm = parameter_delta_norm(actor_params_before, actor_params)
 
@@ -175,6 +214,18 @@ class SACAgent:
                 "q_update_norm_ratio": q_update_norm / max(q_param_norm_before, 1e-12),
             }
         )
+
+        # === NEW TRACKING CODE: Layer-by-Layer Parameter Norms & Feature Norm Extraction ===
+        for name, param in self.actor.named_parameters():
+            metrics[f"param_actor_{name}"] = torch.norm(param.data.detach(), p=2).item()
+        for name, param in self.q1.named_parameters():
+            metrics[f"param_q1_{name}"] = torch.norm(param.data.detach(), p=2).item()
+        for name, param in self.q2.named_parameters():
+            metrics[f"param_q2_{name}"] = torch.norm(param.data.detach(), p=2).item()
+
+        # Merge the forward pass feature norms captured by the hooks
+        metrics.update(self.feature_norms)
+
         return metrics
 
     def diagnostics(self, data: Any, dormant_relative_threshold: float) -> dict[str, float]:
