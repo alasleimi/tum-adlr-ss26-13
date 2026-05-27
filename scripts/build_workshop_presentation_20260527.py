@@ -116,19 +116,7 @@ def main() -> None:
         "hard_interventions": plot_hard_interventions(relative, FIG / "hard_interventions_result.png"),
     }
 
-    copied = copy_assets(
-        [
-            Asset(
-                "representation_health",
-                ROOT
-                / "reports"
-                / "week3_simbav2_scale_100k_20260526"
-                / "replay_diagnostics"
-                / "representation_health.png",
-                FIG / "representation_health_100k.png",
-            ),
-        ]
-    )
+    copied: dict[str, Path] = {}
 
     gif_path = FIG / "pendulum_sac_vs_simba.gif"
     gif_status = build_pendulum_gif(gif_path)
