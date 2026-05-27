@@ -38,4 +38,4 @@ Format: 8 minutes talk plus 5 minutes questions. Speaker A covers slides 1-5. Sp
 - SAC 100k seed0 is a real bad seed: 52.4% reference success versus 93.0%/92.2% for seeds 1/2, with replay coverage tied.
 - Seed is the statistical unit. Cell-level pooling is for maps; seed-level intervals are used for claims.
 
-GIF status: Built policy GIF from exact-grid contrast where SAC seed0 fails and full SimbaV2 seed0 succeeds (theta=-174.1 deg, theta_dot=-1.00, return gap=+18.2): C:\Users\Ala\Desktop\Project 15\reports\week3_workshop_presentation_20260527\figures\pendulum_sac_vs_simba.gif
+GIF status: Policy GIF: exact-grid contrast where SAC seed0 fails and full SimbaV2 seed0 succeeds (theta=-174.1 deg, theta_dot=-1.00, return gap=+18.2).

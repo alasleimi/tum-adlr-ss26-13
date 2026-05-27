@@ -61,4 +61,4 @@ In parallel, we should push Pendulum toward at least 0.99 reference success usin
 ## Backup / Q&A
 Use the DP slide if asked whether DP is optimal. It is approximate finite-horizon DP, not a proof. Use the controller slide if asked what max(DP, controller) means. Use the bad-seed slide if asked why SAC has a huge confidence interval.
 
-GIF status: Built policy GIF from exact-grid contrast where SAC seed0 fails and full SimbaV2 seed0 succeeds (theta=-174.1 deg, theta_dot=-1.00, return gap=+18.2): C:\Users\Ala\Desktop\Project 15\reports\week3_workshop_presentation_20260527\figures\pendulum_sac_vs_simba.gif
+GIF status: Policy GIF: exact-grid contrast where SAC seed0 fails and full SimbaV2 seed0 succeeds (theta=-174.1 deg, theta_dot=-1.00, return gap=+18.2).
