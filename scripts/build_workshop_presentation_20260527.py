@@ -1801,7 +1801,7 @@ def build_deck(
             </div>
             """,
             speaker="A",
-            time="0:00-0:45",
+            time="0:00-0:40",
         ),
         slide(
             "What Is Success?",
@@ -2571,7 +2571,7 @@ This slide adds the norm-diagnostics evidence. It is not a new main result, beca
 
 In this run, the critic parameter norm grows from {num(norm_summary['q_param_first'], 1)} to {num(norm_summary['q_param_last'], 1)}, while the actor norm only grows from {num(norm_summary['actor_param_first'], 1)} to {num(norm_summary['actor_param_last'], 1)}. The critic hidden feature scale also inflates: Q1 fc2 grows from about {num(norm_summary['q_feat_first'], 0)} to {num(norm_summary['q_feat_last'], 0)}, with a peak around {num(norm_summary['q_feat_max'], 0)}. This is exactly the kind of scale drift that SimbaV2 tries to remove with hyperspherical feature normalization and hyperspherical weight normalization.
 
-The caveat is important: this does not prove which SimbaV2 component helps. It supports the optimization diagnosis and motivates the 100k component ablations.
+The caveat is important: this supports the optimization diagnosis and motivates the 100k component ablations. Component attribution is exactly what those ablations are for.
 
 ## Slide 9, Speaker B, 5:55-6:30
 More SAC compute is a useful negative result, but we need to state the metric carefully. SAC 500k is not worse on reference success: it reaches 96.3 percent, compared with 92.5 percent for full SimbaV2 100k.

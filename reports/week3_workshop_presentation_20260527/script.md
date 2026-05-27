@@ -46,7 +46,7 @@ This slide adds the norm-diagnostics evidence. It is not a new main result, beca
 
 In this run, the critic parameter norm grows from 38.4 to 348.5, while the actor norm only grows from 14.4 to 67.1. The critic hidden feature scale also inflates: Q1 fc2 grows from about 606 to 4856, with a peak around 5416. This is exactly the kind of scale drift that SimbaV2 tries to remove with hyperspherical feature normalization and hyperspherical weight normalization.
 
-The caveat is important: this does not prove which SimbaV2 component helps. It supports the optimization diagnosis and motivates the 100k component ablations.
+The caveat is important: this supports the optimization diagnosis and motivates the 100k component ablations. Component attribution is exactly what those ablations are for.
 
 ## Slide 9, Speaker B, 5:55-6:30
 More SAC compute is a useful negative result, but we need to state the metric carefully. SAC 500k is not worse on reference success: it reaches 96.3 percent, compared with 92.5 percent for full SimbaV2 100k.
