@@ -8,7 +8,7 @@ Format: 8 minutes talk plus 5 minutes questions. Speaker A covers slides 1-5. Sp
 3. Explain SimbaV2 in plain language through the four paper changes, without claiming yet which component drives the gain.
 4. Show raw maps first, then seed-level statistics.
 5. Diagnose exploration versus optimization using replay and critic-health trackers.
-6. Add SAC norm diagnostics as a mechanism check, without treating them as seeded proof.
+6. Add SAC norm diagnostics as a mechanism check, with component attribution left to the 100k ablations.
 7. Close with negative results and concrete next steps.
 
 ## Key Numbers To Say Correctly
