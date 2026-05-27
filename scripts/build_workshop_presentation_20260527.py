@@ -28,6 +28,7 @@ RELATIVE_CSV = ROOT / "reports" / "week3_relative_frontier_20260526" / "relative
 RELIABILITY_CSV = ROOT / "reports" / "week3_reliability_frontier_20260526" / "reliability_frontier.csv"
 POSTHOC_CSV = ROOT / "reports" / "week3_followup_20260526" / "key_posthoc_results.csv"
 DIAGNOSTIC_CSV = ROOT / "reports" / "week3_followup_20260526" / "key_diagnostic_results.csv"
+NORM_TELEMETRY_CSV = ROOT / "extracted_telemetry.csv"
 SAC_RELATIVE_ROLLOUTS_CSV = (
     ROOT / "reports" / "week3_simbav2_scale_100k_20260526" / "relative_success" / "sac" / "relative_rollouts.csv"
 )
@@ -110,12 +111,15 @@ def main() -> None:
     reliability = read_rows(RELIABILITY_CSV)
     posthoc = read_rows(POSTHOC_CSV)
     diagnostics = read_rows(DIAGNOSTIC_CSV)
+    norm_telemetry = read_rows(NORM_TELEMETRY_CSV)
+    norm_summary = build_norm_summary(norm_telemetry)
     analysis = build_analysis(relative, diagnostics)
 
     generated = {
         "raw_maps": plot_raw_maps(FIG / "raw_maps_task_return_regret.png"),
         "main_result": plot_main_result(analysis, FIG / "main_result_seed_intervals.png"),
         "exploration": plot_exploration_optimization(analysis, diagnostics, FIG / "exploration_vs_optimization.png"),
+        "sac_norms": plot_sac_norm_diagnostics(norm_telemetry, FIG / "sac_norm_diagnostics.png"),
         "compute_negative": plot_compute_negative(relative, diagnostics, FIG / "compute_negative_result.png"),
         "hard_interventions": plot_hard_interventions(relative, FIG / "hard_interventions_result.png"),
     }
@@ -127,11 +131,11 @@ def main() -> None:
 
     summary = build_scientific_summary_rows(analysis, relative, posthoc, diagnostics)
     write_summary_csv(OUT / "presentation_numbers.csv", summary)
-    notes = build_notes(analysis, gif_status)
-    script = build_script(analysis, gif_status)
+    notes = build_notes(analysis, norm_summary, gif_status)
+    script = build_script(analysis, norm_summary, gif_status)
     (OUT / "speaker_notes.md").write_text(notes, encoding="utf-8")
     (OUT / "script.md").write_text(script, encoding="utf-8")
-    (OUT / "index.html").write_text(build_deck(generated, copied, gif_path, analysis), encoding="utf-8")
+    (OUT / "index.html").write_text(build_deck(generated, copied, gif_path, analysis, norm_summary), encoding="utf-8")
 
     print(f"Wrote {OUT / 'index.html'}")
     print(f"Wrote {OUT / 'speaker_notes.md'}")
@@ -207,6 +211,85 @@ def annotate_bars(ax, bars, fmt=pct) -> None:
             fontsize=8,
             color=PALETTE["dark"],
         )
+
+
+def telemetry_series(rows: list[dict[str, str]], key: str) -> list[float]:
+    values = [as_float(row, key) for row in rows]
+    return [value for value in values if math.isfinite(value)]
+
+
+def build_norm_summary(rows: list[dict[str, str]]) -> dict[str, float]:
+    if not rows:
+        raise ValueError(f"No norm telemetry rows found in {NORM_TELEMETRY_CSV}")
+
+    def stat(key: str, part: str) -> float:
+        values = telemetry_series(rows, key)
+        if not values:
+            raise KeyError(f"Missing norm telemetry column: {key}")
+        if part == "first":
+            return values[0]
+        if part == "last":
+            return values[-1]
+        if part == "max":
+            return max(values)
+        raise ValueError(part)
+
+    steps = telemetry_series(rows, "step")
+    return {
+        "step_first": steps[0],
+        "step_last": steps[-1],
+        "q_param_first": stat("q_param_norm", "first"),
+        "q_param_last": stat("q_param_norm", "last"),
+        "q_param_max": stat("q_param_norm", "max"),
+        "actor_param_first": stat("actor_param_norm", "first"),
+        "actor_param_last": stat("actor_param_norm", "last"),
+        "actor_param_max": stat("actor_param_norm", "max"),
+        "q_feat_first": stat("feat_q1_fc2", "first"),
+        "q_feat_last": stat("feat_q1_fc2", "last"),
+        "q_feat_max": stat("feat_q1_fc2", "max"),
+        "actor_feat_first": stat("feat_actor_fc2", "first"),
+        "actor_feat_last": stat("feat_actor_fc2", "last"),
+        "actor_feat_max": stat("feat_actor_fc2", "max"),
+        "q_grad_max": stat("q_grad_norm", "max"),
+        "actor_grad_max": stat("actor_grad_norm", "max"),
+    }
+
+
+def plot_sac_norm_diagnostics(rows: list[dict[str, str]], path: Path) -> Path:
+    steps = np.array(telemetry_series(rows, "step"), dtype=float) / 1000.0
+
+    def series(key: str) -> np.ndarray:
+        values = np.array(telemetry_series(rows, key), dtype=float)
+        if len(values) != len(steps):
+            raise ValueError(f"Telemetry column {key} has {len(values)} rows, expected {len(steps)}")
+        return values
+
+    fig, axes = plt.subplots(1, 3, figsize=(14.0, 3.95), constrained_layout=True)
+    fig.suptitle("SAC norms-checking run: critic scale drift", x=0.015, ha="left", fontsize=15, fontweight="bold")
+
+    setup_ax(axes[0], "Parameter norm", "L2 norm")
+    axes[0].plot(steps, series("q_param_norm"), color=PALETTE["red"], linewidth=2.5, label="critic Q")
+    axes[0].plot(steps, series("actor_param_norm"), color=PALETTE["blue"], linewidth=2.5, label="actor")
+    axes[0].legend(frameon=False, loc="upper left", fontsize=9)
+
+    setup_ax(axes[1], "Hidden feature norm", "L2 norm")
+    axes[1].plot(steps, series("feat_q1_fc2"), color=PALETTE["red"], linewidth=2.5, label="Q1 fc2")
+    axes[1].plot(steps, series("feat_actor_fc2"), color=PALETTE["blue"], linewidth=2.5, label="actor fc2")
+    axes[1].legend(frameon=False, loc="upper left", fontsize=9)
+
+    setup_ax(axes[2], "Gradient norm", "L2 norm, log scale")
+    axes[2].plot(steps, series("q_grad_norm"), color=PALETTE["red"], linewidth=2.1, label="critic Q")
+    axes[2].plot(steps, series("actor_grad_norm"), color=PALETTE["blue"], linewidth=2.1, label="actor")
+    axes[2].set_yscale("log")
+    axes[2].legend(frameon=False, loc="upper left", fontsize=9)
+
+    for ax in axes:
+        ax.set_xlabel("training step (k)")
+        ax.tick_params(labelsize=9)
+
+    fig.savefig(path, dpi=180, bbox_inches="tight")
+    plt.close(fig)
+    return path
 
 
 def plot_matched_100k(
@@ -1677,7 +1760,13 @@ def deck_img(path: Path, alt: str, cls: str = "") -> str:
     return f'<img class="{cls}" src="{rel(path)}" alt="{html.escape(alt)}">'
 
 
-def build_deck(generated: dict[str, Path], copied: dict[str, Path], gif_path: Path, analysis: dict[str, object]) -> str:
+def build_deck(
+    generated: dict[str, Path],
+    copied: dict[str, Path],
+    gif_path: Path,
+    analysis: dict[str, object],
+    norm_summary: dict[str, float],
+) -> str:
     policies = analysis["policies"]  # type: ignore[index]
     sac_all = policies["SAC 100k"]["task_all"]  # type: ignore[index]
     simba_all = policies["Full SimbaV2 100k"]["task_all"]  # type: ignore[index]
@@ -1834,6 +1923,31 @@ def build_deck(generated: dict[str, Path], copied: dict[str, Path], gif_path: Pa
             time="4:35-5:25",
         ),
         slide(
+            "SAC Norm Diagnostics",
+            "A mechanism check for the optimization diagnosis",
+            f"""
+            <div class="norm-diagnostics">
+              <div class="norm-figure">{deck_img(generated["sac_norms"], "SAC norm diagnostics from telemetry")}</div>
+              <div class="norm-cards">
+                <div>
+                  <h2>Critic scale drifts</h2>
+                  <p>In the SAC norms-checking run, critic parameter norm grows from <b>{num(norm_summary["q_param_first"], 1)}</b> to <b>{num(norm_summary["q_param_last"], 1)}</b>; actor norm grows from <b>{num(norm_summary["actor_param_first"], 1)}</b> to <b>{num(norm_summary["actor_param_last"], 1)}</b>.</p>
+                </div>
+                <div>
+                  <h2>Features also inflate</h2>
+                  <p>Q1 fc2 activation norm grows from <b>{num(norm_summary["q_feat_first"], 0)}</b> to <b>{num(norm_summary["q_feat_last"], 0)}</b> and peaks at <b>{num(norm_summary["q_feat_max"], 0)}</b>.</p>
+                </div>
+                <div>
+                  <h2>Scope of the claim</h2>
+                  <p>This is one SAC diagnostic run. It supports the critic-health story and motivates SimbaV2 ablations; it is not a seeded proof of which component helps.</p>
+                </div>
+              </div>
+            </div>
+            """,
+            speaker="B",
+            time="5:25-5:55",
+        ),
+        slide(
             "What Did Not Solve It?",
             "More SAC compute improves return matching, but still misses task reliability",
             f"""
@@ -1850,7 +1964,7 @@ def build_deck(generated: dict[str, Path], copied: dict[str, Path], gif_path: Pa
             </div>
             """,
             speaker="B",
-            time="5:25-6:05",
+            time="5:55-6:30",
         ),
         slide(
             "What Else Did Not Solve It?",
@@ -1874,7 +1988,7 @@ def build_deck(generated: dict[str, Path], copied: dict[str, Path], gif_path: Pa
             </div>
             """,
             speaker="B",
-            time="6:05-6:45",
+            time="6:30-7:10",
         ),
         slide(
             "Next Experiments",
@@ -1896,14 +2010,10 @@ def build_deck(generated: dict[str, Path], copied: dict[str, Path], gif_path: Pa
                 <p><b>Experiment:</b> reuse the exact-grid/replay/critic-health protocol on CartPole-Swingup after the Pendulum frontier is stable.</p>
                 <p><b>Decision:</b> test whether the Pendulum diagnosis transfers when exploration is genuinely harder.</p>
               </div>
-              <div>
-                <h2>Why not present 50k ablations?</h2>
-                <p>Short-budget component screens were too noisy for a scientific claim about which SimbaV2 piece helps. We keep them as debugging evidence, not as a talk result.</p>
-              </div>
             </div>
             """,
             speaker="B",
-            time="6:45-8:00",
+            time="7:10-8:00",
         ),
         slide(
             "Backup: DP Reference",
@@ -2125,6 +2235,40 @@ def build_deck(generated: dict[str, Path], copied: dict[str, Path], gif_path: Pa
     }
     .wide-left { grid-template-columns: 1.28fr 0.82fr; }
     .figure-full img { max-height: 560px; margin: 0 auto; }
+    .norm-diagnostics {
+      display: grid;
+      grid-template-rows: auto 1fr;
+      gap: 14px;
+    }
+    .norm-figure img {
+      max-height: 372px;
+      margin: 0 auto;
+      border: 1px solid var(--line);
+      background: var(--panel);
+    }
+    .norm-cards {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 16px;
+    }
+    .norm-cards > div {
+      background: var(--panel);
+      border: 1px solid var(--line);
+      border-top: 5px solid var(--teal);
+      padding: 13px 15px;
+      min-height: 125px;
+    }
+    .norm-cards h2 {
+      color: var(--teal);
+      font-size: 17px;
+      margin-bottom: 6px;
+    }
+    .norm-cards p {
+      margin: 0;
+      font-size: 15px;
+      line-height: 1.28;
+      color: var(--muted);
+    }
     .definition-grid {
       display: grid;
       grid-template-columns: 1fr 1fr;
@@ -2314,7 +2458,7 @@ def slide(title: str, subtitle: str, body: str, speaker: str, time: str) -> str:
     """
 
 
-def build_notes(analysis: dict[str, object], gif_status: str) -> str:
+def build_notes(analysis: dict[str, object], norm_summary: dict[str, float], gif_status: str) -> str:
     policies = analysis["policies"]  # type: ignore[index]
     sac_all = policies["SAC 100k"]["task_all"]  # type: ignore[index]
     simba_all = policies["Full SimbaV2 100k"]["task_all"]  # type: ignore[index]
@@ -2325,7 +2469,7 @@ def build_notes(analysis: dict[str, object], gif_status: str) -> str:
     feasible_rate = float(analysis["feasible_cells"]) / float(analysis["total_cells"])
     return f"""# Project 15 Week 3 Workshop Speaker Notes
 
-Format: 8 minutes talk plus 5 minutes questions. Speaker A covers slides 1-5. Speaker B covers slides 6-10. Slides 11-13 are backup.
+Format: 8 minutes talk plus 5 minutes questions. Speaker A covers slides 1-5. Speaker B covers slides 6-11. Slides 12-14 are backup.
 
 ## Story Arc
 1. Pendulum is the controlled testbed: high average return is not enough; we care about the last failing starts.
@@ -2333,7 +2477,8 @@ Format: 8 minutes talk plus 5 minutes questions. Speaker A covers slides 1-5. Sp
 3. Explain SimbaV2 in plain language through the four paper changes, without claiming yet which component drives the gain.
 4. Show raw maps first, then seed-level statistics.
 5. Diagnose exploration versus optimization using replay and critic-health trackers.
-6. Close with negative results and concrete next steps.
+6. Add SAC norm diagnostics as a mechanism check, without treating them as seeded proof.
+7. Close with negative results and concrete next steps.
 
 ## Key Numbers To Say Correctly
 - Known-feasible cells: {analysis['feasible_cells']}/{analysis['total_cells']} = {pct(feasible_rate)}. The remaining {analysis['uncertified_cells']} cells are uncertified, not proven impossible.
@@ -2344,6 +2489,7 @@ Format: 8 minutes talk plus 5 minutes questions. Speaker A covers slides 1-5. Sp
 - Full SimbaV2 100k known-feasible task: {fmt_metric(simba_feasible)}.
 - SAC 100k reference success: {fmt_metric(sac_return)}.
 - Full SimbaV2 100k reference success: {fmt_metric(simba_return)}.
+- SAC norm diagnostic: Q parameter norm {num(norm_summary['q_param_first'], 1)} -> {num(norm_summary['q_param_last'], 1)}; Q1 fc2 feature norm {num(norm_summary['q_feat_first'], 0)} -> {num(norm_summary['q_feat_last'], 0)} with peak {num(norm_summary['q_feat_max'], 0)}. This is one diagnostic run, not a seeded claim.
 
 ## Slide Timing
 - Slide 1: 0:00-0:40. Goal and GIF.
@@ -2353,9 +2499,10 @@ Format: 8 minutes talk plus 5 minutes questions. Speaker A covers slides 1-5. Sp
 - Slide 5: 3:05-3:50. Raw maps.
 - Slide 6: 3:50-4:35. Main seed-level result.
 - Slide 7: 4:35-5:25. Exploration versus optimization.
-- Slide 8: 5:25-6:05. More compute negative result.
-- Slide 9: 6:05-6:45. Hard reset/replay negative result.
-- Slide 10: 6:45-8:00. Next steps.
+- Slide 8: 5:25-5:55. SAC norm diagnostics.
+- Slide 9: 5:55-6:30. More compute negative result.
+- Slide 10: 6:30-7:10. Hard reset/replay negative result.
+- Slide 11: 7:10-8:00. Next steps.
 
 ## Q&A Backup
 - DP uses the known Pendulum dynamics and reward on a discretized grid; it is an approximate reference, not a proof of optimality.
@@ -2367,7 +2514,7 @@ GIF status: {gif_status}
 """
 
 
-def build_script(analysis: dict[str, object], gif_status: str) -> str:
+def build_script(analysis: dict[str, object], norm_summary: dict[str, float], gif_status: str) -> str:
     policies = analysis["policies"]  # type: ignore[index]
     sac_all = policies["SAC 100k"]["task_all"]  # type: ignore[index]
     simba_all = policies["Full SimbaV2 100k"]["task_all"]  # type: ignore[index]
@@ -2378,7 +2525,7 @@ def build_script(analysis: dict[str, object], gif_status: str) -> str:
     feasible_rate = float(analysis["feasible_cells"]) / float(analysis["total_cells"])
     return f"""# Project 15 Week 3 Workshop Script
 
-This script is written for an 8 minute talk. Speaker A covers slides 1-5. Speaker B covers slides 6-10. Backup slides are for questions.
+This script is written for an 8 minute talk. Speaker A covers slides 1-5. Speaker B covers slides 6-11. Backup slides are for questions.
 
 ## Slide 1, Speaker A, 0:00-0:40
 Our project is about reliability in deep reinforcement learning. Pendulum is not supposed to be a hard benchmark, so average return is not the interesting part. The interesting part is the last set of initial states where a neural SAC policy still fails to swing up and stabilize.
@@ -2419,19 +2566,26 @@ This is the exploration versus optimization diagnosis. If SAC failed only becaus
 
 The separation is critic health. Dormant units are critic units that barely activate, so lower is better. Effective rank is a proxy for how diverse the critic features are, so higher is better. SAC has high dormancy and low rank, while SimbaV2 has zero measured Q1 dormancy and much higher rank. That points to optimization, plasticity, and value estimation, not pure exploration.
 
-## Slide 8, Speaker B, 5:25-6:05
+## Slide 8, Speaker B, 5:25-5:55
+This slide adds the norm-diagnostics evidence. It is not a new main result, because it is one SAC diagnostic run, not a seeded comparison. But it explains why the SimbaV2 changes are plausible.
+
+In this run, the critic parameter norm grows from {num(norm_summary['q_param_first'], 1)} to {num(norm_summary['q_param_last'], 1)}, while the actor norm only grows from {num(norm_summary['actor_param_first'], 1)} to {num(norm_summary['actor_param_last'], 1)}. The critic hidden feature scale also inflates: Q1 fc2 grows from about {num(norm_summary['q_feat_first'], 0)} to {num(norm_summary['q_feat_last'], 0)}, with a peak around {num(norm_summary['q_feat_max'], 0)}. This is exactly the kind of scale drift that SimbaV2 tries to remove with hyperspherical feature normalization and hyperspherical weight normalization.
+
+The caveat is important: this does not prove which SimbaV2 component helps. It supports the optimization diagnosis and motivates the 100k component ablations.
+
+## Slide 9, Speaker B, 5:55-6:30
 More SAC compute is a useful negative result, but we need to state the metric carefully. SAC 500k is not worse on reference success: it reaches 96.3 percent, compared with 92.5 percent for full SimbaV2 100k.
 
 It is still worse on the behavioral reliability metrics. Exact-grid task-stability is 88.6 percent for SAC 500k versus 91.4 percent for full SimbaV2 100k, so SAC is 2.8 percentage points behind. On near-down starts the gap is much larger: 58.4 percent versus 70.6 percent, so SAC is 12.2 percentage points behind. The critic-health signal also worsens: SAC 500k has 77.3 percent dormant Q1 units, while full SimbaV2 has 0.0 percent in this diagnostic.
 
-## Slide 9, Speaker B, 6:05-6:45
+## Slide 10, Speaker B, 6:30-7:10
 Hard reset and hard replay test the data-distribution hypothesis more directly. Hard reset p=0.2 means 20 percent of episode resets are forced into a large-angle band: absolute theta between 120 and 135 degrees, with absolute angular velocity at most 1. Hard replay p=0.2 means 20 percent of each replay minibatch is sampled from transitions in that same hard-start band.
 
 The graph is now a grouped bar chart because these are categorical interventions, not a progression. Ordinary full SimbaV2 50k has task-stability 89.8 percent and reference success 81.6 percent. Hard reset moves task-stability slightly to 90.3 percent, but reference success drops to 73.6 percent. Hard replay is worse on both headline metrics, at 89.0 percent task-stability and 72.0 percent reference success. Near-down task success is also worse for hard replay.
 
 So just showing hard states more often is too blunt. The next intervention has to preserve value accuracy on the rest of the state space.
 
-## Slide 10, Speaker B, 6:45-8:00
+## Slide 11, Speaker B, 7:10-8:00
 The next step is to move the component claims to representative budget. We should ablate away SimbaV2 components one at a time at 100k: feature normalization, weight projection, distributional critic, reward scaling, and the official SAC recipe. That tells us what actually drives the reliability improvement.
 
 In parallel, we should push Pendulum toward at least 0.99 reference success using other reliability ideas from the proposal: ReDo, Sample Weight Decay, Fisher-guided selective forgetting, and regret-weighted auxiliary losses. After the Pendulum frontier is stable, we move the same protocol to CartPole-Swingup, where exploration is a more serious part of the problem.

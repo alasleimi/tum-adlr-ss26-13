@@ -12,6 +12,7 @@ The generator reads these report artifacts:
 - `reports/week3_reliability_frontier_20260526/reliability_frontier.csv`
 - `reports/week3_followup_20260526/key_posthoc_results.csv`
 - `reports/week3_followup_20260526/key_diagnostic_results.csv`
+- `extracted_telemetry.csv`
 - `reports/week3_simbav2_scale_100k_20260526/relative_success/sac/relative_rollouts.csv`
 - `reports/week3_simbav2_scale_100k_20260526/relative_success/sac/relative_cell_summary.csv`
 - `reports/week3_simbav2_scale_100k_20260526/relative_success/simba_full_official_opt/relative_rollouts.csv`

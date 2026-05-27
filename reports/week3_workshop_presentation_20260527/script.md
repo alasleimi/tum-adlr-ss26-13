@@ -1,6 +1,6 @@
 # Project 15 Week 3 Workshop Script
 
-This script is written for an 8 minute talk. Speaker A covers slides 1-5. Speaker B covers slides 6-10. Backup slides are for questions.
+This script is written for an 8 minute talk. Speaker A covers slides 1-5. Speaker B covers slides 6-11. Backup slides are for questions.
 
 ## Slide 1, Speaker A, 0:00-0:40
 Our project is about reliability in deep reinforcement learning. Pendulum is not supposed to be a hard benchmark, so average return is not the interesting part. The interesting part is the last set of initial states where a neural SAC policy still fails to swing up and stabilize.
@@ -41,19 +41,26 @@ This is the exploration versus optimization diagnosis. If SAC failed only becaus
 
 The separation is critic health. Dormant units are critic units that barely activate, so lower is better. Effective rank is a proxy for how diverse the critic features are, so higher is better. SAC has high dormancy and low rank, while SimbaV2 has zero measured Q1 dormancy and much higher rank. That points to optimization, plasticity, and value estimation, not pure exploration.
 
-## Slide 8, Speaker B, 5:25-6:05
+## Slide 8, Speaker B, 5:25-5:55
+This slide adds the norm-diagnostics evidence. It is not a new main result, because it is one SAC diagnostic run, not a seeded comparison. But it explains why the SimbaV2 changes are plausible.
+
+In this run, the critic parameter norm grows from 38.4 to 348.5, while the actor norm only grows from 14.4 to 67.1. The critic hidden feature scale also inflates: Q1 fc2 grows from about 606 to 4856, with a peak around 5416. This is exactly the kind of scale drift that SimbaV2 tries to remove with hyperspherical feature normalization and hyperspherical weight normalization.
+
+The caveat is important: this does not prove which SimbaV2 component helps. It supports the optimization diagnosis and motivates the 100k component ablations.
+
+## Slide 9, Speaker B, 5:55-6:30
 More SAC compute is a useful negative result, but we need to state the metric carefully. SAC 500k is not worse on reference success: it reaches 96.3 percent, compared with 92.5 percent for full SimbaV2 100k.
 
 It is still worse on the behavioral reliability metrics. Exact-grid task-stability is 88.6 percent for SAC 500k versus 91.4 percent for full SimbaV2 100k, so SAC is 2.8 percentage points behind. On near-down starts the gap is much larger: 58.4 percent versus 70.6 percent, so SAC is 12.2 percentage points behind. The critic-health signal also worsens: SAC 500k has 77.3 percent dormant Q1 units, while full SimbaV2 has 0.0 percent in this diagnostic.
 
-## Slide 9, Speaker B, 6:05-6:45
+## Slide 10, Speaker B, 6:30-7:10
 Hard reset and hard replay test the data-distribution hypothesis more directly. Hard reset p=0.2 means 20 percent of episode resets are forced into a large-angle band: absolute theta between 120 and 135 degrees, with absolute angular velocity at most 1. Hard replay p=0.2 means 20 percent of each replay minibatch is sampled from transitions in that same hard-start band.
 
 The graph is now a grouped bar chart because these are categorical interventions, not a progression. Ordinary full SimbaV2 50k has task-stability 89.8 percent and reference success 81.6 percent. Hard reset moves task-stability slightly to 90.3 percent, but reference success drops to 73.6 percent. Hard replay is worse on both headline metrics, at 89.0 percent task-stability and 72.0 percent reference success. Near-down task success is also worse for hard replay.
 
 So just showing hard states more often is too blunt. The next intervention has to preserve value accuracy on the rest of the state space.
 
-## Slide 10, Speaker B, 6:45-8:00
+## Slide 11, Speaker B, 7:10-8:00
 The next step is to move the component claims to representative budget. We should ablate away SimbaV2 components one at a time at 100k: feature normalization, weight projection, distributional critic, reward scaling, and the official SAC recipe. That tells us what actually drives the reliability improvement.
 
 In parallel, we should push Pendulum toward at least 0.99 reference success using other reliability ideas from the proposal: ReDo, Sample Weight Decay, Fisher-guided selective forgetting, and regret-weighted auxiliary losses. After the Pendulum frontier is stable, we move the same protocol to CartPole-Swingup, where exploration is a more serious part of the problem.

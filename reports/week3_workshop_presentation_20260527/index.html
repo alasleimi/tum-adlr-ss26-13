@@ -126,6 +126,40 @@
     }
     .wide-left { grid-template-columns: 1.28fr 0.82fr; }
     .figure-full img { max-height: 560px; margin: 0 auto; }
+    .norm-diagnostics {
+      display: grid;
+      grid-template-rows: auto 1fr;
+      gap: 14px;
+    }
+    .norm-figure img {
+      max-height: 372px;
+      margin: 0 auto;
+      border: 1px solid var(--line);
+      background: var(--panel);
+    }
+    .norm-cards {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 16px;
+    }
+    .norm-cards > div {
+      background: var(--panel);
+      border: 1px solid var(--line);
+      border-top: 5px solid var(--teal);
+      padding: 13px 15px;
+      min-height: 125px;
+    }
+    .norm-cards h2 {
+      color: var(--teal);
+      font-size: 17px;
+      margin-bottom: 6px;
+    }
+    .norm-cards p {
+      margin: 0;
+      font-size: 15px;
+      line-height: 1.28;
+      color: var(--muted);
+    }
     .definition-grid {
       display: grid;
       grid-template-columns: 1fr 1fr;
@@ -442,10 +476,40 @@
     <section class="slide">
       <div class="topline">
         <div class="title">
+          <h1>SAC Norm Diagnostics</h1>
+          <div class="subtitle">A mechanism check for the optimization diagnosis</div>
+        </div>
+        <div class="badge">Speaker B | 5:25-5:55</div>
+      </div>
+      
+            <div class="norm-diagnostics">
+              <div class="norm-figure"><img class="" src="figures/sac_norm_diagnostics.png" alt="SAC norm diagnostics from telemetry"></div>
+              <div class="norm-cards">
+                <div>
+                  <h2>Critic scale drifts</h2>
+                  <p>In the SAC norms-checking run, critic parameter norm grows from <b>38.4</b> to <b>348.5</b>; actor norm grows from <b>14.4</b> to <b>67.1</b>.</p>
+                </div>
+                <div>
+                  <h2>Features also inflate</h2>
+                  <p>Q1 fc2 activation norm grows from <b>606</b> to <b>4856</b> and peaks at <b>5416</b>.</p>
+                </div>
+                <div>
+                  <h2>Scope of the claim</h2>
+                  <p>This is one SAC diagnostic run. It supports the critic-health story and motivates SimbaV2 ablations; it is not a seeded proof of which component helps.</p>
+                </div>
+              </div>
+            </div>
+            
+      <div class="footer">Project 15 | Week 3 workshop</div>
+    </section>
+    
+    <section class="slide">
+      <div class="topline">
+        <div class="title">
           <h1>What Did Not Solve It?</h1>
           <div class="subtitle">More SAC compute improves return matching, but still misses task reliability</div>
         </div>
-        <div class="badge">Speaker B | 5:25-6:05</div>
+        <div class="badge">Speaker B | 5:55-6:30</div>
       </div>
       
             <div class="two-col wide-left">
@@ -469,7 +533,7 @@
           <h1>What Else Did Not Solve It?</h1>
           <div class="subtitle">Hard reset and hard replay are categorical data interventions</div>
         </div>
-        <div class="badge">Speaker B | 6:05-6:45</div>
+        <div class="badge">Speaker B | 6:30-7:10</div>
       </div>
       
             <div class="two-col wide-left">
@@ -498,7 +562,7 @@
           <h1>Next Experiments</h1>
           <div class="subtitle">Move the ablations to representative budget</div>
         </div>
-        <div class="badge">Speaker B | 6:45-8:00</div>
+        <div class="badge">Speaker B | 7:10-8:00</div>
       </div>
       
             <div class="next-grid">
@@ -516,10 +580,6 @@
                 <h2>3. Move to CartPole-Swingup</h2>
                 <p><b>Experiment:</b> reuse the exact-grid/replay/critic-health protocol on CartPole-Swingup after the Pendulum frontier is stable.</p>
                 <p><b>Decision:</b> test whether the Pendulum diagnosis transfers when exploration is genuinely harder.</p>
-              </div>
-              <div>
-                <h2>Why not present 50k ablations?</h2>
-                <p>Short-budget component screens were too noisy for a scientific claim about which SimbaV2 piece helps. We keep them as debugging evidence, not as a talk result.</p>
               </div>
             </div>
             
