@@ -1,0 +1,658 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Project 15 Week 3 Workshop Presentation</title>
+  <style>
+    :root {
+      --dark: #17202a;
+      --muted: #5f6b76;
+      --line: #d8ddd6;
+      --paper: #fbfaf5;
+      --panel: #fffdf8;
+      --teal: #2e7d78;
+      --green: #4f8a5b;
+      --orange: #c47a2c;
+      --red: #b9564c;
+      --blue: #376996;
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      background: #1f262d;
+      color: var(--dark);
+      font-family: Arial, Helvetica, sans-serif;
+    }
+    .deck {
+      width: 100vw;
+      height: 100vh;
+      overflow: hidden;
+    }
+    .slide {
+      display: none;
+      width: min(100vw, 177.777vh);
+      height: min(56.25vw, 100vh);
+      margin: auto;
+      padding: 42px 54px 34px;
+      background: var(--paper);
+      position: relative;
+      overflow: hidden;
+    }
+    .slide::before {
+      content: "";
+      position: absolute;
+      left: 0;
+      top: 0;
+      bottom: 0;
+      width: 10px;
+      background: var(--teal);
+    }
+    .slide.active { display: block; }
+    .topline {
+      display: flex;
+      justify-content: space-between;
+      align-items: baseline;
+      gap: 20px;
+      border-bottom: 2px solid var(--line);
+      padding-bottom: 12px;
+      margin-bottom: 24px;
+    }
+    .title h1 {
+      margin: 0;
+      font-size: 36px;
+      line-height: 1.05;
+      letter-spacing: 0;
+      color: var(--dark);
+    }
+    .subtitle {
+      margin-top: 7px;
+      font-size: 17px;
+      color: var(--muted);
+    }
+    .badge {
+      display: flex;
+      gap: 8px;
+      align-items: center;
+      color: #ffffff;
+      background: var(--dark);
+      padding: 8px 11px;
+      font-size: 13px;
+      white-space: nowrap;
+    }
+    h1 { font-size: 43px; line-height: 1.04; margin: 12px 0 18px; letter-spacing: 0; }
+    h2 { font-size: 21px; margin: 0 0 10px; letter-spacing: 0; }
+    .subhead { margin-top: 24px; }
+    p, li { font-size: 20px; line-height: 1.34; }
+    ul, ol { padding-left: 24px; margin: 12px 0 0; }
+    li { margin: 8px 0; }
+    code {
+      font-family: Consolas, "Liberation Mono", monospace;
+      font-size: 0.86em;
+      background: #f0f3ef;
+      padding: 1px 4px;
+      border: 1px solid var(--line);
+    }
+    img { max-width: 100%; height: auto; display: block; }
+    .hero-grid {
+      display: grid;
+      grid-template-columns: 1.02fr 0.98fr;
+      gap: 32px;
+      align-items: center;
+    }
+    .lead { font-size: 23px; color: var(--muted); max-width: 820px; }
+    .kicker { color: var(--teal); font-weight: 700; text-transform: uppercase; font-size: 15px; }
+    .hero-gif { width: 100%; border: 1px solid var(--line); background: var(--panel); }
+    .caption { font-size: 14px; color: var(--muted); margin: 8px 0 0; }
+    .metric-row {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 12px;
+      margin-top: 30px;
+    }
+    .metric {
+      background: var(--panel);
+      border: 1px solid var(--line);
+      padding: 16px;
+      min-height: 98px;
+    }
+    .metric b { display: block; font-size: 29px; color: var(--teal); }
+    .metric span { display: block; color: var(--muted); font-size: 13px; margin-top: 8px; }
+    .two-col {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 32px;
+      align-items: center;
+    }
+    .wide-left { grid-template-columns: 1.28fr 0.82fr; }
+    .figure-full img { max-height: 560px; margin: 0 auto; }
+    .definition-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 20px;
+      align-items: stretch;
+    }
+    .definition-grid > div,
+    .next-grid > div,
+    .backup-grid > div {
+      background: var(--panel);
+      border: 1px solid var(--line);
+      border-top: 5px solid var(--teal);
+      padding: 18px 20px;
+    }
+    .definition-grid p,
+    .definition-grid li,
+    .next-grid p,
+    .backup-grid li {
+      font-size: 18px;
+    }
+    .wide-card { grid-column: 1 / -1; }
+    .next-grid,
+    .backup-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 20px;
+      align-items: stretch;
+    }
+    .next-grid h2,
+    .backup-grid h2 {
+      color: var(--teal);
+    }
+    .equation {
+      font-family: Consolas, "Liberation Mono", monospace;
+      font-size: 16px;
+      line-height: 1.35;
+      background: #f0f3ef;
+      border: 1px solid var(--line);
+      padding: 10px 12px;
+      margin: 9px 0;
+    }
+    .data-table {
+      width: 100%;
+      border-collapse: collapse;
+      margin: 6px 0 14px;
+      font-size: 17px;
+    }
+    .data-table th,
+    .data-table td {
+      border-bottom: 1px solid var(--line);
+      padding: 8px 7px;
+      text-align: left;
+    }
+    .data-table th {
+      color: var(--teal);
+      font-weight: 700;
+      background: #f0f3ef;
+    }
+    .map-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 22px;
+      align-items: start;
+    }
+    .map-grid img { border: 1px solid var(--line); background: var(--panel); max-height: 505px; object-fit: contain; }
+    .change-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 18px;
+    }
+    .change-grid div {
+      background: var(--panel);
+      border-left: 6px solid var(--teal);
+      padding: 12px 14px;
+      min-height: 118px;
+    }
+    .change-grid h2 { font-size: 17px; margin-bottom: 7px; }
+    .change-grid p { margin: 0; color: var(--muted); font-size: 14px; line-height: 1.30; }
+    .change-grid .tested {
+      margin-top: 12px;
+      color: var(--dark);
+      font-size: 15px;
+      font-weight: 700;
+    }
+    .compact-table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 13px;
+      font-size: 13px;
+      background: var(--panel);
+      border: 1px solid var(--line);
+    }
+    .compact-table th,
+    .compact-table td {
+      border-bottom: 1px solid var(--line);
+      padding: 6px 8px;
+      text-align: left;
+      vertical-align: top;
+    }
+    .compact-table th {
+      color: var(--teal);
+      background: #f0f3ef;
+      font-weight: 700;
+    }
+    .recipe-table td:first-child { width: 24%; font-weight: 700; color: var(--dark); }
+    .takeaway {
+      position: absolute;
+      left: 54px;
+      right: 54px;
+      bottom: 34px;
+      margin: 0;
+      padding-top: 14px;
+      border-top: 2px solid var(--line);
+      color: var(--dark);
+      font-size: 19px;
+      font-weight: 700;
+    }
+    .footer {
+      position: absolute;
+      right: 54px;
+      bottom: 10px;
+      color: var(--muted);
+      font-size: 12px;
+    }
+    @media print {
+      body { background: #ffffff; }
+      .deck { height: auto; overflow: visible; }
+      .slide { display: block; width: 13.333in; height: 7.5in; page-break-after: always; }
+    }
+    </style>
+</head>
+<body>
+  <main class="deck">
+    
+    <section class="slide">
+      <div class="topline">
+        <div class="title">
+          <h1>More Nines in Deep RL Reliability</h1>
+          <div class="subtitle">Workshop update: Project 15, Week 3</div>
+        </div>
+        <div class="badge">Speaker A | 0:00-0:45</div>
+      </div>
+      
+            <div class="hero-grid">
+              <div>
+                <div class="kicker">Goal</div>
+                <h1>Make easy control tasks reliable, not just high return on average.</h1>
+                <p class="lead">Pendulum should be close to solved. The interesting failures are the last starts where a neural SAC policy still does not swing up and stabilize.</p>
+                <div class="metric-row">
+                  <div class="metric"><b>79.2%</b><span>SAC 100k: within 5 of max(DP, controller)</span></div>
+                  <div class="metric"><b>92.5%</b><span>SimbaV2 100k: within 5 of max(DP, controller)</span></div>
+                  <div class="metric"><b>75.8%</b><span>SAC 100k: task-stability predicate</span></div>
+                  <div class="metric"><b>91.4%</b><span>SimbaV2 100k: task-stability predicate</span></div>
+                </div>
+              </div>
+              <div>
+                <img class="hero-gif" src="figures/pendulum_sac_vs_simba.gif" alt="Exact-grid fail/success rollout comparison">
+                <p class="caption">GIF: exact grid start initial angle=-174.1 deg, angular velocity=-1.00; SAC seed0 fails, full SimbaV2 seed0 succeeds.</p>
+              </div>
+            </div>
+            
+      <div class="footer">Project 15 | Week 3 workshop</div>
+    </section>
+    
+    <section class="slide">
+      <div class="topline">
+        <div class="title">
+          <h1>What Is Success?</h1>
+          <div class="subtitle">Why the headline metric uses max(DP, controller)</div>
+        </div>
+        <div class="badge">Speaker A | 0:40-1:35</div>
+      </div>
+      
+            <div class="definition-grid">
+              <div>
+                <h2>First attempt: intuitive task success</h2>
+                <p>We tried a behavioral criterion: swing up and stay near upright.</p>
+                <ul>
+                  <li>Near upright if <code>cos(theta) &gt;= 0.95</code> and <code>|theta_dot| &lt;= 1.0</code>.</li>
+                  <li>Stable if near-upright fraction is at least 80% during the 200-step rollout.</li>
+                  <li>No long loss if the longest not-near-upright streak is at most 50 steps.</li>
+                </ul>
+              </div>
+              <div>
+                <h2>Problem: not feasible everywhere</h2>
+                <p>Our DP/controller references satisfy that task-stability predicate on <b>2336/2501</b> cells (93.4%). The other <b>165</b> cells are not certified by either reference, so task-stability alone is not a fair universal success definition.</p>
+              </div>
+              <div class="wide-card">
+                <h2>Final headline success: match the best same-start reference</h2>
+                <p><code>R(policy, s0) &gt;= max(R_DP(s0), R_controller(s0)) - 5</code>.</p>
+                <p>DP is the stronger return reference on <b>2403/2501</b> cells (96.1%); the hand controller is stronger on <b>98/2501</b> cells (3.9%). We use the max because DP is approximate and the controller fixes some regions.</p>
+              </div>
+            </div>
+            
+      <div class="footer">Project 15 | Week 3 workshop</div>
+    </section>
+    
+    <section class="slide">
+      <div class="topline">
+        <div class="title">
+          <h1>Evaluation Protocol</h1>
+          <div class="subtitle">What was run and how each plotted number is counted</div>
+        </div>
+        <div class="badge">Speaker A | 1:35-2:15</div>
+      </div>
+      
+            <div class="two-col">
+              <div>
+                <h2>Exact initial-state grid</h2>
+                <ul>
+                  <li>61 angle bins x 41 velocity bins = <b>2501</b> reset-support states.</li>
+                  <li>Three training seeds per current 100k comparison, so <b>7503</b> deterministic grid rollouts.</li>
+                  <li>Map color means fraction of seeds satisfying the plotted criterion in that exact cell: 0%, 33%, 67%, or 100%.</li>
+                </ul>
+              </div>
+              <div>
+                <h2>Reference and diagnostics</h2>
+                <ul>
+                  <li>DP: finite-horizon value iteration on a 241 x 161 state grid and 81 torque actions, horizon 200.</li>
+                  <li>Controller: energy swing-up plus local PD stabilization.</li>
+                  <li>Trackers: replay near-upright coverage, critic dormancy, and effective rank.</li>
+                </ul>
+              </div>
+            </div>
+            
+      <div class="footer">Project 15 | Week 3 workshop</div>
+    </section>
+    
+    <section class="slide">
+      <div class="topline">
+        <div class="title">
+          <h1>What Did SimbaV2 Change?</h1>
+          <div class="subtitle">Four concrete changes relative to the CleanRL SAC baseline</div>
+        </div>
+        <div class="badge">Speaker A | 2:15-3:05</div>
+      </div>
+      
+            <div class="change-grid">
+              <div><h2>1. Hyperspherical feature normalization</h2><p>Replace layer norm-style scale learning with L2 normalization, so hidden feature vectors keep a fixed length instead of drifting to larger or smaller magnitudes.</p></div>
+              <div><h2>2. Hyperspherical weight normalization</h2><p>Remove weight decay and project selected weights back to unit norm after each gradient update. The optimizer mainly changes directions, not raw scale.</p></div>
+              <div><h2>3. Distributional critic + reward scaling</h2><p>Predict a distribution over return bins instead of one Q value. Scale rewards so the critic target stays near unit variance and gradient norms are less sensitive to outliers.</p></div>
+              <div><h2>4. Official SimbaV2 SAC recipe</h2><p>Use the paper-style optimizer and entropy settings rather than the default CleanRL SAC hyperparameters. This makes early learning slower but is meant to be more stable.</p></div>
+            </div>
+            <table class="compact-table recipe-table">
+              <thead><tr><th>Parameter</th><th>CleanRL SAC baseline</th><th>Full SimbaV2 run</th></tr></thead>
+              <tbody>
+                <tr><td>Q / actor learning rate</td><td>1e-3 / 3e-4</td><td>1e-4 -> 5e-5 / 1e-4 -> 5e-5</td></tr>
+                <tr><td>Initial entropy weight alpha</td><td>1.0</td><td>0.01</td></tr>
+                <tr><td>Target entropy scale</td><td>-1.0</td><td>-0.5</td></tr>
+                <tr><td>Network size</td><td>actor 128, critic 512</td><td>Simba actor 32, critic 64</td></tr>
+                <tr><td>Critic target</td><td>scalar Q value</td><td>51-bin distribution + reward scaling</td></tr>
+              </tbody>
+            </table>
+            <p class="takeaway">We should not claim yet which of these four changes drives the 100k improvement. The component ablations are now a next experiment at representative budget.</p>
+            
+      <div class="footer">Project 15 | Week 3 workshop</div>
+    </section>
+    
+    <section class="slide">
+      <div class="topline">
+        <div class="title">
+          <h1>Raw Plots</h1>
+          <div class="subtitle">The same starts under the two success criteria</div>
+        </div>
+        <div class="badge">Speaker A | 3:05-3:50</div>
+      </div>
+      
+            <div class="figure-full"><img class="" src="figures/raw_maps_task_return_regret.png" alt="Raw exact-grid maps for task-stability, reference success, and regret"></div>
+            <p class="takeaway">Middle column is the headline success metric. Right column shows return points below max(DP, controller); colors saturate at 20 because rare outliers exceed 100 and would wash out the map.</p>
+            
+      <div class="footer">Project 15 | Week 3 workshop</div>
+    </section>
+    
+    <section class="slide">
+      <div class="topline">
+        <div class="title">
+          <h1>First Result</h1>
+          <div class="subtitle">Full SimbaV2 is the current 100k reference-success frontier</div>
+        </div>
+        <div class="badge">Speaker B | 3:50-4:35</div>
+      </div>
+      
+            <div class="figure-full"><img class="" src="figures/main_result_seed_intervals.png" alt="100k seed-level reliability comparison"></div>
+            <p class="takeaway">Reference success: 79.2% +/- 57.6 pp for SAC vs 92.5% +/- 5.7 pp for SimbaV2. Task-stability all-grid: 75.8% +/- 64.6 pp vs 91.4% +/- 3.9 pp.</p>
+            
+      <div class="footer">Project 15 | Week 3 workshop</div>
+    </section>
+    
+    <section class="slide">
+      <div class="topline">
+        <div class="title">
+          <h1>Exploration vs Optimization</h1>
+          <div class="subtitle">Replay coverage is necessary, but not sufficient</div>
+        </div>
+        <div class="badge">Speaker B | 4:35-5:25</div>
+      </div>
+      
+            <div class="two-col wide-left">
+              <div><img class="" src="figures/exploration_vs_optimization.png" alt="Exploration versus optimization diagnostics"></div>
+              <div>
+                <h2>Current diagnosis</h2>
+                <ul>
+                  <li>Replay near-upright coverage: SAC 82.6%, SimbaV2 82.7%.</li>
+                  <li>Dormant critic units are units that barely activate; lower is better.</li>
+                  <li>Effective rank is a feature-diversity proxy; higher is better.</li>
+                  <li>Same replay coverage but different critic health points to optimization and plasticity, not pure exploration.</li>
+                </ul>
+              </div>
+            </div>
+            
+      <div class="footer">Project 15 | Week 3 workshop</div>
+    </section>
+    
+    <section class="slide">
+      <div class="topline">
+        <div class="title">
+          <h1>What Did Not Solve It?</h1>
+          <div class="subtitle">More SAC compute improves return matching, but still misses task reliability</div>
+        </div>
+        <div class="badge">Speaker B | 5:25-6:05</div>
+      </div>
+      
+            <div class="two-col wide-left">
+              <div><img class="" src="figures/compute_negative_result.png" alt="Compute negative result"></div>
+              <div>
+                <h2>Why this is negative</h2>
+                <ul>
+                  <li>Reference success is not the problem: SAC 500k is 96.3% vs Full SimbaV2 100k at 92.5% (+3.8 pp).</li>
+                  <li>Task-stability is still worse: 88.6% vs 91.4% (-2.8 pp), and near-down task success is 58.4% vs 70.6% (-12.2 pp).</li>
+                  <li>Critic dormancy worsens with compute: SAC 500k has 77.3% dormant Q1 units vs 0.0% for Full SimbaV2 100k.</li>
+                </ul>
+              </div>
+            </div>
+            
+      <div class="footer">Project 15 | Week 3 workshop</div>
+    </section>
+    
+    <section class="slide">
+      <div class="topline">
+        <div class="title">
+          <h1>What Else Did Not Solve It?</h1>
+          <div class="subtitle">Hard reset and hard replay are categorical data interventions</div>
+        </div>
+        <div class="badge">Speaker B | 6:05-6:45</div>
+      </div>
+      
+            <div class="two-col wide-left">
+              <div><img class="" src="figures/hard_interventions_result.png" alt="Hard-state intervention result"></div>
+              <div>
+                <h2>Definitions</h2>
+                <ul>
+                  <li>Hard reset p=0.2: 20% of training resets are forced to |theta|=120-135 deg, |theta_dot|<=1.</li>
+                  <li>Hard replay p=0.2: 20% of each replay update batch is sampled from transitions in that same hard-start band.</li>
+                  <li>Near-down task: task-stability on evaluation starts with |theta|>=150 deg.</li>
+                </ul>
+                <h2>Result</h2>
+                <ul>
+                  <li>Hard reset p=0.2 helps 50k task-stability slightly, but reference success falls sharply.</li>
+                  <li>Hard replay p=0.2 is worse on both task-stability and reference success than ordinary full 50k.</li>
+                </ul>
+              </div>
+            </div>
+            
+      <div class="footer">Project 15 | Week 3 workshop</div>
+    </section>
+    
+    <section class="slide">
+      <div class="topline">
+        <div class="title">
+          <h1>Next Experiments</h1>
+          <div class="subtitle">Move the ablations to representative budget</div>
+        </div>
+        <div class="badge">Speaker B | 6:45-8:00</div>
+      </div>
+      
+            <div class="next-grid">
+              <div>
+                <h2>1. Ablate SimbaV2 at 100k</h2>
+                <p><b>Experiment:</b> remove one component at a time: feature normalization, weight projection, distributional critic, reward scaling, and official SAC recipe.</p>
+                <p><b>Decision:</b> identify which change actually drives the reliability gain, using seed-level intervals and exact-grid maps.</p>
+              </div>
+              <div>
+                <h2>2. Push Pendulum toward 0.99</h2>
+                <p><b>Experiment:</b> try plasticity and reliability fixes: ReDo, Sample Weight Decay, Fisher-guided selective forgetting, and regret-weighted auxiliary losses.</p>
+                <p><b>Decision:</b> keep only changes that improve reference success, task-stability, and near-down starts without damaging critic health.</p>
+              </div>
+              <div>
+                <h2>3. Move to CartPole-Swingup</h2>
+                <p><b>Experiment:</b> reuse the exact-grid/replay/critic-health protocol on CartPole-Swingup after the Pendulum frontier is stable.</p>
+                <p><b>Decision:</b> test whether the Pendulum diagnosis transfers when exploration is genuinely harder.</p>
+              </div>
+              <div>
+                <h2>Why not present 50k ablations?</h2>
+                <p>Short-budget component screens were too noisy for a scientific claim about which SimbaV2 piece helps. We keep them as debugging evidence, not as a talk result.</p>
+              </div>
+            </div>
+            
+      <div class="footer">Project 15 | Week 3 workshop</div>
+    </section>
+    
+    <section class="slide">
+      <div class="topline">
+        <div class="title">
+          <h1>Backup: DP Reference</h1>
+          <div class="subtitle">What DP means in this project</div>
+        </div>
+        <div class="badge">Speaker Q | Q&amp;A</div>
+      </div>
+      
+            <div class="backup-grid">
+              <div>
+                <h2>Dynamic programming setup</h2>
+                <ul>
+                  <li>Uses the known Gymnasium Pendulum-v1 transition equation and reward.</li>
+                  <li>No neural model is learned; Bellman backups are computed on a grid.</li>
+                  <li>Horizon 200, torque limit 2.0, velocity limit 8.0.</li>
+                  <li>State grid: 241 theta x 161 theta_dot; action grid: 81 torques.</li>
+                </ul>
+              </div>
+              <div>
+                <h2>Why it is only an approximate reference</h2>
+                <ul>
+                  <li>Continuous state and action are discretized; next-state values use bilinear interpolation.</li>
+                  <li>It is finite-horizon and optimizes Gym return, not the task-stability predicate directly.</li>
+                  <li>DP is better on 2403/2501 cells; the controller is better on 98/2501 cells.</li>
+                  <li>That is why reference success uses max(DP, controller), and task-stability feasibility is reported separately.</li>
+                </ul>
+              </div>
+            </div>
+            
+      <div class="footer">Project 15 | Week 3 workshop</div>
+    </section>
+    
+    <section class="slide">
+      <div class="topline">
+        <div class="title">
+          <h1>Backup: Hand Controller</h1>
+          <div class="subtitle">Energy shaping plus a local PD switch</div>
+        </div>
+        <div class="badge">Speaker Q | Q&amp;A</div>
+      </div>
+      
+            <div class="backup-grid">
+              <div>
+                <h2>Control law used</h2>
+                <div class="equation">
+                  E = 0.5 dot(theta)^2 + E_u cos(theta), &nbsp; E_u = 3g/(2l)
+                </div>
+                <div class="equation">
+                  u = clip[-2,2](-k_p theta - k_d dot(theta))<br>
+                  if |theta| <= 0.4 and |dot(theta)| <= 3
+                </div>
+                <div class="equation">
+                  u = clip[-2,2](-k_E(E - E_u)dot(theta) - 0.5 sign(theta) 1[|dot(theta)| &lt; 0.1])<br>
+                  otherwise
+                </div>
+                <p class="caption">Gains: k_E=2, k_p=9, k_d=3. Implemented in <code>reference.py</code>.</p>
+              </div>
+              <div>
+                <h2>Why it is in the reference</h2>
+                <ul>
+                  <li>Energy-shaping swing-up follows the classic Astrom-Furuta energy-control idea.</li>
+                  <li>The PD branch is our local stabilizer near the upright equilibrium.</li>
+                  <li>Reference success uses <code>max(DP, controller)</code> from the same initial state.</li>
+                  <li>The controller is better than DP on 98/2501 grid cells.</li>
+                  <li>It does not certify impossibility when it fails.</li>
+                </ul>
+                <p class="caption">Citation: K. J. Astrom and K. Furuta, "Swinging up a pendulum by energy control," Automatica, 36(2), 287-295, 2000.</p>
+              </div>
+            </div>
+            
+      <div class="footer">Project 15 | Week 3 workshop</div>
+    </section>
+    
+    <section class="slide">
+      <div class="topline">
+        <div class="title">
+          <h1>Backup: Bad SAC Seed</h1>
+          <div class="subtitle">Why the SAC 100k interval is so wide</div>
+        </div>
+        <div class="badge">Speaker Q | Q&amp;A</div>
+      </div>
+      
+            <div class="backup-grid">
+              <div>
+                <h2>What happened</h2>
+                <table class="data-table">
+                  <tr><th>SAC 100k seed</th><th>reference</th><th>task</th><th>replay near</th></tr>
+                  <tr><td>seed 0</td><td>52.4%</td><td>45.8%</td><td>82.1%</td></tr>
+                  <tr><td>seed 1</td><td>93.0%</td><td>92.2%</td><td>82.0%</td></tr>
+                  <tr><td>seed 2</td><td>92.2%</td><td>89.3%</td><td>82.5%</td></tr>
+                </table>
+                <ul>
+                  <li>Seed 0 creates the 57.6 pp SAC seed interval.</li>
+                  <li>Replay near-upright coverage is tied, so this is not simply "did not see upright states."</li>
+                </ul>
+              </div>
+              <div>
+                <h2>Why we kept it</h2>
+                <ul>
+                  <li>Configs differ only by seed; the run completed 100k steps and 99k updates.</li>
+                  <li>Checkpoint has no NaNs/Infs; deterministic grid evaluation matched scalar Gym rollout on checked states.</li>
+                  <li>Failures are broad and mostly moderate: many cells are 10-20 return points below max(DP, controller)-5.</li>
+                  <li>Interpretation: a real optimization/reliability failure, not an obvious logging or evaluator bug.</li>
+                </ul>
+              </div>
+            </div>
+            
+      <div class="footer">Project 15 | Week 3 workshop</div>
+    </section>
+    
+  </main>
+  <script>
+    const slides = Array.from(document.querySelectorAll('.slide'));
+    let idx = 0;
+    function show(i) {
+      idx = Math.max(0, Math.min(slides.length - 1, i));
+      slides.forEach((s, n) => s.classList.toggle('active', n === idx));
+      history.replaceState(null, '', '#' + (idx + 1));
+    }
+    const start = parseInt(location.hash.replace('#', ''), 10);
+    if (!Number.isNaN(start)) idx = start - 1;
+    show(idx);
+    window.addEventListener('keydown', (e) => {
+      if (['ArrowRight', 'PageDown', ' '].includes(e.key)) show(idx + 1);
+      if (['ArrowLeft', 'PageUp', 'Backspace'].includes(e.key)) show(idx - 1);
+    });
+    </script>
+</body>
+</html>
