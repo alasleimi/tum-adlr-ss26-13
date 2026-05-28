@@ -117,7 +117,7 @@
       min-height: 98px;
     }
     .metric b { display: block; font-size: 29px; color: var(--teal); }
-    .metric span { display: block; color: var(--muted); font-size: 13px; margin-top: 8px; }
+    .metric span { display: block; color: var(--muted); font-size: 13px; line-height: 1.22; margin-top: 8px; }
     .two-col {
       display: grid;
       grid-template-columns: 1fr 1fr;
@@ -125,7 +125,11 @@
       align-items: center;
     }
     .wide-left { grid-template-columns: 1.28fr 0.82fr; }
+    .compute-result-grid { grid-template-columns: 1.42fr 0.78fr; }
     .figure-full img { max-height: 560px; margin: 0 auto; }
+    .raw-maps-figure img { max-height: 500px; }
+    .return-maps-figure img { max-height: 545px; }
+    .seed-maps-figure img { max-height: 545px; }
     .norm-diagnostics {
       display: grid;
       grid-template-rows: auto 1fr;
@@ -277,6 +281,13 @@
       font-size: 19px;
       font-weight: 700;
     }
+    .source-note {
+      display: block;
+      margin-top: 5px;
+      color: var(--muted);
+      font-size: 12px;
+      font-weight: 400;
+    }
     .footer {
       position: absolute;
       right: 54px;
@@ -290,10 +301,17 @@
       .slide { display: block; width: 13.333in; height: 7.5in; page-break-after: always; }
     }
     </style>
+  <script>
+    window.MathJax = {
+      tex: { displayMath: [['\\[', '\\]']], inlineMath: [['\\(', '\\)']] },
+      chtml: { scale: 0.95 }
+    };
+  </script>
+  <script defer src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-chtml.js"></script>
 </head>
 <body>
   <main class="deck">
-    
+
     <section class="slide">
       <div class="topline">
         <div class="title">
@@ -302,17 +320,17 @@
         </div>
         <div class="badge">Speaker A | 0:00-0:40</div>
       </div>
-      
+
             <div class="hero-grid">
               <div>
                 <div class="kicker">Goal</div>
                 <h1>Make easy control tasks reliable, not just high return on average.</h1>
                 <p class="lead">Pendulum should be close to solved. The interesting failures are the last starts where a neural SAC policy still does not swing up and stabilize.</p>
                 <div class="metric-row">
-                  <div class="metric"><b>79.2%</b><span>SAC 100k: within 5 of max(DP, controller)</span></div>
-                  <div class="metric"><b>92.5%</b><span>SimbaV2 100k: within 5 of max(DP, controller)</span></div>
-                  <div class="metric"><b>75.8%</b><span>SAC 100k: task-stability predicate</span></div>
-                  <div class="metric"><b>91.4%</b><span>SimbaV2 100k: task-stability predicate</span></div>
+                  <div class="metric"><b>83.0%</b><span>+/- 7.8 pp SE<br>SAC 100k: ref success within 5</span></div>
+                  <div class="metric"><b>91.8%</b><span>+/- 0.8 pp SE<br>SimbaV2 100k: ref success within 5</span></div>
+                  <div class="metric"><b>81.2%</b><span>+/- 8.9 pp SE<br>SAC 100k: task-stability predicate</span></div>
+                  <div class="metric"><b>91.5%</b><span>+/- 0.6 pp SE<br>SimbaV2 100k: task-stability predicate</span></div>
                 </div>
               </div>
               <div>
@@ -320,10 +338,10 @@
                 <p class="caption">GIF: exact grid start initial angle=-174.1 deg, angular velocity=-1.00; SAC seed0 fails, full SimbaV2 seed0 succeeds.</p>
               </div>
             </div>
-            
+
       <div class="footer">Project 15 | Week 3 workshop</div>
     </section>
-    
+
     <section class="slide">
       <div class="topline">
         <div class="title">
@@ -332,7 +350,7 @@
         </div>
         <div class="badge">Speaker A | 0:40-1:35</div>
       </div>
-      
+
             <div class="definition-grid">
               <div>
                 <h2>First attempt: intuitive task success</h2>
@@ -353,10 +371,10 @@
                 <p>DP is the stronger return reference on <b>2403/2501</b> cells (96.1%); the hand controller is stronger on <b>98/2501</b> cells (3.9%). We use the max because DP is approximate and the controller fixes some regions.</p>
               </div>
             </div>
-            
+
       <div class="footer">Project 15 | Week 3 workshop</div>
     </section>
-    
+
     <section class="slide">
       <div class="topline">
         <div class="title">
@@ -365,14 +383,15 @@
         </div>
         <div class="badge">Speaker A | 1:35-2:15</div>
       </div>
-      
+
             <div class="two-col">
               <div>
                 <h2>Exact initial-state grid</h2>
                 <ul>
                   <li>61 angle bins x 41 velocity bins = <b>2501</b> reset-support states.</li>
-                  <li>Three training seeds per current 100k comparison, so <b>7503</b> deterministic grid rollouts.</li>
-                  <li>Map color means fraction of seeds satisfying the plotted criterion in that exact cell: 0%, 33%, 67%, or 100%.</li>
+                  <li>Five training seeds per current 100k comparison, so <b>12505</b> deterministic grid rollouts.</li>
+                  <li>Map color means fraction of seeds satisfying the plotted criterion in that exact cell: 0%, 20%, 40%, 60%, 80%, 100%.</li>
+                  <li>Seeds 3-4 are follow-up runs with diagnostics every 10k steps instead of 100k; training recipe and final evaluation are otherwise the same.</li>
                 </ul>
               </div>
               <div>
@@ -384,10 +403,10 @@
                 </ul>
               </div>
             </div>
-            
+
       <div class="footer">Project 15 | Week 3 workshop</div>
     </section>
-    
+
     <section class="slide">
       <div class="topline">
         <div class="title">
@@ -396,7 +415,7 @@
         </div>
         <div class="badge">Speaker A | 2:15-3:05</div>
       </div>
-      
+
             <div class="change-grid">
               <div><h2>1. Hyperspherical feature normalization</h2><p>Replace layer norm-style scale learning with L2 normalization, so hidden feature vectors keep a fixed length instead of drifting to larger or smaller magnitudes.</p></div>
               <div><h2>2. Hyperspherical weight normalization</h2><p>Remove weight decay and project selected weights back to unit norm after each gradient update. The optimizer mainly changes directions, not raw scale.</p></div>
@@ -413,11 +432,11 @@
                 <tr><td>Critic target</td><td>scalar Q value</td><td>51-bin distribution + reward scaling</td></tr>
               </tbody>
             </table>
-            <p class="takeaway">We should not claim yet which of these four changes drives the 100k improvement. The component ablations are now a next experiment at representative budget.</p>
-            
+            <p class="takeaway">We should not claim yet which of these four changes drives the 100k improvement. The component ablations are now a next experiment at representative budget.<span class="source-note">Source: Lee et al., "Hyperspherical Normalization for Scalable Deep Reinforcement Learning", arXiv:2502.15280, 2025.</span></p>
+
       <div class="footer">Project 15 | Week 3 workshop</div>
     </section>
-    
+
     <section class="slide">
       <div class="topline">
         <div class="title">
@@ -426,13 +445,13 @@
         </div>
         <div class="badge">Speaker A | 3:05-3:50</div>
       </div>
-      
-            <div class="figure-full"><img class="" src="figures/raw_maps_task_return_regret.png" alt="Raw exact-grid maps for task-stability, reference success, and regret"></div>
-            <p class="takeaway">Middle column is the headline success metric. Right column shows return points below max(DP, controller); colors saturate at 20 because rare outliers exceed 100 and would wash out the map.</p>
-            
+
+            <div class="figure-full raw-maps-figure"><img class="" src="figures/raw_maps_task_return_regret.png" alt="Raw exact-grid maps for task-stability, reference success, and regret"></div>
+            <p class="takeaway">Middle column is the headline success metric. Right column shows return points below max(DP, controller); colors saturate at 20 because rare outliers exceed 100 and would wash out the map. Unclipped cell-mean shortfall: SAC max 122.4, mean 4.6 +/- 8.2; SimbaV2 max 113.8, mean 3.2 +/- 9.3.</p>
+
       <div class="footer">Project 15 | Week 3 workshop</div>
     </section>
-    
+
     <section class="slide">
       <div class="topline">
         <div class="title">
@@ -441,13 +460,13 @@
         </div>
         <div class="badge">Speaker B | 3:50-4:35</div>
       </div>
-      
+
             <div class="figure-full"><img class="" src="figures/main_result_seed_intervals.png" alt="100k seed-level reliability comparison"></div>
-            <p class="takeaway">Reference success: 79.2% +/- 57.6 pp for SAC vs 92.5% +/- 5.7 pp for SimbaV2. Task-stability all-grid: 75.8% +/- 64.6 pp vs 91.4% +/- 3.9 pp.</p>
-            
+            <p class="takeaway">Reference success: 83.0% +/- 21.6 pp for SAC vs 91.8% +/- 2.3 pp for SimbaV2. Task-stability all-grid: 81.2% +/- 24.7 pp vs 91.5% +/- 1.7 pp.</p>
+
       <div class="footer">Project 15 | Week 3 workshop</div>
     </section>
-    
+
     <section class="slide">
       <div class="topline">
         <div class="title">
@@ -456,23 +475,23 @@
         </div>
         <div class="badge">Speaker B | 4:35-5:25</div>
       </div>
-      
-            <div class="two-col wide-left">
+
+            <div class="two-col compute-result-grid">
               <div><img class="" src="figures/exploration_vs_optimization.png" alt="Exploration versus optimization diagnostics"></div>
               <div>
                 <h2>Current diagnosis</h2>
                 <ul>
-                  <li>Replay near-upright coverage: SAC 82.6%, SimbaV2 82.7%.</li>
+                  <li>Replay near-upright coverage: SAC 82.6%, SimbaV2 82.4%.</li>
                   <li>Dormant critic units are units that barely activate; lower is better.</li>
                   <li>Effective rank is a feature-diversity proxy; higher is better.</li>
                   <li>Same replay coverage but different critic health points to optimization and plasticity, not pure exploration.</li>
                 </ul>
               </div>
             </div>
-            
+
       <div class="footer">Project 15 | Week 3 workshop</div>
     </section>
-    
+
     <section class="slide">
       <div class="topline">
         <div class="title">
@@ -481,7 +500,7 @@
         </div>
         <div class="badge">Speaker B | 5:25-5:55</div>
       </div>
-      
+
             <div class="norm-diagnostics">
               <div class="norm-figure"><img class="" src="figures/sac_norm_diagnostics.png" alt="SAC norm diagnostics from telemetry"></div>
               <div class="norm-cards">
@@ -499,10 +518,10 @@
                 </div>
               </div>
             </div>
-            
+
       <div class="footer">Project 15 | Week 3 workshop</div>
     </section>
-    
+
     <section class="slide">
       <div class="topline">
         <div class="title">
@@ -511,22 +530,22 @@
         </div>
         <div class="badge">Speaker B | 5:55-6:30</div>
       </div>
-      
+
             <div class="two-col wide-left">
               <div><img class="" src="figures/compute_negative_result.png" alt="Compute negative result"></div>
               <div>
                 <h2>Why this is negative</h2>
                 <ul>
-                  <li>Reference success is not the problem: SAC 500k is 96.3% vs Full SimbaV2 100k at 92.5% (+3.8 pp).</li>
-                  <li>Task-stability is still worse: 88.6% vs 91.4% (-2.8 pp), and near-down task success is 58.4% vs 70.6% (-12.2 pp).</li>
+                  <li>Reference success is not the problem: SAC 500k is 96.3% vs Full SimbaV2 100k at 91.8% (+4.5 pp).</li>
+                  <li>Task-stability is still worse: 88.6% vs 91.5% (-2.8 pp), and near-down task success is 58.4% vs 69.4% (-11.1 pp).</li>
                   <li>Critic dormancy worsens with compute: SAC 500k has 77.3% dormant Q1 units vs 0.0% for Full SimbaV2 100k.</li>
                 </ul>
               </div>
             </div>
-            
+
       <div class="footer">Project 15 | Week 3 workshop</div>
     </section>
-    
+
     <section class="slide">
       <div class="topline">
         <div class="title">
@@ -535,7 +554,7 @@
         </div>
         <div class="badge">Speaker B | 6:30-7:10</div>
       </div>
-      
+
             <div class="two-col wide-left">
               <div><img class="" src="figures/hard_interventions_result.png" alt="Hard-state intervention result"></div>
               <div>
@@ -552,10 +571,10 @@
                 </ul>
               </div>
             </div>
-            
+
       <div class="footer">Project 15 | Week 3 workshop</div>
     </section>
-    
+
     <section class="slide">
       <div class="topline">
         <div class="title">
@@ -564,7 +583,7 @@
         </div>
         <div class="badge">Speaker B | 7:10-8:00</div>
       </div>
-      
+
             <div class="next-grid">
               <div>
                 <h2>1. Ablate SimbaV2 at 100k</h2>
@@ -582,10 +601,97 @@
                 <p><b>Decision:</b> test whether the Pendulum diagnosis transfers when exploration is genuinely harder.</p>
               </div>
             </div>
-            
+
       <div class="footer">Project 15 | Week 3 workshop</div>
     </section>
-    
+
+    <section class="slide">
+      <div class="topline">
+        <div class="title">
+          <h1>Backup: Pendulum Task</h1>
+          <div class="subtitle">Angles, observation, action, and return</div>
+        </div>
+        <div class="badge">Speaker Q | Q&amp;A</div>
+      </div>
+
+            <div class="backup-grid">
+              <div>
+                <h2>State convention</h2>
+                <ul>
+                  <li><code>theta = 0</code>: pendulum upright.</li>
+                  <li><code>theta = +/- pi</code>: pendulum hanging down; the two ends are the same physical angle.</li>
+                  <li>Plots show <code>theta</code> in degrees: <code>0 deg</code> upright, <code>+/-180 deg</code> downward.</li>
+                  <li>Policy observation is <code>[cos(theta), sin(theta), theta_dot]</code>, not raw theta.</li>
+                </ul>
+              </div>
+              <div>
+                <h2>Return and controls</h2>
+                <div class="equation">
+                  \[
+                    r_t = -\left(\operatorname{angle\_normalize}(\theta_t)^2 + 0.1\dot{\theta}_t^2 + 0.001u_t^2\right)
+                  \]
+                </div>
+                <div class="equation">
+                  \[
+                    R = \sum_{t=0}^{199} r_t,\qquad u_t \in [-2,2],\qquad \dot{\theta}_t \in [-8,8]
+                  \]
+                </div>
+                <ul>
+                  <li>Higher return is better; the best possible per-step reward is near 0.</li>
+                  <li>The return metric rewards being upright, slow, and using little torque.</li>
+                  <li>Task-stability is separate: near upright means <code>cos(theta) &gt;= 0.95</code> and <code>|theta_dot| &lt;= 1.0</code>.</li>
+                </ul>
+              </div>
+            </div>
+
+      <div class="footer">Project 15 | Week 3 workshop</div>
+    </section>
+
+    <section class="slide">
+      <div class="topline">
+        <div class="title">
+          <h1>Backup: Raw Return Maps</h1>
+          <div class="subtitle">Absolute returns behind the binary success maps</div>
+        </div>
+        <div class="badge">Speaker Q | Q&amp;A</div>
+      </div>
+
+            <div class="figure-full return-maps-figure"><img class="" src="figures/raw_return_maps.png" alt="Raw return maps for max(DP, controller), SAC 100k, and Full SimbaV2 100k"></div>
+            <p class="takeaway">All three panels use the same color scale. The reference is <code>max(DP, controller)</code>; the learned-policy panels are mean return over five training seeds.</p>
+
+      <div class="footer">Project 15 | Week 3 workshop</div>
+    </section>
+
+    <section class="slide">
+      <div class="topline">
+        <div class="title">
+          <h1>Backup: Per-Seed Shortfall Maps</h1>
+          <div class="subtitle">Each seed&#x27;s return gap to max(DP, controller)</div>
+        </div>
+        <div class="badge">Speaker Q | Q&amp;A</div>
+      </div>
+
+            <div class="figure-full seed-maps-figure"><img class="" src="figures/seed_return_shortfall_maps.png" alt="Per-seed return shortfall maps for SAC and Full SimbaV2"></div>
+            <p class="takeaway">Each panel is one training seed. Color is return points below <code>max(DP, controller)</code>, clipped at 20; white/yellow near zero means the seed is close to the same-start reference.</p>
+
+      <div class="footer">Project 15 | Week 3 workshop</div>
+    </section>
+
+    <section class="slide">
+      <div class="topline">
+        <div class="title">
+          <h1>Backup: Raw Plots Without Seed 0</h1>
+          <div class="subtitle">Same plots after removing the outlier SAC seed</div>
+        </div>
+        <div class="badge">Speaker Q | Q&amp;A</div>
+      </div>
+
+            <div class="figure-full raw-maps-figure"><img class="" src="figures/raw_maps_task_return_regret_no_seed0.png" alt="Raw exact-grid maps excluding seed 0"></div>
+            <p class="takeaway">This is the same visualization as the main Raw Plots slide, recomputed from per-seed rollouts after excluding seed 0 for both SAC and SimbaV2. It is a sensitivity check, not the main result.</p>
+
+      <div class="footer">Project 15 | Week 3 workshop</div>
+    </section>
+
     <section class="slide">
       <div class="topline">
         <div class="title">
@@ -594,7 +700,7 @@
         </div>
         <div class="badge">Speaker Q | Q&amp;A</div>
       </div>
-      
+
             <div class="backup-grid">
               <div>
                 <h2>Dynamic programming setup</h2>
@@ -615,10 +721,10 @@
                 </ul>
               </div>
             </div>
-            
+
       <div class="footer">Project 15 | Week 3 workshop</div>
     </section>
-    
+
     <section class="slide">
       <div class="topline">
         <div class="title">
@@ -627,20 +733,29 @@
         </div>
         <div class="badge">Speaker Q | Q&amp;A</div>
       </div>
-      
+
             <div class="backup-grid">
               <div>
                 <h2>Control law used</h2>
                 <div class="equation">
-                  E = 0.5 dot(theta)^2 + E_u cos(theta), &nbsp; E_u = 3g/(2l)
+                  \[
+                    E(\theta,\dot{\theta}) = \frac{1}{2}\dot{\theta}^{2} + E_u\cos\theta,\qquad
+                    E_u = \frac{3g}{2l}
+                  \]
                 </div>
                 <div class="equation">
-                  u = clip[-2,2](-k_p theta - k_d dot(theta))<br>
-                  if |theta| <= 0.4 and |dot(theta)| <= 3
+                  \[
+                    u = \operatorname{clip}_{[-2,2]}\!\left(-k_p\theta-k_d\dot{\theta}\right)
+                    \quad \text{if } |\theta|\le 0.4,\ |\dot{\theta}|\le 3
+                  \]
                 </div>
                 <div class="equation">
-                  u = clip[-2,2](-k_E(E - E_u)dot(theta) - 0.5 sign(theta) 1[|dot(theta)| &lt; 0.1])<br>
-                  otherwise
+                  \[
+                    u = \operatorname{clip}_{[-2,2]}\!\left(
+                    -k_E\left(E-E_u\right)\dot{\theta}
+                    -0.5\,\operatorname{sign}(\theta)\mathbf{1}_{\lvert\dot{\theta}\rvert \lt 0.1}
+                    \right)\quad \text{otherwise}
+                  \]
                 </div>
                 <p class="caption">Gains: k_E=2, k_p=9, k_d=3. Implemented in <code>reference.py</code>.</p>
               </div>
@@ -656,10 +771,10 @@
                 <p class="caption">Citation: K. J. Astrom and K. Furuta, "Swinging up a pendulum by energy control," Automatica, 36(2), 287-295, 2000.</p>
               </div>
             </div>
-            
+
       <div class="footer">Project 15 | Week 3 workshop</div>
     </section>
-    
+
     <section class="slide">
       <div class="topline">
         <div class="title">
@@ -668,18 +783,20 @@
         </div>
         <div class="badge">Speaker Q | Q&amp;A</div>
       </div>
-      
+
             <div class="backup-grid">
               <div>
                 <h2>What happened</h2>
                 <table class="data-table">
                   <tr><th>SAC 100k seed</th><th>reference</th><th>task</th><th>replay near</th></tr>
-                  <tr><td>seed 0</td><td>52.4%</td><td>45.8%</td><td>82.1%</td></tr>
-                  <tr><td>seed 1</td><td>93.0%</td><td>92.2%</td><td>82.0%</td></tr>
-                  <tr><td>seed 2</td><td>92.2%</td><td>89.3%</td><td>82.5%</td></tr>
+<tr><td>seed 0</td><td>52.4%</td><td>45.8%</td><td>82.5%</td></tr>
+<tr><td>seed 1</td><td>93.0%</td><td>92.2%</td><td>82.4%</td></tr>
+<tr><td>seed 2</td><td>92.2%</td><td>89.3%</td><td>83.0%</td></tr>
+<tr><td>seed 3</td><td>85.0%</td><td>87.2%</td><td>82.4%</td></tr>
+<tr><td>seed 4</td><td>92.6%</td><td>91.4%</td><td>82.8%</td></tr>
                 </table>
                 <ul>
-                  <li>Seed 0 creates the 57.6 pp SAC seed interval.</li>
+                  <li>Seed 0 remains the failure mode that keeps SAC's seed interval large: reference-success CI half-width is 21.6 pp.</li>
                   <li>Replay near-upright coverage is tied, so this is not simply "did not see upright states."</li>
                 </ul>
               </div>
@@ -693,10 +810,10 @@
                 </ul>
               </div>
             </div>
-            
+
       <div class="footer">Project 15 | Week 3 workshop</div>
     </section>
-    
+
   </main>
   <script>
     const slides = Array.from(document.querySelectorAll('.slide'));
@@ -712,6 +829,10 @@
     window.addEventListener('keydown', (e) => {
       if (['ArrowRight', 'PageDown', ' '].includes(e.key)) show(idx + 1);
       if (['ArrowLeft', 'PageUp', 'Backspace'].includes(e.key)) show(idx - 1);
+    });
+    window.addEventListener('hashchange', () => {
+      const next = parseInt(location.hash.replace('#', ''), 10);
+      if (!Number.isNaN(next)) show(next - 1);
     });
     </script>
 </body>

@@ -1,6 +1,6 @@
 # Project 15 Week 3 Workshop Speaker Notes
 
-Format: 8 minutes talk plus 5 minutes questions. Speaker A covers slides 1-5. Speaker B covers slides 6-11. Slides 12-14 are backup.
+Format: 8 minutes talk plus 5 minutes questions. Speaker A covers slides 1-5. Speaker B covers slides 6-11. Slides 12-18 are backup.
 
 ## Story Arc
 1. Pendulum is the controlled testbed: high average return is not enough; we care about the last failing starts.
@@ -14,12 +14,16 @@ Format: 8 minutes talk plus 5 minutes questions. Speaker A covers slides 1-5. Sp
 ## Key Numbers To Say Correctly
 - Known-feasible cells: 2336/2501 = 93.4%. The remaining 165 cells are uncertified, not proven impossible.
 - DP has the higher reference return on 2403/2501 cells; the hand controller is higher on 98/2501 cells.
-- SAC 100k all-grid task: 75.8% +/- 64.6 pp.
-- Full SimbaV2 100k all-grid task: 91.4% +/- 3.9 pp.
-- SAC 100k known-feasible task: 80.9% +/- 68.6 pp.
-- Full SimbaV2 100k known-feasible task: 97.3% +/- 3.3 pp.
-- SAC 100k reference success: 79.2% +/- 57.6 pp.
-- Full SimbaV2 100k reference success: 92.5% +/- 5.7 pp.
+- Current 100k comparison: 5 training seeds, 12505 exact-grid rollouts per policy.
+- Protocol caveat: seeds 3-4 are follow-up runs with 10k-step diagnostics instead of 100k-step diagnostics; training recipe and final evaluation are otherwise the same.
+- SAC 100k all-grid task: 81.2% +/- 24.7 pp.
+- Full SimbaV2 100k all-grid task: 91.5% +/- 1.7 pp.
+- SAC 100k known-feasible task: 86.6% +/- 26.2 pp.
+- Full SimbaV2 100k known-feasible task: 97.2% +/- 1.3 pp.
+- SAC 100k reference success: 83.0% +/- 21.6 pp.
+- Full SimbaV2 100k reference success: 91.8% +/- 2.3 pp.
+- Opening-card standard errors: SAC reference +/- 7.8 pp SE, SimbaV2 reference +/- 0.8 pp SE, SAC task +/- 8.9 pp SE, SimbaV2 task +/- 0.6 pp SE.
+- Unclipped cell-mean shortfall to max(DP, controller): SAC max 122.4, mean 4.6 +/- 8.2; SimbaV2 max 113.8, mean 3.2 +/- 9.3.
 - SAC norm diagnostic: Q parameter norm 38.4 -> 348.5; Q1 fc2 feature norm 606 -> 4856 with peak 5416. This is one diagnostic run, not a seeded claim.
 
 ## Slide Timing
@@ -36,9 +40,12 @@ Format: 8 minutes talk plus 5 minutes questions. Speaker A covers slides 1-5. Sp
 - Slide 11: 7:10-8:00. Next steps.
 
 ## Q&A Backup
+- Pendulum convention: theta is 0 upright and +/-180 degrees downward; observation is [cos(theta), sin(theta), theta_dot].
+- Per-seed shortfall maps show return points below max(DP, controller), clipped at 20, one panel per seed.
+- The seed-0-excluded raw maps are a sensitivity check; the main result keeps all seeds.
 - DP uses the known Pendulum dynamics and reward on a discretized grid; it is an approximate reference, not a proof of optimality.
 - The hand controller is energy shaping plus local PD, following Astrom-Furuta style swing-up; it is a witness and return reference, not an oracle.
-- SAC 100k seed0 is a real bad seed: 52.4% reference success versus 93.0%/92.2% for seeds 1/2, with replay coverage tied.
+- SAC 100k per-seed spread: seed 0: 52.4% ref / 45.8% task; seed 1: 93.0% ref / 92.2% task; seed 2: 92.2% ref / 89.3% task; seed 3: 85.0% ref / 87.2% task; seed 4: 92.6% ref / 91.4% task. Replay coverage is tied, so seed 0 is not simply "did not see upright states."
 - Seed is the statistical unit. Cell-level pooling is for maps; seed-level intervals are used for claims.
 
 GIF status: Policy GIF: exact-grid contrast where SAC seed0 fails and full SimbaV2 seed0 succeeds (theta=-174.1 deg, theta_dot=-1.00, return gap=+18.2).

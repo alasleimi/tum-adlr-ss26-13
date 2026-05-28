@@ -8,7 +8,7 @@ Now I will show the main result.
 
 Each dot here is one training seed, and the diamond is the mean over seeds. The error bars are seed-level confidence intervals, so we are not pretending that every grid cell is an independent experiment.
 
-The headline result is that full SimbaV2 is more reliable at 100k steps. On the return-reference metric, SAC reaches 79.2 percent, while full SimbaV2 reaches 92.5 percent. On the stricter task-stability metric, SAC is 75.8 percent and SimbaV2 is 91.4 percent.
+The headline result is that full SimbaV2 is more reliable at 100k steps. On the return-reference metric, SAC reaches 83.0 percent, while full SimbaV2 reaches 91.8 percent. On the stricter task-stability metric, SAC is 81.2 percent and SimbaV2 is 91.5 percent.
 
 The large SAC error bar is important. SAC has one very bad seed. So the story is not just that SimbaV2 has a slightly higher mean. The story is that SimbaV2 is much more consistent across seeds.
 
@@ -20,7 +20,7 @@ SimbaV2 improves both reference success and task-stability, and it does so with 
 
 The next question is why SAC fails.
 
-One possible explanation is exploration. Maybe SAC simply does not visit useful states often enough. But the replay data does not support that as the whole explanation. SAC and SimbaV2 both have about 82.6 to 82.7 percent replay coverage near upright states.
+One possible explanation is exploration. Maybe SAC simply does not visit useful states often enough. But the replay data does not support that as the whole explanation. SAC has 82.6 percent replay coverage near upright states, and SimbaV2 has 82.4 percent.
 
 The stronger difference is in the critic representation. Dormant units are units in the critic network that almost never activate. Lower dormancy is better. Effective rank is a rough measure of how many independent directions the critic features use. Higher rank is better.
 
@@ -50,7 +50,7 @@ We also tested whether the answer is simply more SAC compute.
 
 The careful answer is mixed. More compute does help SAC on the return-reference metric. SAC at 500k reaches 96.3 percent reference success, which is even higher than full SimbaV2 at 100k.
 
-But it still does not solve the behavioral reliability problem. On task-stability, SAC 500k is 88.6 percent, while full SimbaV2 100k is 91.4 percent. The gap is larger on near-down starts: 58.4 percent for SAC 500k versus 70.6 percent for SimbaV2 100k.
+But it still does not solve the behavioral reliability problem. On task-stability, SAC 500k is 88.6 percent, while full SimbaV2 100k is 91.5 percent. The gap is larger on near-down starts: 58.4 percent for SAC 500k versus 69.4 percent for SimbaV2 100k.
 
 The critic-health signal also gets worse. SAC 500k has 77.3 percent dormant Q1 units. So more compute improves return matching, but it does not fix the underlying reliability issue cleanly.
 
@@ -90,6 +90,6 @@ Next we separate the SimbaV2 components, try other plasticity methods, and then 
 
 The main takeaway is that SimbaV2 improves reliability on Pendulum not because replay coverage is obviously better, but because the critic representation appears healthier and more stable.
 
-## If Asked About The Two Extra Seeds
+## If Asked About The Five-Seed Update
 
-Two more SAC and two more SimbaV2 seeds have finished training and look sane on fixed evaluation, but they are not yet in the headline slide because they still need the exact-grid DP/controller-relative evaluation.
+The headline slide now uses five seeds. Seeds 3 and 4 are follow-up runs with more frequent diagnostics, every 10k steps instead of every 100k steps. The training recipe and final evaluation are otherwise the same, so we use them for a better estimate but disclose that caveat.

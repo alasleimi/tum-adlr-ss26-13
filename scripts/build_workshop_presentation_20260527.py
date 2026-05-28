@@ -24,33 +24,25 @@ POLICY_GIF_STATUS = (
     "(theta=-174.1 deg, theta_dot=-1.00, return gap=+18.2)."
 )
 
-RELATIVE_CSV = ROOT / "reports" / "week3_relative_frontier_20260526" / "relative_frontier.csv"
 RELIABILITY_CSV = ROOT / "reports" / "week3_reliability_frontier_20260526" / "reliability_frontier.csv"
-POSTHOC_CSV = ROOT / "reports" / "week3_followup_20260526" / "key_posthoc_results.csv"
-DIAGNOSTIC_CSV = ROOT / "reports" / "week3_followup_20260526" / "key_diagnostic_results.csv"
+N5_REPORT = ROOT / "reports" / "week3_simbav2_scale_100k_n5_20260527"
+RELATIVE_CSV = N5_REPORT / "relative_frontier_n5.csv"
+POSTHOC_CSV = N5_REPORT / "key_posthoc_results_n5.csv"
+DIAGNOSTIC_CSV = N5_REPORT / "key_diagnostic_results_n5.csv"
 NORM_TELEMETRY_CSV = ROOT / "extracted_telemetry.csv"
 SAC_RELATIVE_ROLLOUTS_CSV = (
-    ROOT / "reports" / "week3_simbav2_scale_100k_20260526" / "relative_success" / "sac" / "relative_rollouts.csv"
+    N5_REPORT / "relative_success" / "sac" / "relative_rollouts.csv"
 )
 SIMBA_RELATIVE_ROLLOUTS_CSV = (
-    ROOT
-    / "reports"
-    / "week3_simbav2_scale_100k_20260526"
-    / "relative_success"
-    / "simba_full_official_opt"
-    / "relative_rollouts.csv"
+    N5_REPORT / "relative_success" / "simba_full_official_opt" / "relative_rollouts.csv"
 )
 SAC_CELL_SUMMARY_CSV = (
-    ROOT / "reports" / "week3_simbav2_scale_100k_20260526" / "relative_success" / "sac" / "relative_cell_summary.csv"
+    N5_REPORT / "relative_success" / "sac" / "relative_cell_summary.csv"
 )
 SIMBA_CELL_SUMMARY_CSV = (
-    ROOT
-    / "reports"
-    / "week3_simbav2_scale_100k_20260526"
-    / "relative_success"
-    / "simba_full_official_opt"
-    / "relative_cell_summary.csv"
+    N5_REPORT / "relative_success" / "simba_full_official_opt" / "relative_cell_summary.csv"
 )
+N5_REPLAY_SNAPSHOT_CSV = N5_REPORT / "replay_diagnostics" / "replay_diagnostics_snapshot.csv"
 DP_GRID_CSV = (
     ROOT
     / "reports"
@@ -117,6 +109,9 @@ def main() -> None:
 
     generated = {
         "raw_maps": plot_raw_maps(FIG / "raw_maps_task_return_regret.png"),
+        "raw_maps_no_seed0": plot_raw_maps_seed0_excluded(FIG / "raw_maps_task_return_regret_no_seed0.png"),
+        "raw_return_maps": plot_raw_return_maps(FIG / "raw_return_maps.png"),
+        "seed_shortfall_maps": plot_seed_shortfall_maps(FIG / "seed_return_shortfall_maps.png"),
         "main_result": plot_main_result(analysis, FIG / "main_result_seed_intervals.png"),
         "exploration": plot_exploration_optimization(analysis, diagnostics, FIG / "exploration_vs_optimization.png"),
         "sac_norms": plot_sac_norm_diagnostics(norm_telemetry, FIG / "sac_norm_diagnostics.png"),
@@ -133,15 +128,21 @@ def main() -> None:
     write_summary_csv(OUT / "presentation_numbers.csv", summary)
     notes = build_notes(analysis, norm_summary, gif_status)
     script = build_script(analysis, norm_summary, gif_status)
-    (OUT / "speaker_notes.md").write_text(notes, encoding="utf-8")
-    (OUT / "script.md").write_text(script, encoding="utf-8")
-    (OUT / "index.html").write_text(build_deck(generated, copied, gif_path, analysis, norm_summary), encoding="utf-8")
+    (OUT / "speaker_notes.md").write_text(clean_text(notes), encoding="utf-8")
+    (OUT / "script.md").write_text(clean_text(script), encoding="utf-8")
+    (OUT / "index.html").write_text(
+        clean_text(build_deck(generated, copied, gif_path, analysis, norm_summary)), encoding="utf-8"
+    )
 
     print(f"Wrote {OUT / 'index.html'}")
     print(f"Wrote {OUT / 'speaker_notes.md'}")
     print(f"Wrote {OUT / 'script.md'}")
     print(f"Wrote {OUT / 'presentation_numbers.csv'}")
     print(gif_status)
+
+
+def clean_text(text: str) -> str:
+    return "\n".join(line.rstrip() for line in text.splitlines()) + "\n"
 
 
 def read_rows(path: Path) -> list[dict[str, str]]:
@@ -798,9 +799,11 @@ def metric_from_flags(
 
     seed_rates = [float(np.mean(by_seed[seed])) for seed in sorted(by_seed, key=lambda item: int(float(item)))]
     mean, half = seed_ci95(seed_rates)
+    sem = float(np.std(seed_rates, ddof=1)) / math.sqrt(len(seed_rates)) if len(seed_rates) > 1 else math.nan
     return {
         "mean": mean,
         "ci95": half,
+        "sem": sem,
         "seed_rates": seed_rates,
         "count": int(sum(values)),
         "total": len(values),
@@ -866,6 +869,74 @@ def fmt_metric(metric: dict[str, object]) -> str:
     if math.isfinite(half):
         return f"{pct(mean)} +/- {fmt_pp(half)}"
     return pct(mean)
+
+
+def fmt_metric_sem(metric: dict[str, object]) -> str:
+    mean = float(metric["mean"])
+    sem = float(metric.get("sem", math.nan))
+    if math.isfinite(sem):
+        return f"{pct(mean)} +/- {fmt_pp(sem)} SE"
+    return pct(mean)
+
+
+def fmt_se(metric: dict[str, object]) -> str:
+    sem = float(metric.get("sem", math.nan))
+    if math.isfinite(sem):
+        return f"+/- {fmt_pp(sem)} SE"
+    return "SE n/a"
+
+
+def seed_count(metric: dict[str, object]) -> int:
+    return len(metric.get("seed_rates", []))  # type: ignore[arg-type]
+
+
+def rollout_count(metric: dict[str, object]) -> int:
+    return int(metric.get("total", 0))
+
+
+def signed_pp(delta: float) -> str:
+    return f"{100.0 * delta:+.1f} pp"
+
+
+def sac_seed_diagnostic_rows(
+    sac_return: dict[str, object],
+    sac_task: dict[str, object],
+) -> list[dict[str, float]]:
+    replay_by_seed = {
+        str(int(float(row["seed"]))): as_float(row, "replay_near_upright_any_transition_fraction")
+        for row in read_rows(N5_REPLAY_SNAPSHOT_CSV)
+        if row.get("condition") == "100k SAC"
+    }
+    return [
+        {
+            "seed": float(seed),
+            "reference": float(reference),
+            "task": float(task),
+            "replay": replay_by_seed.get(str(seed), math.nan),
+        }
+        for seed, (reference, task) in enumerate(
+            zip(sac_return.get("seed_rates", []), sac_task.get("seed_rates", []), strict=True)  # type: ignore[arg-type]
+        )
+    ]
+
+
+def sac_seed_table_html(
+    sac_return: dict[str, object],
+    sac_task: dict[str, object],
+) -> str:
+    rows = [
+        "<tr><th>SAC 100k seed</th><th>reference</th><th>task</th><th>replay near</th></tr>",
+    ]
+    for row in sac_seed_diagnostic_rows(sac_return, sac_task):
+        rows.append(
+            "<tr>"
+            f"<td>seed {int(row['seed'])}</td>"
+            f"<td>{pct(row['reference'])}</td>"
+            f"<td>{pct(row['task'])}</td>"
+            f"<td>{pct(row['replay'])}</td>"
+            "</tr>"
+        )
+    return "\n".join(rows)
 
 
 def plot_cell_heatmap(
@@ -967,30 +1038,241 @@ def plot_raw_maps(path: Path) -> Path:
     return path
 
 
+def summarize_rollout_cells(rows: list[dict[str, str]], exclude_seeds: set[int] | None = None) -> list[dict[str, str]]:
+    exclude_seeds = exclude_seeds or set()
+    grouped: dict[tuple[float, float, float], list[dict[str, str]]] = {}
+    for row in rows:
+        seed = int(float(row["actual_seed"]))
+        if seed in exclude_seeds:
+            continue
+        key = (as_float(row, "theta"), as_float(row, "theta_degrees"), as_float(row, "theta_dot"))
+        grouped.setdefault(key, []).append(row)
+
+    summary_rows: list[dict[str, str]] = []
+    for (theta, theta_degrees, theta_dot), cell_rows in sorted(grouped.items(), key=lambda item: (item[0][2], item[0][1])):
+        def mean_col(column: str) -> float:
+            values = np.asarray([as_float(cell_row, column) for cell_row in cell_rows], dtype=np.float64)
+            values = values[np.isfinite(values)]
+            return float(np.mean(values)) if len(values) else math.nan
+
+        summary_rows.append(
+            {
+                "theta": str(theta),
+                "theta_degrees": str(theta_degrees),
+                "theta_dot": str(theta_dot),
+                "num_training_seeds": str(len({int(float(cell_row["actual_seed"])) for cell_row in cell_rows})),
+                "mean_return": str(mean_col("return")),
+                "best_known_return": str(mean_col("best_known_return")),
+                "mean_regret_to_best_known": str(mean_col("regret_to_best_known")),
+                "task_success_rate": str(mean_col("task_success")),
+                "near_best_known_return_eps_rate": str(mean_col("near_best_known_return_eps")),
+            }
+        )
+    return summary_rows
+
+
+def plot_raw_maps_seed0_excluded(path: Path) -> Path:
+    sac_rows = summarize_rollout_cells(read_rows(SAC_RELATIVE_ROLLOUTS_CSV), exclude_seeds={0})
+    simba_rows = summarize_rollout_cells(read_rows(SIMBA_RELATIVE_ROLLOUTS_CSV), exclude_seeds={0})
+    regret_vmax = 20.0
+
+    fig, axes = plt.subplots(2, 3, figsize=(13.8, 7.0))
+    specs = [
+        (sac_rows, "SAC s1-4"),
+        (simba_rows, "SimbaV2 s1-4"),
+    ]
+    for row_idx, (rows, label) in enumerate(specs):
+        plot_cell_heatmap(
+            axes[row_idx, 0],
+            rows,
+            "task_success_rate",
+            f"{label}: task-stability",
+            "Greens",
+            0.0,
+            1.0,
+            "fraction of seeds",
+        )
+        plot_cell_heatmap(
+            axes[row_idx, 1],
+            rows,
+            "near_best_known_return_eps_rate",
+            f"{label}: reference success",
+            "Blues",
+            0.0,
+            1.0,
+            "fraction of seeds",
+        )
+        plot_cell_heatmap(
+            axes[row_idx, 2],
+            rows,
+            "mean_regret_to_best_known",
+            f"{label}: return shortfall",
+            "YlOrRd",
+            0.0,
+            regret_vmax,
+            "return points below reference, color cap 20",
+        )
+    fig.suptitle(
+        "Same raw maps with seed 0 excluded: task stability, reference success, and return shortfall",
+        x=0.02,
+        y=0.995,
+        ha="left",
+        fontsize=14,
+        fontweight="bold",
+        color=PALETTE["dark"],
+    )
+    fig.tight_layout(rect=(0, 0, 1, 0.965))
+    fig.savefig(path, dpi=190)
+    plt.close(fig)
+    return path
+
+
+def return_shortfall_stats() -> dict[str, dict[str, float]]:
+    stats: dict[str, dict[str, float]] = {}
+    for key, path in {
+        "sac": SAC_CELL_SUMMARY_CSV,
+        "simba": SIMBA_CELL_SUMMARY_CSV,
+    }.items():
+        rows = read_rows(path)
+        values = np.asarray([as_float(row, "mean_regret_to_best_known") for row in rows], dtype=np.float64)
+        values = values[np.isfinite(values)]
+        stats[key] = {
+            "max": float(np.max(values)),
+            "mean": float(np.mean(values)),
+            "std": float(np.std(values, ddof=1)),
+        }
+    return stats
+
+
+def fmt_return_points(value: float) -> str:
+    if not math.isfinite(value):
+        return "n/a"
+    return f"{value:.1f}"
+
+
+def cell_matrix(rows: list[dict[str, str]], value_key: str) -> tuple[np.ndarray, list[float], list[float], list[float]]:
+    theta_values = sorted({as_float(row, "theta_degrees") for row in rows})
+    velocity_values = sorted({as_float(row, "theta_dot") for row in rows})
+    theta_index = {value: idx for idx, value in enumerate(theta_values)}
+    velocity_index = {value: idx for idx, value in enumerate(velocity_values)}
+    matrix = np.full((len(velocity_values), len(theta_values)), np.nan, dtype=np.float64)
+    for row in rows:
+        matrix[velocity_index[as_float(row, "theta_dot")], theta_index[as_float(row, "theta_degrees")]] = as_float(
+            row, value_key
+        )
+    theta_step = theta_values[1] - theta_values[0] if len(theta_values) > 1 else 1.0
+    velocity_step = velocity_values[1] - velocity_values[0] if len(velocity_values) > 1 else 1.0
+    extent = [
+        theta_values[0] - theta_step / 2.0,
+        theta_values[-1] + theta_step / 2.0,
+        velocity_values[0] - velocity_step / 2.0,
+        velocity_values[-1] + velocity_step / 2.0,
+    ]
+    return matrix, theta_values, velocity_values, extent
+
+
+def plot_raw_return_maps(path: Path) -> Path:
+    sac_rows = read_rows(SAC_CELL_SUMMARY_CSV)
+    simba_rows = read_rows(SIMBA_CELL_SUMMARY_CSV)
+    panels = [
+        ("Reference: max(DP, controller)", sac_rows, "best_known_return"),
+        ("SAC 100k: mean return", sac_rows, "mean_return"),
+        ("Full SimbaV2 100k: mean return", simba_rows, "mean_return"),
+    ]
+    matrices = [(title, *cell_matrix(rows, key)) for title, rows, key in panels]
+    values = np.concatenate([matrix[np.isfinite(matrix)].ravel() for _, matrix, *_ in matrices])
+    vmin = 10.0 * math.floor(float(np.min(values)) / 10.0)
+    vmax = 0.0
+
+    fig, axes = plt.subplots(1, 3, figsize=(14.0, 4.45), constrained_layout=True)
+    image = None
+    for ax, (title, matrix, _theta_values, _velocity_values, extent) in zip(axes, matrices):
+        image = ax.imshow(matrix, origin="lower", aspect="auto", extent=extent, cmap="viridis", vmin=vmin, vmax=vmax)
+        ax.set_title(title, loc="left", fontsize=13, fontweight="bold", color=PALETTE["dark"])
+        ax.set_xlabel("initial angle theta (degrees)", fontsize=10)
+        ax.set_ylabel("initial angular velocity", fontsize=10)
+        ax.tick_params(labelsize=9)
+        ax.grid(False)
+        ax.spines["top"].set_visible(False)
+        ax.spines["right"].set_visible(False)
+    assert image is not None
+    cbar = fig.colorbar(image, ax=axes.ravel().tolist(), fraction=0.025, pad=0.018)
+    cbar.set_label("200-step Gym return; higher / less negative is better", fontsize=10)
+    cbar.ax.tick_params(labelsize=9)
+    fig.savefig(path, dpi=190, bbox_inches="tight")
+    plt.close(fig)
+    return path
+
+
+def plot_seed_shortfall_maps(path: Path) -> Path:
+    policy_specs = [
+        ("SAC 100k", SAC_RELATIVE_ROLLOUTS_CSV),
+        ("Full SimbaV2 100k", SIMBA_RELATIVE_ROLLOUTS_CSV),
+    ]
+    rows_by_policy: list[tuple[str, dict[int, list[dict[str, str]]]]] = []
+    for label, csv_path in policy_specs:
+        rows = read_rows(csv_path)
+        grouped: dict[int, list[dict[str, str]]] = {}
+        for row in rows:
+            grouped.setdefault(int(float(row["actual_seed"])), []).append(row)
+        rows_by_policy.append((label, grouped))
+
+    fig, axes = plt.subplots(2, 5, figsize=(15.2, 6.1), constrained_layout=True)
+    image = None
+    for row_idx, (policy_label, grouped) in enumerate(rows_by_policy):
+        for col_idx, seed in enumerate(sorted(grouped)):
+            ax = axes[row_idx, col_idx]
+            matrix, _theta_values, _velocity_values, extent = cell_matrix(grouped[seed], "regret_to_best_known")
+            clipped = np.clip(matrix, 0.0, 20.0)
+            image = ax.imshow(clipped, origin="lower", aspect="auto", extent=extent, cmap="YlOrRd", vmin=0.0, vmax=20.0)
+            ax.set_title(f"{policy_label}\nseed {seed}", fontsize=9.5, fontweight="bold", color=PALETTE["dark"])
+            ax.grid(False)
+            ax.spines["top"].set_visible(False)
+            ax.spines["right"].set_visible(False)
+            if row_idx == 1:
+                ax.set_xlabel("theta deg", fontsize=8)
+            else:
+                ax.set_xlabel("")
+                ax.set_xticklabels([])
+            if col_idx == 0:
+                ax.set_ylabel("theta_dot", fontsize=8)
+            else:
+                ax.set_ylabel("")
+                ax.set_yticklabels([])
+            ax.tick_params(labelsize=7)
+    assert image is not None
+    cbar = fig.colorbar(image, ax=axes.ravel().tolist(), fraction=0.022, pad=0.012)
+    cbar.set_label("return points below max(DP, controller), clipped at 20", fontsize=9)
+    cbar.ax.tick_params(labelsize=8)
+    fig.savefig(path, dpi=190, bbox_inches="tight")
+    plt.close(fig)
+    return path
+
+
 def plot_main_result(analysis: dict[str, object], path: Path) -> Path:
     policies = analysis["policies"]  # type: ignore[index]
     categories = [
-        ("Reference success", "return_match_all"),
-        ("All-grid task stability", "task_all"),
-        ("Known-feasible task stability", "task_feasible"),
+        ("Reference\nsuccess", "return_match_all"),
+        ("Task stability\nall grid", "task_all"),
+        ("Task stability\nknown feasible", "task_feasible"),
     ]
     methods = [("SAC 100k", PALETTE["blue"]), ("Full SimbaV2 100k", PALETTE["teal"])]
 
-    fig, ax = plt.subplots(figsize=(11.4, 5.0))
-    width = 0.28
+    fig, ax = plt.subplots(figsize=(12.7, 5.4))
+    width = 0.34
     for cat_idx, (_, metric_key) in enumerate(categories):
         for method_idx, (method, color) in enumerate(methods):
             metric = policies[method][metric_key]  # type: ignore[index]
             x = cat_idx + (method_idx - 0.5) * width
             seed_rates = [float(v) for v in metric["seed_rates"]]  # type: ignore[index]
-            jitter = np.linspace(-0.035, 0.035, len(seed_rates)) if seed_rates else []
+            jitter = np.linspace(-0.045, 0.045, len(seed_rates)) if seed_rates else []
             ax.scatter(
                 np.asarray(jitter) + x,
                 seed_rates,
                 color=color,
                 edgecolor="white",
-                linewidth=0.8,
-                s=44,
+                linewidth=1.0,
+                s=64,
                 zorder=4,
                 alpha=0.88,
             )
@@ -1001,31 +1283,44 @@ def plot_main_result(analysis: dict[str, object], path: Path) -> Path:
                 fmt="D",
                 color=color,
                 ecolor=color,
-                markersize=7,
-                capsize=5,
-                linewidth=1.5,
+                markersize=9,
+                capsize=7,
+                elinewidth=2.2,
+                linewidth=2.2,
                 zorder=5,
                 label=method if cat_idx == 0 else None,
             )
+            upper = float(metric["mean"]) + float(metric["ci95"])
+            label_y = min(1.15, upper + 0.025)
             ax.text(
                 x,
-                min(1.035, float(metric["mean"]) + 0.04),
-                f"{100.0 * float(metric['mean']):.1f}\n+/-{100.0 * float(metric['ci95']):.1f}pp",
+                label_y,
+                f"{100.0 * float(metric['mean']):.1f}%\n+/-{100.0 * float(metric['ci95']):.1f} pp",
                 ha="center",
                 va="bottom",
-                fontsize=8,
+                fontsize=11,
                 color=PALETTE["dark"],
+                linespacing=1.05,
+                bbox={
+                    "boxstyle": "round,pad=0.18",
+                    "facecolor": PALETTE["panel"],
+                    "edgecolor": "none",
+                    "alpha": 0.95,
+                },
             )
     ax.set_xticks(range(len(categories)))
-    ax.set_xticklabels([label for label, _ in categories], fontsize=10)
-    setup_ax(ax, "100k exact-grid reliability, seed is the statistical unit", "rate", (0.0, 1.04))
-    ax.legend(loc="lower right", frameon=False)
+    ax.set_xticklabels([label for label, _ in categories], fontsize=13)
+    setup_ax(ax, "100k exact-grid reliability; dots are seeds", "rate", (0.38, 1.18))
+    ax.set_title("100k exact-grid reliability; dots are seeds", loc="left", fontsize=18, fontweight="bold", color=PALETTE["dark"])
+    ax.tick_params(axis="y", labelsize=12)
+    ax.set_ylabel("rate", fontsize=13)
+    ax.legend(loc="lower right", frameon=False, fontsize=13)
     ax.text(
         0.0,
-        -0.22,
-        "Dots are training seeds; diamonds are seed means; intervals are 95% t-intervals over seeds (n=3).",
+        -0.25,
+        "Diamonds are seed means; vertical intervals are 95% t-intervals over seeds (n=5).",
         transform=ax.transAxes,
-        fontsize=9,
+        fontsize=12,
         color=PALETTE["gray"],
     )
     fig.tight_layout()
@@ -1258,7 +1553,7 @@ def plot_compute_negative(
             first_row(diagnostics, lambda r: r["condition"] == "100k Full SimbaV2 official opt"),
         ),
     ]
-    fig, axes = plt.subplots(1, 2, figsize=(12.2, 4.8), gridspec_kw={"width_ratios": [1.35, 0.75]})
+    fig, axes = plt.subplots(1, 2, figsize=(10.6, 5.75), gridspec_kw={"width_ratios": [1.42, 0.78]})
 
     sac500 = rows[1][1]
     simba100 = rows[2][1]
@@ -1273,59 +1568,97 @@ def plot_compute_negative(
         simba_value = as_float(simba100, key)
         sac_ci = as_float(sac500, ci_key, 0.0) if ci_key else 0.0
         simba_ci = as_float(simba100, ci_key, 0.0) if ci_key else 0.0
-        axes[0].plot([sac_value, simba_value], [ypos, ypos], color=PALETTE["line"], linewidth=3, zorder=1)
+        axes[0].plot([sac_value, simba_value], [ypos, ypos], color=PALETTE["line"], linewidth=5, zorder=1)
+        sac_y = ypos + 0.085
+        simba_y = ypos - 0.085
         axes[0].errorbar(
             sac_value,
-            ypos + 0.045,
+            sac_y,
             xerr=sac_ci,
             fmt="s",
             color=PALETTE["blue"],
             ecolor=PALETTE["blue"],
-            capsize=3 if ci_key else 0,
-            markersize=7,
+            capsize=5 if ci_key else 0,
+            markersize=9,
+            elinewidth=2.0,
             zorder=3,
             label="SAC 500k" if ypos == y[0] else None,
         )
         axes[0].errorbar(
             simba_value,
-            ypos - 0.045,
+            simba_y,
             xerr=simba_ci,
             fmt="o",
             color=PALETTE["teal"],
             ecolor=PALETTE["teal"],
-            capsize=3 if ci_key else 0,
-            markersize=7,
+            capsize=5 if ci_key else 0,
+            markersize=9,
+            elinewidth=2.0,
             zorder=3,
             label="Full SimbaV2 100k" if ypos == y[0] else None,
         )
         delta_pp = 100.0 * (sac_value - simba_value)
         delta_color = PALETTE["green"] if delta_pp >= 0.0 else PALETTE["red"]
         delta_text = f"{delta_pp:+.1f} pp"
-        axes[0].text(0.505, ypos, delta_text, va="center", ha="left", fontsize=9, color=delta_color, fontweight="bold")
-        axes[0].text(sac_value + 0.008, ypos + 0.045, pct(sac_value), va="center", fontsize=8, color=PALETTE["blue"])
-        axes[0].text(simba_value + 0.008, ypos - 0.045, pct(simba_value), va="center", fontsize=8, color=PALETTE["teal"])
+        axes[0].text(0.515, ypos, delta_text, va="center", ha="left", fontsize=13, color=delta_color, fontweight="bold")
+        axes[0].text(
+            sac_value + 0.012,
+            sac_y + 0.13,
+            pct(sac_value),
+            va="bottom",
+            fontsize=12,
+            color=PALETTE["blue"],
+            fontweight="bold",
+            bbox={"boxstyle": "round,pad=0.12", "facecolor": PALETTE["panel"], "edgecolor": "none", "alpha": 0.95},
+        )
+        axes[0].text(
+            simba_value + 0.012,
+            simba_y - 0.13,
+            pct(simba_value),
+            va="top",
+            fontsize=12,
+            color=PALETTE["teal"],
+            fontweight="bold",
+            bbox={"boxstyle": "round,pad=0.12", "facecolor": PALETTE["panel"], "edgecolor": "none", "alpha": 0.95},
+        )
     axes[0].set_yticks(y)
-    axes[0].set_yticklabels([label for label, _, _ in comparisons], fontsize=10)
-    setup_ax(axes[0], "SAC 500k minus Full SimbaV2 100k")
-    axes[0].set_xlabel("exact-grid rate")
+    axes[0].set_yticklabels([label for label, _, _ in comparisons], fontsize=13)
+    setup_ax(axes[0], "SAC 500k vs Full SimbaV2 100k", None, (-0.48, 2.48))
+    axes[0].set_title("SAC 500k vs Full SimbaV2 100k", loc="left", fontsize=17, fontweight="bold", color=PALETTE["dark"])
+    axes[0].set_xlabel("exact-grid rate", fontsize=13)
+    axes[0].tick_params(axis="x", labelsize=12)
     axes[0].set_xlim(0.50, 1.02)
     axes[0].grid(axis="x", alpha=0.55)
     axes[0].grid(axis="y", visible=False)
-    axes[0].legend(loc="lower right", frameon=False, fontsize=8)
+    axes[0].legend(loc="upper center", bbox_to_anchor=(0.64, 1.03), ncol=2, frameon=False, fontsize=11)
 
     x = np.arange(len(rows))
     dormant = [as_float(diag, "q1_dormant") for _, _, diag in rows]
-    axes[1].bar(x, dormant, color=[PALETTE["blue"], PALETTE["blue"], PALETTE["teal"]], width=0.58)
+    bar_colors = [PALETTE["blue"], PALETTE["blue"], PALETTE["teal"]]
+    bars = axes[1].bar(x, dormant, color=bar_colors, width=0.62)
     axes[1].set_xticks(x)
-    axes[1].set_xticklabels([name for name, _, _ in rows], rotation=10)
+    axes[1].set_xticklabels(["SAC\n100k", "SAC\n500k", "Full\nSimbaV2\n100k"], fontsize=11)
     setup_ax(axes[1], "Critic dormancy stays bad", "Q1 dormant fraction", (0.0, 0.85))
-    annotate_bars(axes[1], axes[1].containers[0])
+    axes[1].set_title("Critic dormancy stays bad", loc="left", fontsize=16, fontweight="bold", color=PALETTE["dark"])
+    axes[1].tick_params(axis="y", labelsize=11)
+    axes[1].set_ylabel("Q1 dormant fraction", fontsize=12)
+    for bar, value in zip(bars, dormant):
+        axes[1].text(
+            bar.get_x() + bar.get_width() / 2.0,
+            value + 0.025,
+            pct(value),
+            ha="center",
+            va="bottom",
+            fontsize=12,
+            color=PALETTE["dark"],
+            fontweight="bold",
+        )
     fig.suptitle(
-        "More SAC compute helps return matching, not the reliability failure mode",
+        "More SAC compute helps return matching, not task reliability",
         x=0.02,
-        y=0.98,
+        y=0.985,
         ha="left",
-        fontsize=16,
+        fontsize=18,
         fontweight="bold",
         color=PALETTE["dark"],
     )
@@ -1775,7 +2108,24 @@ def build_deck(
     sac_return = policies["SAC 100k"]["return_match_all"]  # type: ignore[index]
     simba_return = policies["Full SimbaV2 100k"]["return_match_all"]  # type: ignore[index]
     feasible_rate = float(analysis["feasible_cells"]) / float(analysis["total_cells"])
+    n_seeds = seed_count(sac_return)
+    n_rollouts = rollout_count(sac_return)
+    cell_levels = ", ".join(f"{int(round(100 * i / n_seeds))}%" for i in range(n_seeds + 1))
+    relative_rows = analysis["relative"]  # type: ignore[index]
+    sac500 = relative_rows["Legacy500kUTD1"]  # type: ignore[index]
+    simba100 = relative_rows["FullSimba100k"]  # type: ignore[index]
+    sac500_reference = as_float(sac500, "near_best_known_rate")
+    sac500_task = as_float(sac500, "task_rate")
+    sac500_near_down = as_float(sac500, "near_down_task_rate")
+    simba100_reference = as_float(simba100, "near_best_known_rate")
+    simba100_task = as_float(simba100, "task_rate")
+    simba100_near_down = as_float(simba100, "near_down_task_rate")
+    sac_replay = as_float(analysis["diagnostics"]["100k SAC"], "replay_near_any")  # type: ignore[index]
+    simba_replay = as_float(analysis["diagnostics"]["100k Full SimbaV2 official opt"], "replay_near_any")  # type: ignore[index]
     representation_backup = copied.get("representation_health", generated["exploration"])
+    shortfall = return_shortfall_stats()
+    sac_shortfall = shortfall["sac"]
+    simba_shortfall = shortfall["simba"]
 
     slides = [
         slide(
@@ -1788,10 +2138,10 @@ def build_deck(
                 <h1>Make easy control tasks reliable, not just high return on average.</h1>
                 <p class="lead">Pendulum should be close to solved. The interesting failures are the last starts where a neural SAC policy still does not swing up and stabilize.</p>
                 <div class="metric-row">
-                  <div class="metric"><b>{pct(float(sac_return["mean"]))}</b><span>SAC 100k: within 5 of max(DP, controller)</span></div>
-                  <div class="metric"><b>{pct(float(simba_return["mean"]))}</b><span>SimbaV2 100k: within 5 of max(DP, controller)</span></div>
-                  <div class="metric"><b>{pct(float(sac_all["mean"]))}</b><span>SAC 100k: task-stability predicate</span></div>
-                  <div class="metric"><b>{pct(float(simba_all["mean"]))}</b><span>SimbaV2 100k: task-stability predicate</span></div>
+                  <div class="metric"><b>{pct(float(sac_return["mean"]))}</b><span>{fmt_se(sac_return)}<br>SAC 100k: ref success within 5</span></div>
+                  <div class="metric"><b>{pct(float(simba_return["mean"]))}</b><span>{fmt_se(simba_return)}<br>SimbaV2 100k: ref success within 5</span></div>
+                  <div class="metric"><b>{pct(float(sac_all["mean"]))}</b><span>{fmt_se(sac_all)}<br>SAC 100k: task-stability predicate</span></div>
+                  <div class="metric"><b>{pct(float(simba_all["mean"]))}</b><span>{fmt_se(simba_all)}<br>SimbaV2 100k: task-stability predicate</span></div>
                 </div>
               </div>
               <div>
@@ -1840,8 +2190,9 @@ def build_deck(
                 <h2>Exact initial-state grid</h2>
                 <ul>
                   <li>61 angle bins x 41 velocity bins = <b>2501</b> reset-support states.</li>
-                  <li>Three training seeds per current 100k comparison, so <b>7503</b> deterministic grid rollouts.</li>
-                  <li>Map color means fraction of seeds satisfying the plotted criterion in that exact cell: 0%, 33%, 67%, or 100%.</li>
+                  <li>Five training seeds per current 100k comparison, so <b>{n_rollouts}</b> deterministic grid rollouts.</li>
+                  <li>Map color means fraction of seeds satisfying the plotted criterion in that exact cell: {cell_levels}.</li>
+                  <li>Seeds 3-4 are follow-up runs with diagnostics every 10k steps instead of 100k; training recipe and final evaluation are otherwise the same.</li>
                 </ul>
               </div>
               <div>
@@ -1877,7 +2228,7 @@ def build_deck(
                 <tr><td>Critic target</td><td>scalar Q value</td><td>51-bin distribution + reward scaling</td></tr>
               </tbody>
             </table>
-            <p class="takeaway">We should not claim yet which of these four changes drives the 100k improvement. The component ablations are now a next experiment at representative budget.</p>
+            <p class="takeaway">We should not claim yet which of these four changes drives the 100k improvement. The component ablations are now a next experiment at representative budget.<span class="source-note">Source: Lee et al., "Hyperspherical Normalization for Scalable Deep Reinforcement Learning", arXiv:2502.15280, 2025.</span></p>
             """,
             speaker="A",
             time="2:15-3:05",
@@ -1886,8 +2237,8 @@ def build_deck(
             "Raw Plots",
             "The same starts under the two success criteria",
             f"""
-            <div class="figure-full">{deck_img(generated["raw_maps"], "Raw exact-grid maps for task-stability, reference success, and regret")}</div>
-            <p class="takeaway">Middle column is the headline success metric. Right column shows return points below max(DP, controller); colors saturate at 20 because rare outliers exceed 100 and would wash out the map.</p>
+            <div class="figure-full raw-maps-figure">{deck_img(generated["raw_maps"], "Raw exact-grid maps for task-stability, reference success, and regret")}</div>
+            <p class="takeaway">Middle column is the headline success metric. Right column shows return points below max(DP, controller); colors saturate at 20 because rare outliers exceed 100 and would wash out the map. Unclipped cell-mean shortfall: SAC max {fmt_return_points(sac_shortfall["max"])}, mean {fmt_return_points(sac_shortfall["mean"])} +/- {fmt_return_points(sac_shortfall["std"])}; SimbaV2 max {fmt_return_points(simba_shortfall["max"])}, mean {fmt_return_points(simba_shortfall["mean"])} +/- {fmt_return_points(simba_shortfall["std"])}.</p>
             """,
             speaker="A",
             time="3:05-3:50",
@@ -1906,7 +2257,7 @@ def build_deck(
             "Exploration vs Optimization",
             "Replay coverage is necessary, but not sufficient",
             f"""
-            <div class="two-col wide-left">
+            <div class="two-col compute-result-grid">
               <div>{deck_img(generated["exploration"], "Exploration versus optimization diagnostics")}</div>
               <div>
                 <h2>Current diagnosis</h2>
@@ -1956,8 +2307,8 @@ def build_deck(
               <div>
                 <h2>Why this is negative</h2>
                 <ul>
-                  <li>Reference success is not the problem: SAC 500k is 96.3% vs Full SimbaV2 100k at 92.5% (+3.8 pp).</li>
-                  <li>Task-stability is still worse: 88.6% vs 91.4% (-2.8 pp), and near-down task success is 58.4% vs 70.6% (-12.2 pp).</li>
+                  <li>Reference success is not the problem: SAC 500k is {pct(sac500_reference)} vs Full SimbaV2 100k at {pct(simba100_reference)} ({signed_pp(sac500_reference - simba100_reference)}).</li>
+                  <li>Task-stability is still worse: {pct(sac500_task)} vs {pct(simba100_task)} ({signed_pp(sac500_task - simba100_task)}), and near-down task success is {pct(sac500_near_down)} vs {pct(simba100_near_down)} ({signed_pp(sac500_near_down - simba100_near_down)}).</li>
                   <li>Critic dormancy worsens with compute: SAC 500k has 77.3% dormant Q1 units vs 0.0% for Full SimbaV2 100k.</li>
                 </ul>
               </div>
@@ -2016,6 +2367,73 @@ def build_deck(
             time="7:10-8:00",
         ),
         slide(
+            "Backup: Pendulum Task",
+            "Angles, observation, action, and return",
+            r"""
+            <div class="backup-grid">
+              <div>
+                <h2>State convention</h2>
+                <ul>
+                  <li><code>theta = 0</code>: pendulum upright.</li>
+                  <li><code>theta = +/- pi</code>: pendulum hanging down; the two ends are the same physical angle.</li>
+                  <li>Plots show <code>theta</code> in degrees: <code>0 deg</code> upright, <code>+/-180 deg</code> downward.</li>
+                  <li>Policy observation is <code>[cos(theta), sin(theta), theta_dot]</code>, not raw theta.</li>
+                </ul>
+              </div>
+              <div>
+                <h2>Return and controls</h2>
+                <div class="equation">
+                  \[
+                    r_t = -\left(\operatorname{angle\_normalize}(\theta_t)^2 + 0.1\dot{\theta}_t^2 + 0.001u_t^2\right)
+                  \]
+                </div>
+                <div class="equation">
+                  \[
+                    R = \sum_{t=0}^{199} r_t,\qquad u_t \in [-2,2],\qquad \dot{\theta}_t \in [-8,8]
+                  \]
+                </div>
+                <ul>
+                  <li>Higher return is better; the best possible per-step reward is near 0.</li>
+                  <li>The return metric rewards being upright, slow, and using little torque.</li>
+                  <li>Task-stability is separate: near upright means <code>cos(theta) &gt;= 0.95</code> and <code>|theta_dot| &lt;= 1.0</code>.</li>
+                </ul>
+              </div>
+            </div>
+            """,
+            speaker="Q",
+            time="Q&A",
+        ),
+        slide(
+            "Backup: Raw Return Maps",
+            "Absolute returns behind the binary success maps",
+            f"""
+            <div class="figure-full return-maps-figure">{deck_img(generated["raw_return_maps"], "Raw return maps for max(DP, controller), SAC 100k, and Full SimbaV2 100k")}</div>
+            <p class="takeaway">All three panels use the same color scale. The reference is <code>max(DP, controller)</code>; the learned-policy panels are mean return over five training seeds.</p>
+            """,
+            speaker="Q",
+            time="Q&A",
+        ),
+        slide(
+            "Backup: Per-Seed Shortfall Maps",
+            "Each seed's return gap to max(DP, controller)",
+            f"""
+            <div class="figure-full seed-maps-figure">{deck_img(generated["seed_shortfall_maps"], "Per-seed return shortfall maps for SAC and Full SimbaV2")}</div>
+            <p class="takeaway">Each panel is one training seed. Color is return points below <code>max(DP, controller)</code>, clipped at 20; white/yellow near zero means the seed is close to the same-start reference.</p>
+            """,
+            speaker="Q",
+            time="Q&A",
+        ),
+        slide(
+            "Backup: Raw Plots Without Seed 0",
+            "Same plots after removing the outlier SAC seed",
+            f"""
+            <div class="figure-full raw-maps-figure">{deck_img(generated["raw_maps_no_seed0"], "Raw exact-grid maps excluding seed 0")}</div>
+            <p class="takeaway">This is the same visualization as the main Raw Plots slide, recomputed from per-seed rollouts after excluding seed 0 for both SAC and SimbaV2. It is a sensitivity check, not the main result.</p>
+            """,
+            speaker="Q",
+            time="Q&A",
+        ),
+        slide(
             "Backup: DP Reference",
             "What DP means in this project",
             """
@@ -2046,20 +2464,29 @@ def build_deck(
         slide(
             "Backup: Hand Controller",
             "Energy shaping plus a local PD switch",
-            """
+            r"""
             <div class="backup-grid">
               <div>
                 <h2>Control law used</h2>
                 <div class="equation">
-                  E = 0.5 dot(theta)^2 + E_u cos(theta), &nbsp; E_u = 3g/(2l)
+                  \[
+                    E(\theta,\dot{\theta}) = \frac{1}{2}\dot{\theta}^{2} + E_u\cos\theta,\qquad
+                    E_u = \frac{3g}{2l}
+                  \]
                 </div>
                 <div class="equation">
-                  u = clip[-2,2](-k_p theta - k_d dot(theta))<br>
-                  if |theta| <= 0.4 and |dot(theta)| <= 3
+                  \[
+                    u = \operatorname{clip}_{[-2,2]}\!\left(-k_p\theta-k_d\dot{\theta}\right)
+                    \quad \text{if } |\theta|\le 0.4,\ |\dot{\theta}|\le 3
+                  \]
                 </div>
                 <div class="equation">
-                  u = clip[-2,2](-k_E(E - E_u)dot(theta) - 0.5 sign(theta) 1[|dot(theta)| &lt; 0.1])<br>
-                  otherwise
+                  \[
+                    u = \operatorname{clip}_{[-2,2]}\!\left(
+                    -k_E\left(E-E_u\right)\dot{\theta}
+                    -0.5\,\operatorname{sign}(\theta)\mathbf{1}_{\lvert\dot{\theta}\rvert \lt 0.1}
+                    \right)\quad \text{otherwise}
+                  \]
                 </div>
                 <p class="caption">Gains: k_E=2, k_p=9, k_d=3. Implemented in <code>reference.py</code>.</p>
               </div>
@@ -2082,18 +2509,15 @@ def build_deck(
         slide(
             "Backup: Bad SAC Seed",
             "Why the SAC 100k interval is so wide",
-            """
+            f"""
             <div class="backup-grid">
               <div>
                 <h2>What happened</h2>
                 <table class="data-table">
-                  <tr><th>SAC 100k seed</th><th>reference</th><th>task</th><th>replay near</th></tr>
-                  <tr><td>seed 0</td><td>52.4%</td><td>45.8%</td><td>82.1%</td></tr>
-                  <tr><td>seed 1</td><td>93.0%</td><td>92.2%</td><td>82.0%</td></tr>
-                  <tr><td>seed 2</td><td>92.2%</td><td>89.3%</td><td>82.5%</td></tr>
+                  {sac_seed_table_html(sac_return, sac_all)}
                 </table>
                 <ul>
-                  <li>Seed 0 creates the 57.6 pp SAC seed interval.</li>
+                  <li>Seed 0 remains the failure mode that keeps SAC's seed interval large: reference-success CI half-width is {fmt_pp(float(sac_return["ci95"]))}.</li>
                   <li>Replay near-upright coverage is tied, so this is not simply "did not see upright states."</li>
                 </ul>
               </div>
@@ -2226,7 +2650,7 @@ def build_deck(
       min-height: 98px;
     }
     .metric b { display: block; font-size: 29px; color: var(--teal); }
-    .metric span { display: block; color: var(--muted); font-size: 13px; margin-top: 8px; }
+    .metric span { display: block; color: var(--muted); font-size: 13px; line-height: 1.22; margin-top: 8px; }
     .two-col {
       display: grid;
       grid-template-columns: 1fr 1fr;
@@ -2234,7 +2658,11 @@ def build_deck(
       align-items: center;
     }
     .wide-left { grid-template-columns: 1.28fr 0.82fr; }
+    .compute-result-grid { grid-template-columns: 1.42fr 0.78fr; }
     .figure-full img { max-height: 560px; margin: 0 auto; }
+    .raw-maps-figure img { max-height: 500px; }
+    .return-maps-figure img { max-height: 545px; }
+    .seed-maps-figure img { max-height: 545px; }
     .norm-diagnostics {
       display: grid;
       grid-template-rows: auto 1fr;
@@ -2386,6 +2814,13 @@ def build_deck(
       font-size: 19px;
       font-weight: 700;
     }
+    .source-note {
+      display: block;
+      margin-top: 5px;
+      color: var(--muted);
+      font-size: 12px;
+      font-weight: 400;
+    }
     .footer {
       position: absolute;
       right: 54px;
@@ -2415,6 +2850,10 @@ def build_deck(
       if (['ArrowRight', 'PageDown', ' '].includes(e.key)) show(idx + 1);
       if (['ArrowLeft', 'PageUp', 'Backspace'].includes(e.key)) show(idx - 1);
     });
+    window.addEventListener('hashchange', () => {
+      const next = parseInt(location.hash.replace('#', ''), 10);
+      if (!Number.isNaN(next)) show(next - 1);
+    });
     """
 
     return f"""<!doctype html>
@@ -2424,6 +2863,13 @@ def build_deck(
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>Project 15 Week 3 Workshop Presentation</title>
   <style>{css}</style>
+  <script>
+    window.MathJax = {{
+      tex: {{ displayMath: [['\\\\[', '\\\\]']], inlineMath: [['\\\\(', '\\\\)']] }},
+      chtml: {{ scale: 0.95 }}
+    }};
+  </script>
+  <script defer src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-chtml.js"></script>
 </head>
 <body>
   <main class="deck">
@@ -2467,9 +2913,19 @@ def build_notes(analysis: dict[str, object], norm_summary: dict[str, float], gif
     sac_return = policies["SAC 100k"]["return_match_all"]  # type: ignore[index]
     simba_return = policies["Full SimbaV2 100k"]["return_match_all"]  # type: ignore[index]
     feasible_rate = float(analysis["feasible_cells"]) / float(analysis["total_cells"])
+    n_seeds = seed_count(sac_return)
+    n_rollouts = rollout_count(sac_return)
+    shortfall = return_shortfall_stats()
+    sac_shortfall = shortfall["sac"]
+    simba_shortfall = shortfall["simba"]
+    sac_seed_rows = sac_seed_diagnostic_rows(sac_return, sac_all)
+    sac_seed_summary = "; ".join(
+        f"seed {int(row['seed'])}: {pct(row['reference'])} ref / {pct(row['task'])} task"
+        for row in sac_seed_rows
+    )
     return f"""# Project 15 Week 3 Workshop Speaker Notes
 
-Format: 8 minutes talk plus 5 minutes questions. Speaker A covers slides 1-5. Speaker B covers slides 6-11. Slides 12-14 are backup.
+Format: 8 minutes talk plus 5 minutes questions. Speaker A covers slides 1-5. Speaker B covers slides 6-11. Slides 12-18 are backup.
 
 ## Story Arc
 1. Pendulum is the controlled testbed: high average return is not enough; we care about the last failing starts.
@@ -2483,12 +2939,16 @@ Format: 8 minutes talk plus 5 minutes questions. Speaker A covers slides 1-5. Sp
 ## Key Numbers To Say Correctly
 - Known-feasible cells: {analysis['feasible_cells']}/{analysis['total_cells']} = {pct(feasible_rate)}. The remaining {analysis['uncertified_cells']} cells are uncertified, not proven impossible.
 - DP has the higher reference return on 2403/2501 cells; the hand controller is higher on 98/2501 cells.
+- Current 100k comparison: {n_seeds} training seeds, {n_rollouts} exact-grid rollouts per policy.
+- Protocol caveat: seeds 3-4 are follow-up runs with 10k-step diagnostics instead of 100k-step diagnostics; training recipe and final evaluation are otherwise the same.
 - SAC 100k all-grid task: {fmt_metric(sac_all)}.
 - Full SimbaV2 100k all-grid task: {fmt_metric(simba_all)}.
 - SAC 100k known-feasible task: {fmt_metric(sac_feasible)}.
 - Full SimbaV2 100k known-feasible task: {fmt_metric(simba_feasible)}.
 - SAC 100k reference success: {fmt_metric(sac_return)}.
 - Full SimbaV2 100k reference success: {fmt_metric(simba_return)}.
+- Opening-card standard errors: SAC reference {fmt_se(sac_return)}, SimbaV2 reference {fmt_se(simba_return)}, SAC task {fmt_se(sac_all)}, SimbaV2 task {fmt_se(simba_all)}.
+- Unclipped cell-mean shortfall to max(DP, controller): SAC max {fmt_return_points(sac_shortfall['max'])}, mean {fmt_return_points(sac_shortfall['mean'])} +/- {fmt_return_points(sac_shortfall['std'])}; SimbaV2 max {fmt_return_points(simba_shortfall['max'])}, mean {fmt_return_points(simba_shortfall['mean'])} +/- {fmt_return_points(simba_shortfall['std'])}.
 - SAC norm diagnostic: Q parameter norm {num(norm_summary['q_param_first'], 1)} -> {num(norm_summary['q_param_last'], 1)}; Q1 fc2 feature norm {num(norm_summary['q_feat_first'], 0)} -> {num(norm_summary['q_feat_last'], 0)} with peak {num(norm_summary['q_feat_max'], 0)}. This is one diagnostic run, not a seeded claim.
 
 ## Slide Timing
@@ -2505,9 +2965,12 @@ Format: 8 minutes talk plus 5 minutes questions. Speaker A covers slides 1-5. Sp
 - Slide 11: 7:10-8:00. Next steps.
 
 ## Q&A Backup
+- Pendulum convention: theta is 0 upright and +/-180 degrees downward; observation is [cos(theta), sin(theta), theta_dot].
+- Per-seed shortfall maps show return points below max(DP, controller), clipped at 20, one panel per seed.
+- The seed-0-excluded raw maps are a sensitivity check; the main result keeps all seeds.
 - DP uses the known Pendulum dynamics and reward on a discretized grid; it is an approximate reference, not a proof of optimality.
 - The hand controller is energy shaping plus local PD, following Astrom-Furuta style swing-up; it is a witness and return reference, not an oracle.
-- SAC 100k seed0 is a real bad seed: 52.4% reference success versus 93.0%/92.2% for seeds 1/2, with replay coverage tied.
+- SAC 100k per-seed spread: {sac_seed_summary}. Replay coverage is tied, so seed 0 is not simply "did not see upright states."
 - Seed is the statistical unit. Cell-level pooling is for maps; seed-level intervals are used for claims.
 
 GIF status: {gif_status}
@@ -2523,6 +2986,23 @@ def build_script(analysis: dict[str, object], norm_summary: dict[str, float], gi
     sac_return = policies["SAC 100k"]["return_match_all"]  # type: ignore[index]
     simba_return = policies["Full SimbaV2 100k"]["return_match_all"]  # type: ignore[index]
     feasible_rate = float(analysis["feasible_cells"]) / float(analysis["total_cells"])
+    n_seeds = seed_count(sac_return)
+    n_rollouts = rollout_count(sac_return)
+    cell_levels = ", ".join(f"{int(round(100 * i / n_seeds))} percent" for i in range(n_seeds + 1))
+    relative_rows = analysis["relative"]  # type: ignore[index]
+    sac500 = relative_rows["Legacy500kUTD1"]  # type: ignore[index]
+    simba100 = relative_rows["FullSimba100k"]  # type: ignore[index]
+    sac500_reference = as_float(sac500, "near_best_known_rate")
+    sac500_task = as_float(sac500, "task_rate")
+    sac500_near_down = as_float(sac500, "near_down_task_rate")
+    simba100_reference = as_float(simba100, "near_best_known_rate")
+    simba100_task = as_float(simba100, "task_rate")
+    simba100_near_down = as_float(simba100, "near_down_task_rate")
+    sac_replay = as_float(analysis["diagnostics"]["100k SAC"], "replay_near_any")  # type: ignore[index]
+    simba_replay = as_float(analysis["diagnostics"]["100k Full SimbaV2 official opt"], "replay_near_any")  # type: ignore[index]
+    shortfall = return_shortfall_stats()
+    sac_shortfall = shortfall["sac"]
+    simba_shortfall = shortfall["simba"]
     return f"""# Project 15 Week 3 Workshop Script
 
 This script is written for an 8 minute talk. Speaker A covers slides 1-5. Speaker B covers slides 6-11. Backup slides are for questions.
@@ -2530,7 +3010,7 @@ This script is written for an 8 minute talk. Speaker A covers slides 1-5. Speake
 ## Slide 1, Speaker A, 0:00-0:40
 Our project is about reliability in deep reinforcement learning. Pendulum is not supposed to be a hard benchmark, so average return is not the interesting part. The interesting part is the last set of initial states where a neural SAC policy still fails to swing up and stabilize.
 
-The GIF is not random. It is the same initial state from the exact evaluation grid: initial angle is minus 174.1 degrees and angular velocity is minus 1.0. SAC seed 0 fails there, while full SimbaV2 seed 0 succeeds. The headline success metric is within 5 return points of max(DP, controller): SAC 100k is at {pct(float(sac_return["mean"]))}, while full SimbaV2 100k is at {pct(float(simba_return["mean"]))}. The stricter all-grid task-stability check is {pct(float(sac_all["mean"]))} versus {pct(float(simba_all["mean"]))}. Seed-level intervals are on slide 6, not on the opening slide.
+The GIF is not random. It is the same initial state from the exact evaluation grid: initial angle is minus 174.1 degrees and angular velocity is minus 1.0. SAC seed 0 fails there, while full SimbaV2 seed 0 succeeds. The headline success metric is within 5 return points of max(DP, controller): SAC 100k is at {pct(float(sac_return["mean"]))} with {fmt_se(sac_return)}, while full SimbaV2 100k is at {pct(float(simba_return["mean"]))} with {fmt_se(simba_return)}. The stricter all-grid task-stability check is {pct(float(sac_all["mean"]))} with {fmt_se(sac_all)} versus {pct(float(simba_all["mean"]))} with {fmt_se(simba_all)}. The wider 95 percent intervals are on slide 6.
 
 ## Slide 2, Speaker A, 0:40-1:35
 The most important thing is the success definition. We first tried an intuitive task-stability definition: the policy should swing up, stay near upright for at least 80 percent of the episode, and not lose the upright region for more than 50 consecutive steps.
@@ -2540,9 +3020,9 @@ That is useful, but it is not a fair universal success definition because our re
 So the headline success metric is state-conditioned return matching: the policy return must be within 5 of max(DP, controller) from the same start. Most of the time DP is the better reference: 2403 out of 2501 cells. The controller is better on 98 cells, so using the max matters.
 
 ## Slide 3, Speaker A, 1:35-2:15
-The evaluation grid has 61 angle bins and 41 angular-velocity bins, so 2501 reset-support states. For the 100k comparison we have three training seeds, so 7503 deterministic grid rollouts.
+The evaluation grid has 61 angle bins and 41 angular-velocity bins, so 2501 reset-support states. For the 100k comparison we now have {n_seeds} training seeds, so {n_rollouts} deterministic grid rollouts per policy.
 
-In the maps, each cell is the fraction of seeds that satisfy the plotted criterion from that exact state. With three seeds, that means zero, one third, two thirds, or all seeds. The references are finite-horizon DP and an energy-swing-up plus PD hand controller. The diagnostics track replay coverage and critic representation health.
+In the maps, each cell is the fraction of seeds that satisfy the plotted criterion from that exact state. With five seeds, that means {cell_levels}. Seeds 3 and 4 are follow-up runs with diagnostics every 10k steps rather than 100k steps, but the training recipe and final evaluation are otherwise the same. The references are finite-horizon DP and an energy-swing-up plus PD hand controller. The diagnostics track replay coverage and critic representation health.
 
 ## Slide 4, Speaker A, 2:15-3:05
 For listeners who have not read SimbaV2, the paper is not just "a bigger SAC network." It makes four concrete changes to SAC.
@@ -2552,17 +3032,17 @@ First, hyperspherical feature normalization means L2-normalizing hidden feature 
 The table gives the exact side-by-side settings from our 100k runs. The important scientific point is that we should not claim which component drives the improvement yet. The short-budget ablations were useful for debugging, but not representative enough for the talk.
 
 ## Slide 5, Speaker A, 3:05-3:50
-These are the raw maps. The left column is task-stability success. The middle column is the headline metric: within 5 return points of max(DP, controller). The right column is the continuous version of that same reference comparison: how many return points the policy is below max(DP, controller). The first row is SAC 100k and the second row is full SimbaV2 100k.
+These are the raw maps. The left column is task-stability success. The middle column is the headline metric: within 5 return points of max(DP, controller). The right column is the continuous version of that same reference comparison: how many return points the policy is below max(DP, controller). The first row is SAC 100k and the second row is full SimbaV2 100k. Unclipped cell-mean shortfall is max {fmt_return_points(sac_shortfall['max'])}, mean {fmt_return_points(sac_shortfall['mean'])} plus or minus {fmt_return_points(sac_shortfall['std'])} for SAC, and max {fmt_return_points(simba_shortfall['max'])}, mean {fmt_return_points(simba_shortfall['mean'])} plus or minus {fmt_return_points(simba_shortfall['std'])} for SimbaV2.
 
 The right column uses a color cap at 20 return points. That is not changing the numbers; it only saturates the color scale. We do it because a few cells are more than 100 return points below the reference, and a full-range color scale would make all ordinary near-boundary differences look the same.
 
 ## Slide 6, Speaker B, 3:50-4:35
-Here is the seed-level main result. The dots are training seeds and the diamonds are means. The intervals are 95 percent t-intervals over seeds, so they are deliberately conservative with only three seeds.
+Here is the seed-level main result. The dots are training seeds and the diamonds are means. The intervals are 95 percent t-intervals over seeds, so they are still conservative at five seeds.
 
 Reference success improves from {fmt_metric(sac_return)} for SAC to {fmt_metric(simba_return)} for full SimbaV2. The stricter all-grid task-stability check improves from {fmt_metric(sac_all)} to {fmt_metric(simba_all)}. On known-feasible cells, task-stability improves from {fmt_metric(sac_feasible)} to {fmt_metric(simba_feasible)}. SAC has one very bad seed, which is why its interval is huge. We should present that uncertainty explicitly.
 
 ## Slide 7, Speaker B, 4:35-5:25
-This is the exploration versus optimization diagnosis. If SAC failed only because it never saw useful states, replay near-upright coverage should separate. It does not: SAC and full SimbaV2 are both about 82.6 to 82.7 percent.
+This is the exploration versus optimization diagnosis. If SAC failed only because it never saw useful states, replay near-upright coverage should separate. It does not: SAC is at {pct(sac_replay)} and full SimbaV2 is at {pct(simba_replay)}.
 
 The separation is critic health. Dormant units are critic units that barely activate, so lower is better. Effective rank is a proxy for how diverse the critic features are, so higher is better. SAC has high dormancy and low rank, while SimbaV2 has zero measured Q1 dormancy and much higher rank. That points to optimization, plasticity, and value estimation, not pure exploration.
 
@@ -2574,9 +3054,9 @@ In this run, the critic parameter norm grows from {num(norm_summary['q_param_fir
 The caveat is important: this supports the optimization diagnosis and motivates the 100k component ablations. Component attribution is exactly what those ablations are for.
 
 ## Slide 9, Speaker B, 5:55-6:30
-More SAC compute is a useful negative result, but we need to state the metric carefully. SAC 500k is not worse on reference success: it reaches 96.3 percent, compared with 92.5 percent for full SimbaV2 100k.
+More SAC compute is a useful negative result, but we need to state the metric carefully. SAC 500k is not worse on reference success: it reaches {pct(sac500_reference)}, compared with {pct(simba100_reference)} for full SimbaV2 100k.
 
-It is still worse on the behavioral reliability metrics. Exact-grid task-stability is 88.6 percent for SAC 500k versus 91.4 percent for full SimbaV2 100k, so SAC is 2.8 percentage points behind. On near-down starts the gap is much larger: 58.4 percent versus 70.6 percent, so SAC is 12.2 percentage points behind. The critic-health signal also worsens: SAC 500k has 77.3 percent dormant Q1 units, while full SimbaV2 has 0.0 percent in this diagnostic.
+It is still worse on the behavioral reliability metrics. Exact-grid task-stability is {pct(sac500_task)} for SAC 500k versus {pct(simba100_task)} for full SimbaV2 100k, so SAC is {abs(100.0 * (sac500_task - simba100_task)):.1f} percentage points behind. On near-down starts the gap is {pct(sac500_near_down)} versus {pct(simba100_near_down)}, so SAC is {abs(100.0 * (sac500_near_down - simba100_near_down)):.1f} percentage points behind. The critic-health signal also worsens: SAC 500k has 77.3 percent dormant Q1 units, while full SimbaV2 has 0.0 percent in this diagnostic.
 
 ## Slide 10, Speaker B, 6:30-7:10
 Hard reset and hard replay test the data-distribution hypothesis more directly. Hard reset p=0.2 means 20 percent of episode resets are forced into a large-angle band: absolute theta between 120 and 135 degrees, with absolute angular velocity at most 1. Hard replay p=0.2 means 20 percent of each replay minibatch is sampled from transitions in that same hard-start band.
@@ -2591,7 +3071,7 @@ The next step is to move the component claims to representative budget. We shoul
 In parallel, we should push Pendulum toward at least 0.99 reference success using other reliability ideas from the proposal: ReDo, Sample Weight Decay, Fisher-guided selective forgetting, and regret-weighted auxiliary losses. After the Pendulum frontier is stable, we move the same protocol to CartPole-Swingup, where exploration is a more serious part of the problem.
 
 ## Backup / Q&A
-Use the DP slide if asked whether DP is optimal. It is approximate finite-horizon DP, not a proof. Use the controller slide if asked what max(DP, controller) means. Use the bad-seed slide if asked why SAC has a huge confidence interval.
+Use the seed-0-excluded raw maps if asked how much of the map story is driven by the outlier SAC seed. Use the DP slide if asked whether DP is optimal. It is approximate finite-horizon DP, not a proof. Use the controller slide if asked what max(DP, controller) means. Use the bad-seed slide if asked why SAC has a huge confidence interval.
 
 GIF status: {gif_status}
 """
