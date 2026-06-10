@@ -9,8 +9,10 @@ description = "Week 1 SAC reliability instrumentation for ADLR Project 15."
 requires-python = ">=3.11"
 dependencies = [
     "gymnasium>=1.2",
+    "imageio>=2.34",
     "matplotlib>=3.8",
     "numpy>=2.0",
+    "pillow>=10.0",
     "tensorboard>=2.11",
     "torch>=2.1",
     "tyro>=0.5",
