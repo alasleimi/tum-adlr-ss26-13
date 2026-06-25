@@ -127,14 +127,18 @@ def episode_outcome_metrics(
     return_success = returns_np >= reliability.success_return_threshold
     stability_success = near_np >= reliability.success_near_upright_fraction_threshold
     streak_success = streak_np <= reliability.success_max_not_near_upright_streak
+    task_success = stability_success & streak_success
     strict_success = return_success & stability_success & streak_success
     collapse = returns_np <= reliability.collapse_return_threshold
 
     return_success_low, return_success_high = wilson_interval(int(np.sum(return_success)), len(return_success))
+    task_success_low, task_success_high = wilson_interval(int(np.sum(task_success)), len(task_success))
     strict_success_low, strict_success_high = wilson_interval(int(np.sum(strict_success)), len(strict_success))
     return_failure_rate = float(1.0 - np.mean(return_success))
+    task_failure_rate = float(1.0 - np.mean(task_success))
     strict_failure_rate = float(1.0 - np.mean(strict_success))
     return_failure_high = float(1.0 - return_success_low)
+    task_failure_high = float(1.0 - task_success_low)
     strict_failure_high = float(1.0 - strict_success_low)
     total = len(return_success)
 
@@ -150,6 +154,13 @@ def episode_outcome_metrics(
         "return_reliability_nines_wilson95_low": reliability_nines(return_failure_high),
         "stability_success_rate": float(np.mean(stability_success)),
         "streak_success_rate": float(np.mean(streak_success)),
+        "num_task_successes": float(np.sum(task_success)),
+        "task_success_rate": float(np.mean(task_success)),
+        "task_failure_rate": task_failure_rate,
+        "task_success_rate_wilson95_low": task_success_low,
+        "task_success_rate_wilson95_high": task_success_high,
+        "task_reliability_nines_empirical": empirical_reliability_nines(task_failure_rate, total),
+        "task_reliability_nines_wilson95_low": reliability_nines(task_failure_high),
         "num_strict_successes": float(np.sum(strict_success)),
         "strict_success_rate": float(np.mean(strict_success)),
         "strict_failure_rate": strict_failure_rate,

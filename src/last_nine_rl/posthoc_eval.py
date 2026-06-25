@@ -106,6 +106,7 @@ def episode_rows(run_dir: Path, actual_seed: int, evaluation: dict[str, Any], re
         return_success = float(episode_return) >= reliability.success_return_threshold
         stability_success = near_fraction >= reliability.success_near_upright_fraction_threshold
         streak_success = streak <= reliability.success_max_not_near_upright_streak
+        task_success = stability_success and streak_success
         rows.append(
             {
                 "run_dir": str(run_dir),
@@ -120,7 +121,8 @@ def episode_rows(run_dir: Path, actual_seed: int, evaluation: dict[str, Any], re
                 "return_success": float(return_success),
                 "stability_success": float(stability_success),
                 "streak_success": float(streak_success),
-                "strict_success": float(return_success and stability_success and streak_success),
+                "task_success": float(task_success),
+                "strict_success": float(return_success and task_success),
                 "collapse": float(float(episode_return) <= reliability.collapse_return_threshold),
             }
         )

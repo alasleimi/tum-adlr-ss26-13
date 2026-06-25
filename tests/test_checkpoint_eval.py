@@ -1,8 +1,9 @@
 import numpy as np
+import gymnasium as gym
 
 from last_nine_rl.checkpoints import load_agent_from_run
 from last_nine_rl.config import EnvConfig, EvalConfig, ExperimentConfig, SACConfig, TelemetryConfig
-from last_nine_rl.pendulum_grid import reset_pendulum_to_state, summarize_cells
+from last_nine_rl.pendulum_grid import pendulum_step_batch, reset_pendulum_to_state, summarize_cells
 from last_nine_rl.train import train
 
 
@@ -42,3 +43,21 @@ def test_pendulum_grid_cell_summary():
     assert summary[0]["return_success_rate"] == 0.5
     assert summary[0]["strict_success_rate"] == 0.5
     assert summary[0]["worst_return"] == -300.0
+
+
+def test_vectorized_pendulum_step_matches_gym():
+    theta = np.asarray([-2.0, -0.25, 1.5], dtype=np.float64)
+    theta_dot = np.asarray([-0.5, 0.0, 0.75], dtype=np.float64)
+    action = np.asarray([-2.0, 0.4, 1.75], dtype=np.float64)
+
+    next_theta, next_theta_dot, rewards = pendulum_step_batch(theta, theta_dot, action)
+
+    env = gym.make("Pendulum-v1")
+    try:
+        for idx in range(len(theta)):
+            reset_pendulum_to_state(env, float(theta[idx]), float(theta_dot[idx]))
+            obs, reward, _terminated, _truncated, _info = env.step(np.asarray([action[idx]], dtype=np.float32))
+            np.testing.assert_allclose(obs, [np.cos(next_theta[idx]), np.sin(next_theta[idx]), next_theta_dot[idx]])
+            np.testing.assert_allclose(reward, rewards[idx])
+    finally:
+        env.close()

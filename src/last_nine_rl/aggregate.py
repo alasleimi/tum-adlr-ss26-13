@@ -131,7 +131,10 @@ def load_evaluations(run_dir: Path) -> list[dict[str, Any]]:
     evals = []
     with events_path.open("r", encoding="utf-8") as f:
         for line in f:
-            event = json.loads(line)
+            try:
+                event = json.loads(line)
+            except json.JSONDecodeError:
+                continue
             if event.get("type") == "evaluation":
                 payload = dict(event["payload"])
                 payload["step"] = event["step"]

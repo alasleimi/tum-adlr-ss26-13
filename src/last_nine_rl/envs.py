@@ -32,9 +32,63 @@ class CastAction(gym.ActionWrapper):
         return np.asarray(action, dtype=self.env.action_space.dtype)
 
 
-def make_env(env_id: str, seed: int, max_episode_steps: int | None = None) -> gym.Env:
+class PendulumHardReset(gym.Wrapper):
+    """Bias a fraction of Pendulum training resets toward a configured hard angle band."""
+
+    def __init__(
+        self,
+        env: gym.Env,
+        probability: float,
+        abs_theta_low: float,
+        abs_theta_high: float,
+        velocity_limit: float,
+    ):
+        super().__init__(env)
+        self.probability = float(probability)
+        self.abs_theta_low = float(abs_theta_low)
+        self.abs_theta_high = float(abs_theta_high)
+        self.velocity_limit = float(velocity_limit)
+
+    def reset(self, *, seed: int | None = None, options: dict[str, Any] | None = None):
+        obs, info = self.env.reset(seed=seed, options=options)
+        if self.probability <= 0.0:
+            return obs, info
+
+        rng = self.env.unwrapped.np_random
+        hard = bool(rng.random() < self.probability)
+        if not hard:
+            return obs, {**info, "hard_reset": False}
+
+        abs_theta = rng.uniform(self.abs_theta_low, self.abs_theta_high)
+        theta = -abs_theta if rng.random() < 0.5 else abs_theta
+        theta_dot = rng.uniform(-self.velocity_limit, self.velocity_limit)
+
+        unwrapped = self.env.unwrapped
+        unwrapped.state = np.asarray([theta, theta_dot], dtype=np.float64)
+        unwrapped.last_u = None
+        obs = np.asarray(unwrapped._get_obs())
+        return obs, {
+            **info,
+            "hard_reset": True,
+            "hard_reset_theta": float(theta),
+            "hard_reset_theta_dot": float(theta_dot),
+        }
+
+
+def make_env(
+    env_id: str,
+    seed: int,
+    max_episode_steps: int | None = None,
+    pendulum_hard_reset_prob: float = 0.0,
+    pendulum_hard_reset_abs_theta_low: float = 2.0943951023931953,
+    pendulum_hard_reset_abs_theta_high: float = 2.356194490192345,
+    pendulum_hard_reset_velocity_limit: float = 1.0,
+) -> gym.Env:
     if env_id.startswith("dm_control/"):
         import shimmy  # noqa: F401  Registers dm_control/... Gymnasium IDs.
+
+    if pendulum_hard_reset_prob > 0.0 and not env_id.startswith("Pendulum"):
+        raise ValueError("Pendulum hard-reset curriculum only supports Pendulum environments.")
 
     env = gym.make(env_id)
     if max_episode_steps is not None:
@@ -47,6 +101,15 @@ def make_env(env_id: str, seed: int, max_episode_steps: int | None = None) -> gy
         raise TypeError(f"SAC requires Box observations, got {env.observation_space}")
     if not isinstance(env.action_space, spaces.Box):
         raise TypeError(f"SAC requires Box actions, got {env.action_space}")
+
+    if pendulum_hard_reset_prob > 0.0:
+        env = PendulumHardReset(
+            env,
+            probability=pendulum_hard_reset_prob,
+            abs_theta_low=pendulum_hard_reset_abs_theta_low,
+            abs_theta_high=pendulum_hard_reset_abs_theta_high,
+            velocity_limit=pendulum_hard_reset_velocity_limit,
+        )
 
     env = Float32Observation(env)
     env = CastAction(env)

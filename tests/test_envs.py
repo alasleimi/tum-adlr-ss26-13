@@ -22,6 +22,28 @@ def test_pendulum_env_is_flat_box_and_float32():
         env.close()
 
 
+def test_pendulum_hard_reset_targets_configured_abs_theta_band():
+    low = 2.1
+    high = 2.2
+    env = make_env(
+        "Pendulum-v1",
+        seed=0,
+        pendulum_hard_reset_prob=1.0,
+        pendulum_hard_reset_abs_theta_low=low,
+        pendulum_hard_reset_abs_theta_high=high,
+        pendulum_hard_reset_velocity_limit=0.2,
+    )
+    try:
+        obs, info = env.reset(seed=123)
+        theta = abs(float(np.arctan2(obs[1], obs[0])))
+        assert info["hard_reset"] is True
+        assert obs.dtype == np.float32
+        assert low <= theta <= high
+        assert abs(float(obs[2])) <= 0.2
+    finally:
+        env.close()
+
+
 @pytest.mark.skipif(importlib.util.find_spec("shimmy") is None, reason="shimmy is not installed")
 def test_dmcontrol_cartpole_swingup_env_is_flattened():
     env = make_env("dm_control/cartpole-swingup-v0", seed=0)

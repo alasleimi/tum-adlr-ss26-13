@@ -54,6 +54,7 @@ class TelemetryLogger:
                     "return_success",
                     "stability_success",
                     "streak_success",
+                    "task_success",
                     "strict_success",
                     "collapse",
                 ],
@@ -152,6 +153,7 @@ class TelemetryLogger:
                 "return_success": return_success,
                 "stability_success": stability_success,
                 "streak_success": streak_success,
+                "task_success": float(bool(stability_success and streak_success)),
                 "strict_success": float(bool(return_success and stability_success and streak_success)),
                 "collapse": float(float(episode_return) <= collapse_threshold),
             }

@@ -78,31 +78,29 @@ def evaluate_grid(
     )
 
     rollout_rows: list[dict[str, Any]] = []
-    env = gym.make("Pendulum-v1")
-    try:
-        for velocity in velocity_values:
-            for theta in theta_values:
-                for (agent, config, _payload), run_dir in zip(loaded, run_dirs):
-                    rollout = rollout_from_state(
-                        agent=agent,
-                        env=env,
-                        theta=float(theta),
-                        theta_dot=float(velocity),
-                        detector=detector,
-                        reliability=config.reliability,
-                    )
-                    rollout_rows.append(
-                        {
-                            "run_dir": str(run_dir),
-                            "actual_seed": int(config.seed),
-                            "theta": float(theta),
-                            "theta_degrees": float(np.degrees(theta)),
-                            "theta_dot": float(velocity),
-                            **rollout,
-                        }
-                    )
-    finally:
-        env.close()
+    grid_theta = np.tile(theta_values, len(velocity_values))
+    grid_velocity = np.repeat(velocity_values, len(theta_values))
+    horizon = pendulum_horizon(configs[0].env.max_episode_steps)
+    for (agent, config, _payload), run_dir in zip(loaded, run_dirs):
+        run_rollouts = rollout_pendulum_grid_vectorized(
+            agent=agent,
+            theta_values=grid_theta,
+            theta_dot_values=grid_velocity,
+            detector=detector,
+            reliability=config.reliability,
+            horizon=horizon,
+        )
+        for theta, velocity, rollout in zip(grid_theta, grid_velocity, run_rollouts):
+            rollout_rows.append(
+                {
+                    "run_dir": str(run_dir),
+                    "actual_seed": int(config.seed),
+                    "theta": float(theta),
+                    "theta_degrees": float(np.degrees(theta)),
+                    "theta_dot": float(velocity),
+                    **rollout,
+                }
+            )
 
     grid_rows = summarize_cells(rollout_rows, theta_values, velocity_values)
     write_csv(output_dir / "pendulum_grid_rollouts.csv", rollout_rows)
@@ -115,6 +113,87 @@ def evaluate_grid(
     )
     write_index(output_dir, figures, summary)
     return {"summary": summary, "grid_rows": grid_rows, "rollout_rows": rollout_rows}
+
+
+def pendulum_horizon(configured_max_steps: int | None) -> int:
+    return int(configured_max_steps or 200)
+
+
+def rollout_pendulum_grid_vectorized(
+    agent: SACAgent,
+    theta_values: np.ndarray,
+    theta_dot_values: np.ndarray,
+    detector: UprightDetector,
+    reliability: ReliabilityConfig,
+    horizon: int,
+) -> list[dict[str, float]]:
+    theta = np.asarray(theta_values, dtype=np.float64).copy()
+    theta_dot = np.asarray(theta_dot_values, dtype=np.float64).copy()
+    episode_return = np.zeros_like(theta, dtype=np.float64)
+    min_reward = np.full_like(theta, np.inf, dtype=np.float64)
+    near_count = np.zeros_like(theta, dtype=np.int64)
+    current_not_near_streak = np.zeros_like(theta, dtype=np.int64)
+    longest_not_near_streak = np.zeros_like(theta, dtype=np.int64)
+
+    for _step in range(horizon):
+        obs = pendulum_obs_batch(theta, theta_dot)
+        actions = agent.act_batch(obs, deterministic=True).reshape(-1)
+        theta, theta_dot, reward = pendulum_step_batch(theta, theta_dot, actions)
+        episode_return += reward
+        min_reward = np.minimum(min_reward, reward)
+
+        next_obs = pendulum_obs_batch(theta, theta_dot)
+        near = detector.near_upright(next_obs)
+        near_count += near.astype(np.int64)
+        current_not_near_streak = np.where(near, 0, current_not_near_streak + 1)
+        longest_not_near_streak = np.maximum(longest_not_near_streak, current_not_near_streak)
+
+    near_fraction = near_count / max(horizon, 1)
+    return_success = episode_return >= reliability.success_return_threshold
+    stability_success = near_fraction >= reliability.success_near_upright_fraction_threshold
+    streak_success = longest_not_near_streak <= reliability.success_max_not_near_upright_streak
+    strict_success = return_success & stability_success & streak_success
+    return [
+        {
+            "return": float(episode_return[idx]),
+            "length": float(horizon),
+            "near_upright_fraction": float(near_fraction[idx]),
+            "min_step_reward": float(min_reward[idx]),
+            "not_near_upright_streak": float(longest_not_near_streak[idx]),
+            "return_success": float(return_success[idx]),
+            "stability_success": float(stability_success[idx]),
+            "streak_success": float(streak_success[idx]),
+            "strict_success": float(strict_success[idx]),
+        }
+        for idx in range(len(theta_values))
+    ]
+
+
+def pendulum_obs_batch(theta: np.ndarray, theta_dot: np.ndarray) -> np.ndarray:
+    return np.stack([np.cos(theta), np.sin(theta), theta_dot], axis=1).astype(np.float32)
+
+
+def pendulum_step_batch(
+    theta: np.ndarray,
+    theta_dot: np.ndarray,
+    action: np.ndarray,
+    g: float = 10.0,
+    m: float = 1.0,
+    length: float = 1.0,
+    dt: float = 0.05,
+    max_speed: float = 8.0,
+    max_torque: float = 2.0,
+) -> tuple[np.ndarray, np.ndarray, np.ndarray]:
+    torque = np.clip(np.asarray(action, dtype=np.float64), -max_torque, max_torque)
+    costs = angle_normalize(theta) ** 2 + 0.1 * theta_dot**2 + 0.001 * torque**2
+    new_theta_dot = theta_dot + (3.0 * g / (2.0 * length) * np.sin(theta) + 3.0 / (m * length**2) * torque) * dt
+    new_theta_dot = np.clip(new_theta_dot, -max_speed, max_speed)
+    new_theta = theta + new_theta_dot * dt
+    return new_theta, new_theta_dot, -costs
+
+
+def angle_normalize(theta: np.ndarray) -> np.ndarray:
+    return ((theta + np.pi) % (2.0 * np.pi)) - np.pi
 
 
 def rollout_from_state(
