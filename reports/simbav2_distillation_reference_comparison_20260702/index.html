@@ -1,0 +1,88 @@
+<!doctype html><html><head><meta charset="utf-8"><title>SimbaV2 Distillation Reference Comparison</title>
+<style>body{font-family:Arial,sans-serif;max-width:1180px;margin:32px auto;line-height:1.45;color:#17202a} table{border-collapse:collapse;width:100%;font-size:14px} th,td{border:1px solid #d0d7de;padding:6px 8px;text-align:right} th:first-child,td:first-child{text-align:left} img{max-width:100%;margin:12px 0 28px} code{background:#f3f4f6;padding:2px 4px;border-radius:4px}</style></head><body>
+<h1>SimbaV2, Distillation, and Reference Grid Comparison</h1>
+<p>This report compares the 5-seed SimbaV2 100k baseline, two same-size supervised distillation policies, and DP/controller references on the 61x41 Pendulum reset-support grid.</p>
+<ul><li>Near-reference metric: <code>near_best_known_return_eps</code>, within 5 return units of <code>max(DP, controller)</code>.</li><li>Task success is the stability/task metric, not a fixed-return threshold.</li></ul>
+<table border="1" class="dataframe">
+  <thead>
+    <tr style="text-align: right;">
+      <th>policy</th>
+      <th>type</th>
+      <th>seeds</th>
+      <th>task_success</th>
+      <th>near_best_known_return_eps</th>
+      <th>near_controller_return_eps</th>
+      <th>beats_best_known_return</th>
+      <th>mean_regret_to_best_known</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>Controller reference</td>
+      <td>reference</td>
+      <td>1</td>
+      <td>0.7621</td>
+      <td>0.6829</td>
+      <td>1.0000</td>
+      <td>0.0392</td>
+      <td>13.6024</td>
+    </tr>
+    <tr>
+      <td>DP reference</td>
+      <td>reference</td>
+      <td>1</td>
+      <td>0.9332</td>
+      <td>1.0000</td>
+      <td>1.0000</td>
+      <td>0.9608</td>
+      <td>0.0027</td>
+    </tr>
+    <tr>
+      <td>Max(DP, controller) reference</td>
+      <td>reference</td>
+      <td>1</td>
+      <td>0.9332</td>
+      <td>1.0000</td>
+      <td>1.0000</td>
+      <td>1.0000</td>
+      <td>0.0000</td>
+    </tr>
+    <tr>
+      <td>SimbaV2 100k (5 seeds)</td>
+      <td>learned</td>
+      <td>5</td>
+      <td>0.9146</td>
+      <td>0.9184</td>
+      <td>0.9926</td>
+      <td>0.0852</td>
+      <td>3.1817</td>
+    </tr>
+    <tr>
+      <td>Distill balanced (1 seed)</td>
+      <td>learned</td>
+      <td>1</td>
+      <td>0.9444</td>
+      <td>0.9872</td>
+      <td>0.9940</td>
+      <td>0.1152</td>
+      <td>1.3768</td>
+    </tr>
+    <tr>
+      <td>Distill hard120 (1 seed)</td>
+      <td>learned</td>
+      <td>1</td>
+      <td>0.9316</td>
+      <td>0.9912</td>
+      <td>0.9988</td>
+      <td>0.0412</td>
+      <td>1.0416</td>
+    </tr>
+  </tbody>
+</table>
+<h2>Bar Charts</h2><img src="figures/bar_task_success.png"><img src="figures/bar_near_max_ref.png"><img src="figures/bar_beats_max_ref.png">
+<h2>Initial-Condition Maps</h2><p>Each map uses initial angle in degrees on the x-axis and initial angular velocity on the y-axis.</p>
+<h3>Task Success</h3><img src="figures/map_task_success_panels.png">
+<h3>Near Max Reference</h3><img src="figures/map_near_max_ref_panels.png">
+<h3>Regret to Max Reference</h3><img src="figures/map_regret_to_max_ref_panels.png">
+<h2>Sources</h2><ul><li>Controller reference: <code>reports/distill_best_simbav2_balanced_400k_20260701/grid_reset_support_61x41_vellim1/controller_grid.csv</code></li><li>DP reference: <code>reports/pendulum_investigation_20260509/pendulum_dp_100k_reset_support_241x161x81/pendulum_dp_grid.csv</code></li><li>Max(DP, controller) reference: <code>reports/pendulum_investigation_20260509/pendulum_dp_100k_reset_support_241x161x81/pendulum_dp_grid.csv + reports/distill_best_simbav2_balanced_400k_20260701/grid_reset_support_61x41_vellim1/controller_grid.csv</code></li><li>SimbaV2 100k (5 seeds): <code>reports/week3_simbav2_scale_100k_n5_20260527/relative_success/simba_full_official_opt</code></li><li>Distill balanced (1 seed): <code>reports/distill_best_simbav2_balanced_400k_20260701/relative_success_vellim1</code></li><li>Distill hard120 (1 seed): <code>reports/distill_best_simbav2_hard120_450k_20260701/relative_success_vellim1</code></li></ul>
+</body></html>
