@@ -1,0 +1,8 @@
+{
+  "threshold_degrees": 150.0,
+  "num_rollouts": 12505,
+  "unanimous_rollouts": 2255,
+  "clipped_rollouts": 10250,
+  "unanimous_fraction": 0.18032786885245902,
+  "output": "reports\\pure_rl_initial_state_qfilter_router_5seed_20260717\\grid\\pendulum_grid_rollouts.csv"
+}
