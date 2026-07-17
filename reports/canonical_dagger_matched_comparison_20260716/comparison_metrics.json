@@ -1,45 +1,144 @@
 {
   "evaluation": {
+    "epsilon_return": 5.0,
+    "rollout_horizon": 200,
     "theta_bins": 61,
     "velocity_bins": 41,
-    "velocity_limit": 1.0,
-    "initial_state_cells": 2501,
-    "training_seeds": [0, 1, 2, 3, 4],
-    "rollouts_per_condition": 12505,
-    "near_reference_epsilon_return": 5.0
+    "velocity_limit": 1.0
   },
-  "clean_reference_dagger_100k": {
-    "reference_labeled_environment_steps_per_seed": 100000,
-    "online_rl_steps_per_seed": 0,
-    "near_best_known_return_eps": 0.8092762894842063,
-    "task_success": 0.8642942822870852,
-    "beats_best_known_return": 0.05413834466213514,
-    "near_down_near_best_known_return_eps": 0.4811529933481153,
-    "near_down_task_success": 0.41685144124168516
+  "methods": {
+    "clean_reference_dagger_100k": {
+      "seeds": 5,
+      "reference_labeled_trajectory_steps_per_seed": 100000,
+      "reward_only_rl_steps_per_seed": 0,
+      "total_training_environment_steps_per_seed": 100000,
+      "supervised_epochs": 120,
+      "actor_optimizer_steps_per_seed": 6320,
+      "near_best_known_return_eps": 0.8453418632546981,
+      "near_best_known_return_eps_seed_rates": [
+        0.8428628548580568,
+        0.8580567772890844,
+        0.8332666933226709,
+        0.84406237504998,
+        0.8484606157536985
+      ],
+      "near_best_known_return_eps_seed_ci95": [
+        0.8341516568235768,
+        0.8565320696858193
+      ],
+      "task_success": 0.8802079168332667,
+      "task_success_seed_rates": [
+        0.8688524590163934,
+        0.8688524590163934,
+        0.8872451019592164,
+        0.8888444622151139,
+        0.8872451019592164
+      ],
+      "task_success_seed_ci95": [
+        0.8673133040574087,
+        0.893102529609125
+      ],
+      "beats_best_known_return": 0.06389444222311076,
+      "near_down_near_best_known_return_eps": 0.4722838137472284,
+      "near_down_task_success": 0.435920177383592,
+      "source": "reports/canonical_reference_dagger_100k_5seed_20260716/relative/relative_summary.json"
+    },
+    "reference_dagger50k_simbav2_50k": {
+      "seeds": 5,
+      "reference_labeled_trajectory_steps_per_seed": 50000,
+      "reward_only_rl_steps_per_seed": 50000,
+      "total_training_environment_steps_per_seed": 100000,
+      "dagger_supervised_epochs": 120,
+      "dagger_actor_optimizer_steps_per_seed": 3180,
+      "online_update_triggers_per_seed": 49000,
+      "online_actor_update_start_critic_step": 4000,
+      "online_actor_optimizer_steps_per_seed": 45002,
+      "near_best_known_return_eps": 0.7678528588564574,
+      "near_best_known_return_eps_seed_rates": [
+        0.8288684526189524,
+        0.7524990003998401,
+        0.8284686125549781,
+        0.6629348260695722,
+        0.7664934026389444
+      ],
+      "near_best_known_return_eps_seed_ci95": [
+        0.6830994489801429,
+        0.8526062687327721
+      ],
+      "task_success": 0.8349460215913634,
+      "task_success_seed_rates": [
+        0.8668532586965214,
+        0.8564574170331867,
+        0.8208716513394642,
+        0.8396641343462615,
+        0.7908836465413834
+      ],
+      "task_success_seed_ci95": [
+        0.7974820873380687,
+        0.8724099558446582
+      ],
+      "beats_best_known_return": 0.03758496601359456,
+      "near_down_near_best_known_return_eps": 0.32904656319290465,
+      "near_down_task_success": 0.49135254988913524,
+      "source": "reports/canonical_reference_dagger50k_simbav250k_5seed_20260716/relative/relative_summary.json"
+    },
+    "standard_simbav2_100k": {
+      "seeds": 5,
+      "reference_labeled_trajectory_steps_per_seed": 0,
+      "reward_only_rl_steps_per_seed": 100000,
+      "total_training_environment_steps_per_seed": 100000,
+      "near_best_known_return_eps": 0.9183526589364255,
+      "task_success": 0.914594162335066,
+      "beats_best_known_return": 0.08524590163934426,
+      "near_down_near_best_known_return_eps": 0.7339246119733924,
+      "near_down_task_success": 0.6944567627494457,
+      "source": "reports/week3_simbav2_scale_100k_n5_20260527/relative_success/simba_full_official_opt/relative_summary.json"
+    },
+    "static_balanced_distillation_400k": {
+      "seeds": 1,
+      "privileged_sampled_labels_per_seed": 400000,
+      "total_training_environment_steps_per_seed": null,
+      "near_best_known_return_eps": 0.9872051179528188,
+      "task_success": 0.944422231107557,
+      "beats_best_known_return": 0.11515393842463015,
+      "source": "reports/dagger_exact_comparison_20260716/computed_metrics.json"
+    },
+    "fastsacn8_utd2_qfiltered_50k": {
+      "seeds": 5,
+      "reference_labeled_trajectory_steps_per_seed": 0,
+      "reward_only_rl_steps_per_seed": 50000,
+      "total_training_environment_steps_per_seed": 50000,
+      "near_best_known_return_eps": 0.929148340663735,
+      "task_success": 0.926989204318273,
+      "beats_best_known_return": 0.116593362654938,
+      "source": "reports/fastsacn_qfiltered_5seed_20260710/summary.json"
+    }
   },
-  "clean_reference_dagger_100k_then_simbav2_100k": {
-    "reference_labeled_environment_steps_per_seed": 100000,
-    "online_rl_steps_per_seed": 100000,
-    "near_best_known_return_eps": 0.8807676929228309,
-    "task_success": 0.8989204318272691,
-    "beats_best_known_return": 0.06749300279888044,
-    "near_down_near_best_known_return_eps": 0.7086474501108647,
-    "near_down_task_success": 0.6727272727272727
+  "differences": {
+    "clean_dagger_minus_standard_simbav2": {
+      "near_best_known_return_eps": -0.0730107956817274,
+      "task_success": -0.0343862455017993,
+      "beats_best_known_return": -0.0213514594162335
+    },
+    "hybrid_minus_standard_simbav2": {
+      "near_best_known_return_eps": -0.1504998000799681,
+      "task_success": -0.0796481407437026,
+      "beats_best_known_return": -0.0476609356257497
+    },
+    "hybrid_minus_clean_dagger": {
+      "near_best_known_return_eps": -0.0774890043982407,
+      "task_success": -0.0452618952419033,
+      "beats_best_known_return": -0.0263094762095162
+    }
   },
-  "standard_simbav2_100k": {
-    "reference_labeled_environment_steps_per_seed": 0,
-    "online_rl_steps_per_seed": 100000,
-    "near_best_known_return_eps": 0.9183526589364255,
-    "task_success": 0.914594162335066,
-    "beats_best_known_return": 0.08524590163934426,
-    "near_down_near_best_known_return_eps": 0.7339246119733924,
-    "near_down_task_success": 0.6944567627494457
-  },
-  "fastsacn8_utd2_50k_qfiltered": {
-    "reference_labeled_environment_steps_per_seed": 0,
-    "online_rl_steps_per_seed": 50000,
-    "near_best_known_return_eps": 0.929148340663735,
-    "task_success": 0.926989204318273,
-    "beats_best_known_return": 0.116593362654938
-  }
+  "excluded_from_matched_comparison": [
+    {
+      "run": "runs/canonical_reference_dagger_then_simbav2_100k_n5_20260716",
+      "reason": "100k DAgger plus 100k SimbaV2 is 200k total training transitions per seed"
+    },
+    {
+      "run": "runs/canonical_reference_dagger_25x5_beta0600_20260716",
+      "reason": "interrupted pilot"
+    }
+  ]
 }
