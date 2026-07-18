@@ -29,7 +29,7 @@ CRITERIA: tuple[tuple[str, str], ...] = (
     ("near_dp_return_eps", "SAC >= DP - eps"),
     ("beats_controller_return", "SAC >= controller"),
     ("near_controller_return_eps", "SAC >= controller - eps"),
-    ("beats_best_known_return", "SAC >= max(DP, controller)"),
+    ("beats_best_known_return", "SAC > max(DP, controller)"),
     ("near_best_known_return_eps", "SAC >= max(DP, controller) - eps"),
 )
 
@@ -251,7 +251,7 @@ def enrich_rollouts(
                 "near_dp_return_eps": float(sac_return >= dp_return - epsilon_return),
                 "beats_controller_return": float(sac_return >= controller_return),
                 "near_controller_return_eps": float(sac_return >= controller_return - epsilon_return),
-                "beats_best_known_return": float(sac_return >= best_known_return),
+                "beats_best_known_return": float(sac_return > best_known_return),
                 "near_best_known_return_eps": float(sac_return >= best_known_return - epsilon_return),
                 "signed_gap_to_dp": float(gap_to_dp),
                 "signed_gap_to_controller": float(gap_to_controller),
