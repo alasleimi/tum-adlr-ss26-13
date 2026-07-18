@@ -1,0 +1,215 @@
+{
+  "protocol": {
+    "authoritative_grid_queried": true,
+    "selection_performed_during_evaluation": false,
+    "theta_bins": 61,
+    "velocity_bins": 41,
+    "velocity_limit": 1.0,
+    "initial_condition_cells": 2501,
+    "actor_seeds": [
+      0,
+      1,
+      2,
+      3,
+      4
+    ],
+    "actor_runs": [
+      "runs/general_hybrid_g6c_seed0_20260718/seed0",
+      "runs/general_hybrid_frozen_g2q_5seed_20260718/seed1",
+      "runs/general_hybrid_g6c_seed2_20260718/seed2",
+      "runs/general_hybrid_g6c_seed3_20260718/seed3",
+      "runs/general_hybrid_g6c_seed4_20260718/seed4"
+    ],
+    "actor_checkpoints": [
+      "runs\\general_hybrid_g6c_seed0_20260718\\seed0\\checkpoints\\final.pt",
+      "runs\\general_hybrid_frozen_g2q_5seed_20260718\\seed1\\checkpoints\\final.pt",
+      "runs\\general_hybrid_g6c_seed2_20260718\\seed2\\checkpoints\\final.pt",
+      "runs\\general_hybrid_g6c_seed3_20260718\\seed3\\checkpoints\\final.pt",
+      "runs\\general_hybrid_g6c_seed4_20260718\\seed4\\checkpoints\\final.pt"
+    ],
+    "critic_run": "runs\\simbav2_fastsacn8_lam05_utd2_50k_20260704\\seed1",
+    "critic_checkpoint": "runs\\simbav2_fastsacn8_lam05_utd2_50k_20260704\\seed1\\checkpoints\\final.pt",
+    "q_search": {
+      "candidates": 5,
+      "radius": 0.1,
+      "unanimous_advantage_margin": 0.0
+    },
+    "reference_used_at_inference": false,
+    "reference_used_only_for_post_rollout_scoring": true,
+    "epsilon_return": 5.0,
+    "near_reference_goal": {
+      "rate": 0.999,
+      "minimum_successes": 12493,
+      "trials": 12505
+    }
+  },
+  "result": {
+    "mean_return": -138.56219151149068,
+    "near_best_known_return_eps": {
+      "successes": 12500,
+      "trials": 12505,
+      "rate": 0.9996001599360256
+    },
+    "task_success": {
+      "successes": 11742,
+      "trials": 12505,
+      "rate": 0.938984406237505
+    },
+    "strict_beats_best_known_return": {
+      "successes": 1791,
+      "trials": 12505,
+      "rate": 0.14322271091563374
+    },
+    "goal_reached": true
+  },
+  "per_seed": [
+    {
+      "seed": 0,
+      "mean_return": -138.5299119848965,
+      "near_best_known_return_eps": {
+        "successes": 2499,
+        "trials": 2501,
+        "rate": 0.9992003198720512
+      },
+      "task_success": {
+        "successes": 2352,
+        "trials": 2501,
+        "rate": 0.9404238304678129
+      },
+      "strict_beats_best_known_return": {
+        "successes": 334,
+        "trials": 2501,
+        "rate": 0.133546581367453
+      }
+    },
+    {
+      "seed": 1,
+      "mean_return": -138.66220264364398,
+      "near_best_known_return_eps": {
+        "successes": 2500,
+        "trials": 2501,
+        "rate": 0.9996001599360256
+      },
+      "task_success": {
+        "successes": 2348,
+        "trials": 2501,
+        "rate": 0.9388244702119153
+      },
+      "strict_beats_best_known_return": {
+        "successes": 267,
+        "trials": 2501,
+        "rate": 0.10675729708116753
+      }
+    },
+    {
+      "seed": 2,
+      "mean_return": -138.5536351597131,
+      "near_best_known_return_eps": {
+        "successes": 2501,
+        "trials": 2501,
+        "rate": 1.0
+      },
+      "task_success": {
+        "successes": 2349,
+        "trials": 2501,
+        "rate": 0.9392243102758896
+      },
+      "strict_beats_best_known_return": {
+        "successes": 375,
+        "trials": 2501,
+        "rate": 0.14994002399040385
+      }
+    },
+    {
+      "seed": 3,
+      "mean_return": -138.52569616089195,
+      "near_best_known_return_eps": {
+        "successes": 2500,
+        "trials": 2501,
+        "rate": 0.9996001599360256
+      },
+      "task_success": {
+        "successes": 2349,
+        "trials": 2501,
+        "rate": 0.9392243102758896
+      },
+      "strict_beats_best_known_return": {
+        "successes": 378,
+        "trials": 2501,
+        "rate": 0.15113954418232706
+      }
+    },
+    {
+      "seed": 4,
+      "mean_return": -138.53951160830772,
+      "near_best_known_return_eps": {
+        "successes": 2500,
+        "trials": 2501,
+        "rate": 0.9996001599360256
+      },
+      "task_success": {
+        "successes": 2344,
+        "trials": 2501,
+        "rate": 0.9372251099560176
+      },
+      "strict_beats_best_known_return": {
+        "successes": 437,
+        "trials": 2501,
+        "rate": 0.17473010795681726
+      }
+    }
+  ],
+  "q_search_selection": [
+    {
+      "seed": 0,
+      "selected_count": 88786.0,
+      "total_decisions": 500200.0,
+      "switch_fraction": 0.17750099960015994,
+      "selected_abs_action_delta_mean": 0.06098332967822062,
+      "selected_abs_action_delta_max": 0.10000002384185791,
+      "selected_unanimous_advantage_mean": 6.026757529363185e-05
+    },
+    {
+      "seed": 1,
+      "selected_count": 74319.0,
+      "total_decisions": 500200.0,
+      "switch_fraction": 0.14857856857257098,
+      "selected_abs_action_delta_mean": 0.05668347697365128,
+      "selected_abs_action_delta_max": 0.10000002384185791,
+      "selected_unanimous_advantage_mean": 5.689485415917661e-05
+    },
+    {
+      "seed": 2,
+      "selected_count": 87643.0,
+      "total_decisions": 500200.0,
+      "switch_fraction": 0.1752159136345462,
+      "selected_abs_action_delta_mean": 0.05903990374037061,
+      "selected_abs_action_delta_max": 0.10000002384185791,
+      "selected_unanimous_advantage_mean": 6.395349584584641e-05
+    },
+    {
+      "seed": 3,
+      "selected_count": 87444.0,
+      "total_decisions": 500200.0,
+      "switch_fraction": 0.17481807277089165,
+      "selected_abs_action_delta_mean": 0.05928220134735432,
+      "selected_abs_action_delta_max": 0.10000002384185791,
+      "selected_unanimous_advantage_mean": 7.252759568256137e-05
+    },
+    {
+      "seed": 4,
+      "selected_count": 82579.0,
+      "total_decisions": 500200.0,
+      "switch_fraction": 0.16509196321471412,
+      "selected_abs_action_delta_mean": 0.06281419404515169,
+      "selected_abs_action_delta_max": 0.10000002384185791,
+      "selected_unanimous_advantage_mean": 4.9802917777997957e-05
+    }
+  ],
+  "artifacts": {
+    "task_success_heatmap": "reports\\general_hybrid_99p9_20260718\\authoritative\\grid\\task_success_rate_map.png",
+    "near_reference_heatmap": "reports\\general_hybrid_99p9_20260718\\authoritative\\relative\\near_best_known_return_eps_map.png",
+    "rollouts": "reports\\general_hybrid_99p9_20260718\\authoritative\\grid\\pendulum_grid_rollouts.csv",
+    "relative_rollouts": "reports\\general_hybrid_99p9_20260718\\authoritative\\relative\\relative_rollouts.csv"
+  }
+}
