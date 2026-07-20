@@ -1,0 +1,226 @@
+{
+  "protocol": {
+    "reference_free": true,
+    "authoritative_grid_queried": false,
+    "state_distribution": "continuous_uniform_reset_support",
+    "points": 4096,
+    "rng_seed": 19090100,
+    "runs": [
+      "runs/week3_100k_component_ablation_20260527/simba_full_official_opt/seed3",
+      "runs/week3_100k_component_ablation_20260527/simba_full_official_opt/seed4"
+    ],
+    "selection_metrics": [
+      "mean_return",
+      "bottom10_conditional_mean_return",
+      "task_success"
+    ]
+  },
+  "results": [
+    {
+      "run": "runs\\week3_100k_component_ablation_20260527\\simba_full_official_opt\\seed3",
+      "seed": 3,
+      "variant": "actor",
+      "spec": {
+        "kind": "actor",
+        "name": "actor"
+      },
+      "metrics": {
+        "points": 4096.0,
+        "mean_return": -141.59090098167087,
+        "median_return": -122.17767679245515,
+        "return_p01": -318.4057436251115,
+        "return_p05": -253.24604325799174,
+        "return_p10": -237.4507201733689,
+        "bottom10_conditional_mean_return": -271.95926549579696,
+        "task_success": 0.89892578125,
+        "mean_near_upright_fraction": 0.86655029296875
+      },
+      "selection": {}
+    },
+    {
+      "run": "runs\\week3_100k_component_ablation_20260527\\simba_full_official_opt\\seed3",
+      "seed": 3,
+      "variant": "global_n41_m0.005_b1_unanimous_advantage",
+      "spec": {
+        "kind": "global",
+        "name": "global_n41_m0.005_b1_unanimous_advantage",
+        "num_actions": 41,
+        "margin": 0.005,
+        "filter_mode": "unanimous_advantage",
+        "blend_fraction": 1.0,
+        "max_action_delta": null
+      },
+      "metrics": {
+        "points": 4096.0,
+        "mean_return": -140.77311193808376,
+        "median_return": -122.09733275134818,
+        "return_p01": -308.337470142122,
+        "return_p05": -255.00339382867526,
+        "return_p10": -235.0671619425648,
+        "bottom10_conditional_mean_return": -267.6276481294079,
+        "task_success": 0.914306640625,
+        "mean_near_upright_fraction": 0.8682397460937501,
+        "mean_return_delta": 0.81778904358712,
+        "median_return_delta": 2.0121969654396388e-07,
+        "return_improved_fraction": 0.721923828125,
+        "return_degraded_fraction": 0.278076171875,
+        "return_degraded_by_1_fraction": 0.026611328125,
+        "return_degraded_by_5_fraction": 0.008056640625,
+        "bottom10_conditional_mean_return_delta": 4.331617366389082
+      },
+      "selection": {
+        "selected_count": 732486.0,
+        "total_decisions": 819200.0,
+        "switch_fraction": 0.89414794921875,
+        "trust_region_rejected_count": 0.0,
+        "trust_region_rejected_fraction": 0.0,
+        "selected_abs_action_delta_mean": 0.0032851007112526497,
+        "selected_abs_action_delta_max": 3.9999380111694336
+      }
+    },
+    {
+      "run": "runs\\week3_100k_component_ablation_20260527\\simba_full_official_opt\\seed3",
+      "seed": 3,
+      "variant": "global_n41_m0.005_b1_symmetric_actor_unanimous_advantage",
+      "spec": {
+        "kind": "global",
+        "name": "global_n41_m0.005_b1_symmetric_actor_unanimous_advantage",
+        "num_actions": 41,
+        "margin": 0.005,
+        "filter_mode": "symmetric_actor_unanimous_advantage",
+        "blend_fraction": 1.0,
+        "max_action_delta": null
+      },
+      "metrics": {
+        "points": 4096.0,
+        "mean_return": -140.71906204588868,
+        "median_return": -122.21018064642173,
+        "return_p01": -307.3840284170233,
+        "return_p05": -253.8188294379193,
+        "return_p10": -235.09047160616822,
+        "bottom10_conditional_mean_return": -267.3648297526063,
+        "task_success": 0.91552734375,
+        "mean_near_upright_fraction": 0.8685791015625,
+        "mean_return_delta": 0.8718389357821841,
+        "median_return_delta": 0.01917464837278228,
+        "return_improved_fraction": 0.614501953125,
+        "return_degraded_fraction": 0.385498046875,
+        "return_degraded_by_1_fraction": 0.063232421875,
+        "return_degraded_by_5_fraction": 0.00830078125,
+        "bottom10_conditional_mean_return_delta": 4.594435743190672
+      },
+      "selection": {
+        "selected_count": 819195.0,
+        "total_decisions": 819200.0,
+        "switch_fraction": 0.999993896484375,
+        "trust_region_rejected_count": 0.0,
+        "trust_region_rejected_fraction": 0.0,
+        "selected_abs_action_delta_mean": 0.1704753346994086,
+        "selected_abs_action_delta_max": 3.9999380111694336
+      }
+    },
+    {
+      "run": "runs\\week3_100k_component_ablation_20260527\\simba_full_official_opt\\seed4",
+      "seed": 4,
+      "variant": "actor",
+      "spec": {
+        "kind": "actor",
+        "name": "actor"
+      },
+      "metrics": {
+        "points": 4096.0,
+        "mean_return": -141.35917136804295,
+        "median_return": -122.01837278087368,
+        "return_p01": -322.1145553493214,
+        "return_p05": -248.7520511745459,
+        "return_p10": -233.47087865478335,
+        "bottom10_conditional_mean_return": -269.88238324667986,
+        "task_success": 0.92333984375,
+        "mean_near_upright_fraction": 0.86613037109375
+      },
+      "selection": {}
+    },
+    {
+      "run": "runs\\week3_100k_component_ablation_20260527\\simba_full_official_opt\\seed4",
+      "seed": 4,
+      "variant": "global_n41_m0.005_b1_unanimous_advantage",
+      "spec": {
+        "kind": "global",
+        "name": "global_n41_m0.005_b1_unanimous_advantage",
+        "num_actions": 41,
+        "margin": 0.005,
+        "filter_mode": "unanimous_advantage",
+        "blend_fraction": 1.0,
+        "max_action_delta": null
+      },
+      "metrics": {
+        "points": 4096.0,
+        "mean_return": -139.93057919109347,
+        "median_return": -121.88315415966564,
+        "return_p01": -302.49759951581905,
+        "return_p05": -246.33250832183728,
+        "return_p10": -231.2690049652689,
+        "bottom10_conditional_mean_return": -262.0120805222238,
+        "task_success": 0.929931640625,
+        "mean_near_upright_fraction": 0.8673583984375,
+        "mean_return_delta": 1.4285921769494914,
+        "median_return_delta": -1.0421984975028664e-07,
+        "return_improved_fraction": 0.3974609375,
+        "return_degraded_fraction": 0.6025390625,
+        "return_degraded_by_1_fraction": 0.02197265625,
+        "return_degraded_by_5_fraction": 0.009765625,
+        "bottom10_conditional_mean_return_delta": 7.870302724456053
+      },
+      "selection": {
+        "selected_count": 687747.0,
+        "total_decisions": 819200.0,
+        "switch_fraction": 0.839534912109375,
+        "trust_region_rejected_count": 0.0,
+        "trust_region_rejected_fraction": 0.0,
+        "selected_abs_action_delta_mean": 0.006216649345896482,
+        "selected_abs_action_delta_max": 3.9998092651367188
+      }
+    },
+    {
+      "run": "runs\\week3_100k_component_ablation_20260527\\simba_full_official_opt\\seed4",
+      "seed": 4,
+      "variant": "global_n41_m0.005_b1_symmetric_actor_unanimous_advantage",
+      "spec": {
+        "kind": "global",
+        "name": "global_n41_m0.005_b1_symmetric_actor_unanimous_advantage",
+        "num_actions": 41,
+        "margin": 0.005,
+        "filter_mode": "symmetric_actor_unanimous_advantage",
+        "blend_fraction": 1.0,
+        "max_action_delta": null
+      },
+      "metrics": {
+        "points": 4096.0,
+        "mean_return": -139.97667944042317,
+        "median_return": -121.88578418593168,
+        "return_p01": -302.5310914544965,
+        "return_p05": -245.89210126027007,
+        "return_p10": -231.71521291365278,
+        "bottom10_conditional_mean_return": -262.24837214417755,
+        "task_success": 0.929443359375,
+        "mean_near_upright_fraction": 0.86666748046875,
+        "mean_return_delta": 1.3824919276197751,
+        "median_return_delta": 0.03210770243583738,
+        "return_improved_fraction": 0.709228515625,
+        "return_degraded_fraction": 0.290771484375,
+        "return_degraded_by_1_fraction": 0.065673828125,
+        "return_degraded_by_5_fraction": 0.009521484375,
+        "bottom10_conditional_mean_return_delta": 7.634011102502313
+      },
+      "selection": {
+        "selected_count": 819199.0,
+        "total_decisions": 819200.0,
+        "switch_fraction": 0.999998779296875,
+        "trust_region_rejected_count": 0.0,
+        "trust_region_rejected_fraction": 0.0,
+        "selected_abs_action_delta_mean": 0.1577193731869914,
+        "selected_abs_action_delta_max": 3.9998092651367188
+      }
+    }
+  ]
+}
