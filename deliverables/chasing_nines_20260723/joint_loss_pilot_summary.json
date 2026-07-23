@@ -1,0 +1,81 @@
+{
+  "scope": "seed-0 25k diagnostic pilot; not a five-seed performance result",
+  "run_dir": "runs\\systematic_joint_staging_vs_mixing_20260722\\sm2_joint_bc_plus_sac_same_update_after6k\\seed0",
+  "configured_total_steps": 25000,
+  "max_logged_step": 25000,
+  "completed": true,
+  "joint_diagnostic_steps": [
+    6000,
+    7000,
+    8000,
+    9000,
+    10000,
+    11000,
+    12000,
+    13000,
+    14000,
+    15000,
+    16000,
+    17000,
+    18000,
+    19000,
+    20000,
+    21000,
+    22000,
+    23000,
+    24000,
+    25000
+  ],
+  "weighted_bc_to_sac_gradient_norm_ratio": {
+    "median": 37.19255130641924,
+    "minimum": 31.491935917661984,
+    "maximum": 42.578578882184644,
+    "final_logged": 33.71648284765346
+  },
+  "bc_sac_gradient_cosine": {
+    "median_interval_mean": 0.07533612544618515,
+    "minimum_interval_mean": 0.036931893631001,
+    "maximum_interval_mean": 0.1257197143148951,
+    "minimum_observed_in_interval": -0.9428355097770692,
+    "maximum_observed_in_interval": 0.9354549646377563
+  },
+  "dormancy": {
+    "registered_relative_threshold": 0.1,
+    "maximum_logged_layer_fraction": 0.0,
+    "diagnostic_rows": 45
+  },
+  "standard_grid_evaluation": {
+    "protocol": "one seed on the fixed 61 by 41 grid; actor action only",
+    "reward_only_control": {
+      "trials": 2501,
+      "near_reference_successes": 1757,
+      "near_reference_rate": 0.7025189924030388,
+      "task_successes": 1931,
+      "task_success_rate": 0.7720911635345862,
+      "strict_wins": 31,
+      "strict_win_rate": 0.012395041983206718,
+      "mean_return": -159.71035330423237
+    },
+    "simultaneous_bc_sac": {
+      "trials": 2501,
+      "near_reference_successes": 2443,
+      "near_reference_rate": 0.9768092762894842,
+      "task_successes": 2336,
+      "task_success_rate": 0.9340263894442223,
+      "strict_wins": 164,
+      "strict_win_rate": 0.06557377049180328,
+      "mean_return": -140.05043251118894
+    },
+    "joint_minus_control": {
+      "near_reference_successes": 686,
+      "near_reference_rate": 0.2742902838864454,
+      "task_successes": 405,
+      "task_success_rate": 0.16193522590963616,
+      "strict_wins": 133,
+      "strict_win_rate": 0.05317872850859656,
+      "mean_return": 19.659920793043426
+    },
+    "limitation": "This seed-0 comparison does not include the BC-only or staged controls and does not estimate seed variability."
+  },
+  "interpretation_boundary": "The simultaneous objective is numerically dominated by the weighted BC gradient in this pilot. The cosine range includes both aligned and conflicting minibatches. This does not establish a performance effect."
+}
