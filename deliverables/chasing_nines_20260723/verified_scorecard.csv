@@ -1,0 +1,8 @@
+method_key,method,category,trials,mean_return,near_best_known_return_eps_count,near_best_known_return_eps_rate,near_best_known_return_eps_label,task_success_count,task_success_rate,task_success_label,beats_best_known_return_count,beats_best_known_return_rate,beats_best_known_return_label
+mixed,RL + supervised winner,RL + supervised,12505,-138.64975332422262,12496,0.999280287884846,Near reference,11737,0.9385845661735306,Task success,1570,0.1255497800879648,Strictly beats reference
+mixed_uniform,Uniform-start mixed control,RL + supervised,12505,-138.73854050975197,12486,0.9984806077568973,Near reference,11735,0.9384246301479409,Task success,1459,0.1166733306677329,Strictly beats reference
+supervised,Supervised actor,Supervised,12505,-138.79119976321638,12470,0.9972011195521792,Near reference,11705,0.9360255897640943,Task success,1813,0.14498200719712115,Strictly beats reference
+pure,Pure-RL winner,Pure RL,12505,-140.6206168769089,11832,0.9461815273890444,Near reference,11567,0.9249900039984006,Task success,2303,0.18416633346661335,Strictly beats reference
+fastsacn,FastSACN8 50k,Pure RL,12505,-140.88556552206913,11657,0.9321871251499401,Near reference,11619,0.9291483406637345,Task success,905,0.07237105157936825,Strictly beats reference
+simba,Plain SimbaV2 100k,Pure RL,12505,-141.63855673119457,11484,0.9183526589364255,Near reference,11437,0.914594162335066,Task success,1066,0.08524590163934426,Strictly beats reference
+dagger,Clean DAgger 100k,Supervised,12505,-148.41593322123308,10571,0.8453418632546981,Near reference,11007,0.8802079168332667,Task success,799,0.06389444222311076,Strictly beats reference

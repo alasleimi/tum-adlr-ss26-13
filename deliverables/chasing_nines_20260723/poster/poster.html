@@ -1,0 +1,168 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <title>Chasing the Nines | Project 15</title>
+  <link rel="stylesheet" href="concepts/concepts.css">
+  <style>
+    .poster { background: #eef2f4; padding: 18mm; }
+    header {
+      height: 160mm; border-radius: 8mm; padding: 16mm 19mm;
+      background: #0d2732; color: white; display: grid;
+      grid-template-columns: 1.65fr 1fr; grid-template-rows: 1fr auto; gap: 9mm 16mm;
+    }
+    header h1 { margin: 3mm 0 5mm; font: 800 27mm/1.04 Georgia, serif; letter-spacing: -1mm; }
+    header p { margin: 0; font-size: 8mm; line-height: 1.28; color: #c7d6dc; max-width: 680mm; }
+    .hero-numbers { display: grid; grid-template-columns: 1fr 1fr; gap: 8mm; align-content: center; }
+    .hero-number { padding: 10mm; border-left: 3mm solid #16b8aa; background: #153a47; border-radius: 0 5mm 5mm 0; }
+    .hero-number.blue { border-color: #4b8cf5; }
+    .hero-number strong { display: block; font-size: 24mm; line-height: 1.08; }
+    .hero-number span { font-size: 6.2mm; color: #d7e1e5; }
+    .hero-number .secondary { margin-top: 5mm; padding-top: 4mm; border-top: .7mm solid rgba(255,255,255,.18); font-size: 5.4mm; line-height: 1.25; color: #eaf1f3; }
+    .protocol { grid-column: 1 / -1; display: grid; grid-template-columns: 1.22fr 1fr 1fr 1fr; gap: 5mm; }
+    .protocol div { padding: 4mm 5mm; border-radius: 3mm; background: rgba(255,255,255,.07); font-size: 5.2mm; line-height: 1.2; color: #d9e4e8; }
+    .protocol strong { display: block; margin-bottom: 1mm; color: white; font-size: 5.5mm; }
+    .protocol .eq { color: #70e1d7; font-weight: 800; }
+    main {
+      height: 620mm; margin-top: 12mm;
+      display: grid; gap: 10mm;
+      grid-template-columns: 0.94fr 1.15fr 0.91fr;
+      grid-template-rows: 325mm 285mm;
+    }
+    .recipe { grid-column: 1; grid-row: 1; }
+    .atlas { grid-column: 2 / 4; grid-row: 1; display: grid; grid-template-rows: auto 1fr; }
+    .atlas .evidence-grid { min-height: 0; display: grid; grid-template-columns: 1.65fr 1fr; gap: 8mm; }
+    .atlas .evidence-grid > div { min-height: 0; display: grid; grid-template-rows: auto 1fr; }
+    .atlas .evidence-grid h3 { margin: 0 0 2mm; font-size: 7mm; color: #334155; }
+    .consistency { grid-column: 1; grid-row: 2; display: grid; grid-template-rows: auto 1fr; }
+    .ablation { grid-column: 2; grid-row: 2; display: grid; grid-template-rows: auto 1fr; }
+    .diagnosis { grid-column: 3; grid-row: 2; background: #102d39; color: white; border-color: #102d39; }
+    .diagnosis h2 { color: white; }
+    .diagnosis h2 { font-size: 13mm; margin-bottom: 4mm; }
+    .diagnosis p { color: #d1dde1; }
+    .meter { margin: 5mm 0 6mm; }
+    .meter-top { display: flex; justify-content: space-between; font-size: 6mm; margin-bottom: 2mm; }
+    .track { height: 8mm; border-radius: 5mm; background: #244551; overflow: hidden; }
+    .fill { height: 100%; background: #16b8aa; }
+    .fill.orange { background: #f97316; }
+    .callout { margin-top: 5mm; padding: 5mm; border-left: 2mm solid #f97316; background: #173b48; font-size: 5.6mm; line-height: 1.25; }
+    .atlas .plot { min-height: 0; }
+    .consistency .plot, .ablation .plot { min-height: 0; }
+    .mini-note { font-size: 5.6mm; color: #5c6a78; margin: -3mm 0 4mm; }
+    .recipe .step { font-size: 6.1mm; border-left: 1.5mm solid #0f766e; }
+    .recipe .step.blue { border-left-color: #2563eb; }
+    .recipe .step + .step { margin-top: 4mm; }
+    .recipe .divide { margin: 6mm 0; border-top: 1mm solid #dce4e9; }
+    .phase { display: inline-block; margin-right: 2mm; padding: 1mm 2mm; border-radius: 2mm; background: #dcefeb; color: #0f766e; font-size: 4mm; font-weight: 800; letter-spacing: .2mm; }
+    .phase.deploy { background: #e4edff; color: #2563eb; }
+    .budget { margin-top: 4mm; padding: 4mm; border: .8mm solid #f97316; background: #fff5ea; border-radius: 4mm; font-size: 4.7mm; line-height: 1.18; }
+    .budget table { width: 100%; margin-top: 2mm; border-collapse: collapse; font-size: 4.7mm; line-height: 1.12; }
+    .budget th, .budget td { padding: 1.8mm 1mm; text-align: right; border-top: .4mm solid #efc79f; }
+    .budget th:first-child, .budget td:first-child { text-align: left; }
+    .takehome { margin-top: 5mm; padding: 5mm; border-radius: 4mm; background: #0f766e; color: white !important; font-size: 6mm !important; line-height: 1.24 !important; font-weight: 700; }
+    .footer { position: absolute; left: 20mm; right: 20mm; bottom: 5mm; display: flex; justify-content: space-between; font-size: 5mm; color: #5f6f7c; }
+  </style>
+</head>
+<body>
+<div class="poster">
+  <header>
+    <div>
+      <div class="eyebrow">Chasing the nines: a Pendulum case study</div>
+      <h1>From 673 failures to nine.<br>Reliability must hold across seeds.</h1>
+      <p>The mixed method uses reference labels during training and more total resources. Both frozen winners deploy without reference access, angle routers, or checkpoint mixtures.</p>
+    </div>
+    <div class="hero-numbers">
+      <div class="hero-number"><strong>99.928%</strong><span>RL + supervised near-reference success<br>12,496 / 12,505 trials</span><div class="secondary">Task success 93.858% · strict wins 12.555%</div></div>
+      <div class="hero-number blue"><strong>94.618%</strong><span>pure-RL near-reference success<br>11,832 / 12,505 trials</span><div class="secondary">Task success 92.499% · strict wins 18.417%</div></div>
+    </div>
+    <div class="protocol">
+      <div><strong>Task and return</strong>Pendulum, 200 deterministic steps. r = −(θ² + 0.1θ̇² + 0.001a²). Torque a is in [−2, 2].</div>
+      <div><strong>Near reference</strong><span class="eq">R<sub>π</sub> ≥ R<sup>*</sup> − 5</span><br>R<sup>*</sup> is the better stored dynamic-programming or controller return.</div>
+      <div><strong>Task success</strong>cos θ ≥ 0.95 and |θ̇| ≤ 1 for at least 80% of steps; no failure streak longer than 50 steps.</div>
+      <div><strong>Strict win and grid</strong><span class="eq">R<sub>π</sub> &gt; R<sup>*</sup></span>. 61 angles × 41 velocities × actor seeds 0–4. Grid trials are correlated.</div>
+    </div>
+  </header>
+
+  <main>
+    <section class="card recipe">
+      <span class="tag">1 · Method</span>
+      <h2>Two clean routes to one frozen policy</h2>
+      <h3 class="mixed">RL + supervised</h3>
+      <div class="step"><span class="number">1</span><span class="phase">TRAIN</span>SimbaV2 learns full-circle actions from stored dynamic-programming and controller references.</div>
+      <div class="step"><span class="number">2</span><span class="phase">TRAIN</span>DAgger labels states visited by the actor. Three rounds add 30k transitions; a 20k follow-up prioritizes measured failures.</div>
+      <div class="step"><span class="number">3</span><span class="phase deploy">DEPLOY</span>A shared 50k reward-only critic checks actor ± {0, 0.05, 0.10}. Its mostly one-step FastSACN8 target includes a 0.775% eight-step auxiliary. Both critics must approve.</div>
+      <div class="divide"></div>
+      <h3 class="pure">Pure RL</h3>
+      <div class="step blue"><span class="number">1</span><span class="phase">TRAIN</span>SimbaV2 SAC learns from reward for 100,000 transitions.</div>
+      <div class="step blue"><span class="number">2</span><span class="phase deploy">DEPLOY</span>Project the actor through left-right symmetry: a<sub>sym</sub>(s) = [π(s) − π(Ms)] / 2.</div>
+      <div class="step blue"><span class="number">3</span><span class="phase deploy">DEPLOY</span>Search 41 torques in [−2, 2]. Replace a<sub>sym</sub> only when both critics predict an improvement above 0.005.</div>
+      <div class="budget"><strong>Cost check</strong> · selected lineage per evaluated actor
+        <table>
+          <tr><th>Method</th><th>Learn</th><th>Discover</th><th>Labels</th></tr>
+          <tr><td>Automatic mixed</td><td>100k</td><td>800k</td><td>690k</td></tr>
+          <tr><td>Uniform mixed</td><td>100k</td><td>0</td><td>690k</td></tr>
+          <tr><td>Pure RL</td><td>100k</td><td>0</td><td>0</td></tr>
+        </table>
+        Mixed learning assigns 50k actor transitions plus one shared 50k critic. Uniform mixed removes discovery and still reaches <strong>99.848%</strong> near reference.
+      </div>
+    </section>
+
+    <section class="card atlas">
+      <div>
+        <span class="tag">2 · Primary evidence</span>
+        <h2>Nine failures versus 673</h2>
+        <p class="mini-note">The grid map localizes failures. The tolerance curve checks whether the conclusion depends on choosing ε = 5. Thin curves are individual actor seeds.</p>
+      </div>
+      <div class="evidence-grid">
+        <div>
+          <h3>Where do failures occur?</h3>
+          <img class="plot" src="../figures/02_reliability_maps_poster.png" alt="Pure RL and mixed reliability heat maps">
+        </div>
+        <div>
+          <h3>Does the tolerance choice change the result?</h3>
+          <img class="plot" src="../figures/06_tolerance_curve_poster.png" alt="Near-reference success across return tolerances and actor seeds">
+        </div>
+      </div>
+    </section>
+
+    <section class="card consistency">
+      <div>
+        <span class="tag">3 · Seed diagnosis</span>
+        <h2>Pure RL can solve most cells, but not reliably</h2>
+        <p class="mini-note">Near-reference range over actor seeds: mixed 99.720–100.000%; pure RL 93.323–96.242%.</p>
+      </div>
+      <img class="plot" src="../figures/03_seed_consistency_poster.png" alt="All seed and any seed consistency">
+    </section>
+
+    <section class="card ablation">
+      <div>
+        <span class="tag">4 · Matched component checks</span>
+        <h2>Which additions actually fix failures?</h2>
+        <p class="mini-note">Each bar adds the named component to its paired baseline over 12,505 paired seed-state cases. Net count equals fixed minus newly broken classifications.</p>
+        <p class="mini-note">Near-reference rate: mixed actor 99.720% → 99.928% with local search; plain SimbaV2 91.835% → 94.618% with global search and reflection.</p>
+      </div>
+      <img class="plot" src="../figures/04_component_ablation_poster.png" alt="Component ablations">
+    </section>
+
+    <section class="card diagnosis">
+      <span class="tag">5 · Mechanism diagnostic</span>
+      <h2>Critic uncertainty is larger than the local signal</h2>
+      <div class="meter">
+        <div class="meter-top"><span>Pairwise action ordering</span><strong>84.4%</strong></div>
+        <div class="track"><div class="fill" style="width:84.4%"></div></div>
+      </div>
+      <div class="meter">
+        <div class="meter-top"><span>Harmful tested Q proposals</span><strong>19.0%</strong></div>
+        <div class="track"><div class="fill orange" style="width:19%"></div></div>
+      </div>
+      <div class="callout"><strong>Tail signal problem:</strong> median twin-critic disagreement is <strong>2.43 times</strong> the median local Q range. Typical rankings help, but harmful tested proposals occur 19.0% of the time on these targeted hard states.</div>
+      <p style="margin-top:4mm"><strong class="strict">Strict wins tell a different story.</strong> Pure RL beats the stored reference in 18.4% of trials, compared with 12.6% for the mixed method. Reliability and strict improvement are different operating points.</p>
+      <p class="source"><strong>Diagnostic scope:</strong> five seeds, 99 hard states, and 21 actions per state. Pairwise ordering compares Q with realized counterfactual return.</p>
+      <p class="source"><strong>Limits:</strong> one deterministic task and selected grid campaigns. Mechanism evidence is targeted, not causal or held out.</p>
+      <p class="takehome">Take-home: mixed training suppresses seed-dependent failures. Pure RL often finds excellent actions, but its critic cannot gate tail corrections reliably enough.</p>
+    </section>
+  </main>
+  <div class="footer"><span>Ala Sleimi · Technical University of Munich · Project 15 · 23 July 2026</span><span>SAC: Haarnoja et al. 2018 · DAgger: Ross et al. 2011 · SimbaV2: Lee et al. 2025 · SACn: Lyskawa et al. 2025</span><span>61 angles × 41 velocities × 5 actor seeds</span></div>
+</div>
+</body>
+</html>
