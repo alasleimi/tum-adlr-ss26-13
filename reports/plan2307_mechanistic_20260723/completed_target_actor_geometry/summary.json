@@ -1,0 +1,278 @@
+{
+  "schema_version": 1,
+  "scope": "Frozen-state actor geometry for the four completed five-seed SimbaV2 target arms. This diagnostic does not score policy returns.",
+  "independent_seeds_per_arm": 5,
+  "points_per_seed": 5553,
+  "state_sha256": "6ecb65c0721b5a3671dfe8cd6241158ce9aaed2b5a59b2fcecabdba0efe50e8f",
+  "arms": {
+    "p0_simba_onestep_utd1_100k": {
+      "label": "One-step SAC",
+      "metrics": {
+        "deterministic_action_saturation_fraction_abs_ge_0p995": {
+          "seed_values": [
+            0.5661804676055908,
+            0.6266883015632629,
+            0.5913920402526855,
+            0.7224923372268677,
+            0.5420493483543396
+          ],
+          "median": 0.5913920402526855
+        },
+        "mean_tanh_derivative": {
+          "seed_values": [
+            0.14653722941875458,
+            0.12034948915243149,
+            0.11336193978786469,
+            0.07361848652362823,
+            0.13775645196437836
+          ],
+          "median": 0.12034948915243149
+        },
+        "reflection_action_abs_error_mean": {
+          "seed_values": [
+            0.10502628237009048,
+            0.31514593958854675,
+            0.22940833866596222,
+            0.45252618193626404,
+            0.4290432333946228
+          ],
+          "median": 0.31514593958854675
+        }
+      }
+    },
+    "p1_simba_fastsacn8_lambda1_utd1_100k": {
+      "label": "FastSACN8",
+      "metrics": {
+        "deterministic_action_saturation_fraction_abs_ge_0p995": {
+          "seed_values": [
+            0.8654780983924866,
+            0.8833063244819641,
+            0.869439959526062,
+            0.7725553512573242,
+            0.8795245885848999
+          ],
+          "median": 0.869439959526062
+        },
+        "mean_tanh_derivative": {
+          "seed_values": [
+            0.038812968879938126,
+            0.037465889006853104,
+            0.04253067448735237,
+            0.10447435081005096,
+            0.03746006265282631
+          ],
+          "median": 0.038812968879938126
+        },
+        "reflection_action_abs_error_mean": {
+          "seed_values": [
+            0.5895904898643494,
+            0.3002978265285492,
+            0.24849478900432587,
+            0.39989912509918213,
+            0.3132956922054291
+          ],
+          "median": 0.3132956922054291
+        }
+      }
+    },
+    "p2_simba_sacn8_lambda1_utd1_100k": {
+      "label": "SACn8",
+      "metrics": {
+        "deterministic_action_saturation_fraction_abs_ge_0p995": {
+          "seed_values": [
+            0.8672789335250854,
+            0.7902035117149353,
+            0.8510714769363403,
+            0.8741220831871033,
+            0.8953718543052673
+          ],
+          "median": 0.8672789335250854
+        },
+        "mean_tanh_derivative": {
+          "seed_values": [
+            0.03693201392889023,
+            0.06964120268821716,
+            0.053031690418720245,
+            0.03904043883085251,
+            0.0343056246638298
+          ],
+          "median": 0.03904043883085251
+        },
+        "reflection_action_abs_error_mean": {
+          "seed_values": [
+            0.2801756262779236,
+            0.45988330245018005,
+            0.15280704200267792,
+            0.08124282956123352,
+            0.26876217126846313
+          ],
+          "median": 0.26876217126846313
+        }
+      }
+    },
+    "p7_simba_fastsacn8_lambda0p5_utd2_actorutd1_100k": {
+      "label": "FastSACN8 $\\lambda$=.5, critic UTD2",
+      "metrics": {
+        "deterministic_action_saturation_fraction_abs_ge_0p995": {
+          "seed_values": [
+            0.7574284076690674,
+            0.7025031447410583,
+            0.6189447045326233,
+            0.8089321255683899,
+            0.662164568901062
+          ],
+          "median": 0.7025031447410583
+        },
+        "mean_tanh_derivative": {
+          "seed_values": [
+            0.07482173293828964,
+            0.0892481729388237,
+            0.10925240069627762,
+            0.05190577358007431,
+            0.10900375247001648
+          ],
+          "median": 0.0892481729388237
+        },
+        "reflection_action_abs_error_mean": {
+          "seed_values": [
+            0.41142773628234863,
+            0.29055875539779663,
+            0.33741527795791626,
+            0.20869620144367218,
+            0.21864713728427887
+          ],
+          "median": 0.29055875539779663
+        }
+      }
+    }
+  },
+  "paired_contrasts": [
+    {
+      "contrast": "FastSACN8 minus one-step",
+      "metric": "deterministic_action_saturation_fraction_abs_ge_0p995",
+      "paired_seed_deltas": [
+        0.29929763078689575,
+        0.25661802291870117,
+        0.27804791927337646,
+        0.05006301403045654,
+        0.3374752402305603
+      ],
+      "mean_delta": 0.24430036544799805,
+      "median_delta": 0.27804791927337646,
+      "same_direction_seeds": 5
+    },
+    {
+      "contrast": "FastSACN8 minus one-step",
+      "metric": "mean_tanh_derivative",
+      "paired_seed_deltas": [
+        -0.10772426053881645,
+        -0.08288360014557838,
+        -0.07083126530051231,
+        0.03085586428642273,
+        -0.10029638931155205
+      ],
+      "mean_delta": -0.0661759302020073,
+      "median_delta": -0.08288360014557838,
+      "same_direction_seeds": 4
+    },
+    {
+      "contrast": "FastSACN8 minus one-step",
+      "metric": "reflection_action_abs_error_mean",
+      "paired_seed_deltas": [
+        0.4845642074942589,
+        -0.014848113059997559,
+        0.019086450338363647,
+        -0.05262705683708191,
+        -0.11574754118919373
+      ],
+      "mean_delta": 0.06408558934926986,
+      "median_delta": -0.014848113059997559,
+      "same_direction_seeds": 3
+    },
+    {
+      "contrast": "SACn8 minus FastSACN8",
+      "metric": "deterministic_action_saturation_fraction_abs_ge_0p995",
+      "paired_seed_deltas": [
+        0.001800835132598877,
+        -0.09310281276702881,
+        -0.01836848258972168,
+        0.10156673192977905,
+        0.01584726572036743
+      ],
+      "mean_delta": 0.0015487074851989746,
+      "median_delta": 0.001800835132598877,
+      "same_direction_seeds": 3
+    },
+    {
+      "contrast": "SACn8 minus FastSACN8",
+      "metric": "mean_tanh_derivative",
+      "paired_seed_deltas": [
+        -0.0018809549510478973,
+        0.03217531368136406,
+        0.010501015931367874,
+        -0.06543391197919846,
+        -0.0031544379889965057
+      ],
+      "mean_delta": -0.005558595061302185,
+      "median_delta": -0.0018809549510478973,
+      "same_direction_seeds": 3
+    },
+    {
+      "contrast": "SACn8 minus FastSACN8",
+      "metric": "reflection_action_abs_error_mean",
+      "paired_seed_deltas": [
+        -0.3094148635864258,
+        0.15958547592163086,
+        -0.09568774700164795,
+        -0.3186562955379486,
+        -0.04453352093696594
+      ],
+      "mean_delta": -0.12174139022827149,
+      "median_delta": -0.09568774700164795,
+      "same_direction_seeds": 4
+    },
+    {
+      "contrast": "Matched FastSACN8 combination minus one-step",
+      "metric": "deterministic_action_saturation_fraction_abs_ge_0p995",
+      "paired_seed_deltas": [
+        0.19124794006347656,
+        0.07581484317779541,
+        0.027552664279937744,
+        0.08643978834152222,
+        0.12011522054672241
+      ],
+      "mean_delta": 0.10023409128189087,
+      "median_delta": 0.08643978834152222,
+      "same_direction_seeds": 5
+    },
+    {
+      "contrast": "Matched FastSACN8 combination minus one-step",
+      "metric": "mean_tanh_derivative",
+      "paired_seed_deltas": [
+        -0.07171549648046494,
+        -0.031101316213607788,
+        -0.004109539091587067,
+        -0.021712712943553925,
+        -0.028752699494361877
+      ],
+      "mean_delta": -0.03147835284471512,
+      "median_delta": -0.028752699494361877,
+      "same_direction_seeds": 5
+    },
+    {
+      "contrast": "Matched FastSACN8 combination minus one-step",
+      "metric": "reflection_action_abs_error_mean",
+      "paired_seed_deltas": [
+        0.30640145391225815,
+        -0.024587184190750122,
+        0.10800693929195404,
+        -0.24382998049259186,
+        -0.21039609611034393
+      ],
+      "mean_delta": -0.012880973517894745,
+      "median_delta": -0.024587184190750122,
+      "same_direction_seeds": 3
+    }
+  ],
+  "limitation": "The target is assigned at training time, but the frozen geometry is post-training association. It does not by itself establish that saturation or reflection error causes a reliability failure."
+}
