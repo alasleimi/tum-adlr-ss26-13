@@ -1,0 +1,237 @@
+{
+  "protocol": {
+    "reference_free": false,
+    "reference_used_during_candidate_inference": false,
+    "reference_used_only_for_post_rollout_scoring": true,
+    "authoritative_grid_queried": false,
+    "state_distribution": "fixed_offgrid_midpoint_plus_continuous_reset_support",
+    "points": 5553,
+    "continuous_points": 4096,
+    "rng_seed": 22072601,
+    "state_sha256": "6ecb65c0721b5a3671dfe8cd6241158ce9aaed2b5a59b2fcecabdba0efe50e8f",
+    "raw_state_array_sha256": "c8b4cfabe47c183dbcc01428c4bf9af5bf4198c3f848f7e0133933ad0ce08629",
+    "epsilon_return": 5.0,
+    "runs": [
+      "runs/plan2307_completion_20260723/pure_target_architecture_matrix/p8_simba_fastsacn8_lambda0p5_utd2_actorutd2_100k/seed0"
+    ],
+    "selection_metrics": [
+      "near_reference_eps_successes",
+      "task_successes",
+      "strict_beats_reference_successes",
+      "bottom10_conditional_mean_return",
+      "mean_return"
+    ]
+  },
+  "results": [
+    {
+      "run": "runs\\plan2307_completion_20260723\\pure_target_architecture_matrix\\p8_simba_fastsacn8_lambda0p5_utd2_actorutd2_100k\\seed0",
+      "seed": 0,
+      "variant": "actor",
+      "spec": {
+        "kind": "actor",
+        "name": "actor"
+      },
+      "metrics": {
+        "points": 5553.0,
+        "mean_return": -140.75252315853862,
+        "median_return": -122.41448501065234,
+        "return_p01": -322.04069832673116,
+        "return_p05": -248.8934411220099,
+        "return_p10": -234.01736940779463,
+        "bottom10_conditional_mean_return": -269.24416168358107,
+        "task_success": 0.9070772555375473,
+        "mean_near_upright_fraction": 0.8630145867098865,
+        "near_reference_eps": {
+          "successes": 5145,
+          "trials": 5553,
+          "rate": 0.9265262020529443
+        },
+        "task_success_rate": {
+          "successes": 5037,
+          "trials": 5553,
+          "rate": 0.9070772555375473
+        },
+        "strict_beats_reference": {
+          "successes": 1244,
+          "trials": 5553,
+          "rate": 0.2240230506032775
+        },
+        "reference_regret_mean": 2.3252334099725442,
+        "reference_regret_p95": 6.11634068061868,
+        "reference_regret_p99": 33.84937458371833
+      },
+      "selection": {}
+    },
+    {
+      "run": "runs\\plan2307_completion_20260723\\pure_target_architecture_matrix\\p8_simba_fastsacn8_lambda0p5_utd2_actorutd2_100k\\seed0",
+      "seed": 0,
+      "variant": "reflection_actor",
+      "spec": {
+        "kind": "reflection",
+        "name": "reflection_actor"
+      },
+      "metrics": {
+        "points": 5553.0,
+        "mean_return": -140.90881202068536,
+        "median_return": -122.29957199574682,
+        "return_p01": -322.23773747819,
+        "return_p05": -250.3078477310228,
+        "return_p10": -232.906526120094,
+        "bottom10_conditional_mean_return": -271.1908922655073,
+        "task_success": 0.9157212317666127,
+        "mean_near_upright_fraction": 0.8629704664145508,
+        "near_reference_eps": {
+          "successes": 5185,
+          "trials": 5553,
+          "rate": 0.9337295155771655
+        },
+        "task_success_rate": {
+          "successes": 5085,
+          "trials": 5553,
+          "rate": 0.9157212317666127
+        },
+        "strict_beats_reference": {
+          "successes": 1312,
+          "trials": 5553,
+          "rate": 0.23626868359445344
+        },
+        "reference_regret_mean": 2.481522272119272,
+        "reference_regret_p95": 5.669670462243294,
+        "reference_regret_p99": 75.31397408224676,
+        "mean_return_delta": -0.15628886214672763,
+        "median_return_delta": 0.011423356505716242,
+        "return_improved_fraction": 0.6472177201512695,
+        "return_degraded_fraction": 0.3527822798487304,
+        "return_degraded_by_1_fraction": 0.05780659103187466,
+        "return_degraded_by_5_fraction": 0.0066630650099045565,
+        "bottom10_conditional_mean_return_delta": -1.9467305819262037
+      },
+      "selection": {
+        "selected_count": 0.0,
+        "total_decisions": 0.0,
+        "switch_fraction": 0.0,
+        "selected_abs_action_delta_mean": 0.0,
+        "selected_abs_action_delta_max": 0.0,
+        "selected_unanimous_advantage_mean": 0.0
+      }
+    },
+    {
+      "run": "runs\\plan2307_completion_20260723\\pure_target_architecture_matrix\\p8_simba_fastsacn8_lambda0p5_utd2_actorutd2_100k\\seed0",
+      "seed": 0,
+      "variant": "global_n41_m0.005_b1_unanimous_advantage",
+      "spec": {
+        "kind": "global",
+        "name": "global_n41_m0.005_b1_unanimous_advantage",
+        "num_actions": 41,
+        "margin": 0.005,
+        "filter_mode": "unanimous_advantage",
+        "blend_fraction": 1.0,
+        "max_action_delta": null
+      },
+      "metrics": {
+        "points": 5553.0,
+        "mean_return": -139.6519218456824,
+        "median_return": -122.7410386341105,
+        "return_p01": -303.4071350526133,
+        "return_p05": -245.95305681859926,
+        "return_p10": -231.83168661091702,
+        "bottom10_conditional_mean_return": -260.3894005395272,
+        "task_success": 0.9205834683954619,
+        "mean_near_upright_fraction": 0.8649396722492347,
+        "near_reference_eps": {
+          "successes": 5335,
+          "trials": 5553,
+          "rate": 0.9607419412929947
+        },
+        "task_success_rate": {
+          "successes": 5112,
+          "trials": 5553,
+          "rate": 0.9205834683954619
+        },
+        "strict_beats_reference": {
+          "successes": 1332,
+          "trials": 5553,
+          "rate": 0.23987034035656402
+        },
+        "reference_regret_mean": 1.2246320971163251,
+        "reference_regret_p95": 4.669559882706163,
+        "reference_regret_p99": 7.010703835149549,
+        "mean_return_delta": 1.100601312856219,
+        "median_return_delta": 5.965347327219206e-09,
+        "return_improved_fraction": 0.5512335674410229,
+        "return_degraded_fraction": 0.44876643255897714,
+        "return_degraded_by_1_fraction": 0.019989195029713667,
+        "return_degraded_by_5_fraction": 0.006302899333693499,
+        "bottom10_conditional_mean_return_delta": 8.854761144053896
+      },
+      "selection": {
+        "selected_count": 847755.0,
+        "total_decisions": 1110600.0,
+        "switch_fraction": 0.7633306320907618,
+        "trust_region_rejected_count": 0.0,
+        "trust_region_rejected_fraction": 0.0,
+        "selected_abs_action_delta_mean": 0.00430746233671185,
+        "selected_abs_action_delta_max": 3.9999747276306152
+      }
+    },
+    {
+      "run": "runs\\plan2307_completion_20260723\\pure_target_architecture_matrix\\p8_simba_fastsacn8_lambda0p5_utd2_actorutd2_100k\\seed0",
+      "seed": 0,
+      "variant": "global_n41_m0.005_b1_symmetric_actor_unanimous_advantage",
+      "spec": {
+        "kind": "global",
+        "name": "global_n41_m0.005_b1_symmetric_actor_unanimous_advantage",
+        "num_actions": 41,
+        "margin": 0.005,
+        "filter_mode": "symmetric_actor_unanimous_advantage",
+        "blend_fraction": 1.0,
+        "max_action_delta": null
+      },
+      "metrics": {
+        "points": 5553.0,
+        "mean_return": -139.65361179938807,
+        "median_return": -122.64687336952605,
+        "return_p01": -302.53324018869665,
+        "return_p05": -245.8556770940277,
+        "return_p10": -232.046780314332,
+        "bottom10_conditional_mean_return": -260.4793068959641,
+        "task_success": 0.9211237169097785,
+        "mean_near_upright_fraction": 0.8645227804790203,
+        "near_reference_eps": {
+          "successes": 5338,
+          "trials": 5553,
+          "rate": 0.9612821898073114
+        },
+        "task_success_rate": {
+          "successes": 5115,
+          "trials": 5553,
+          "rate": 0.9211237169097785
+        },
+        "strict_beats_reference": {
+          "successes": 1405,
+          "trials": 5553,
+          "rate": 0.2530163875382676
+        },
+        "reference_regret_mean": 1.2263220508219874,
+        "reference_regret_p95": 4.593095205093873,
+        "reference_regret_p99": 7.781188620110178,
+        "mean_return_delta": 1.098911359150557,
+        "median_return_delta": 0.015761657687505704,
+        "return_improved_fraction": 0.6729695660003602,
+        "return_degraded_fraction": 0.3270304339996398,
+        "return_degraded_by_1_fraction": 0.04123896992616603,
+        "return_degraded_by_5_fraction": 0.0061228164955879705,
+        "bottom10_conditional_mean_return_delta": 8.764854787616969
+      },
+      "selection": {
+        "selected_count": 1110564.0,
+        "total_decisions": 1110600.0,
+        "switch_fraction": 0.999967585089141,
+        "trust_region_rejected_count": 0.0,
+        "trust_region_rejected_fraction": 0.0,
+        "selected_abs_action_delta_mean": 0.09420827399090512,
+        "selected_abs_action_delta_max": 3.9999747276306152
+      }
+    }
+  ]
+}

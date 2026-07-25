@@ -1,0 +1,120 @@
+{
+  "schema_version": 1,
+  "evidence_scope": "terminal telemetry for complete five-seed 100k arms",
+  "complete_five_seed_arms": [
+    "p0_simba_onestep_utd1_100k",
+    "p1_simba_fastsacn8_lambda1_utd1_100k",
+    "p2_simba_sacn8_lambda1_utd1_100k",
+    "p3_simba_sacn16_lambda1_utd1_100k",
+    "p4_simba_fastsacn8_lambda1_utd2_actorutd1_100k",
+    "p5_simba_fastsacn8_lambda0p5_utd1_100k",
+    "p6_simba_fastsacn8_density_lambda0p5_utd1_100k",
+    "p7_simba_fastsacn8_lambda0p5_utd2_actorutd1_100k",
+    "p9_simba_sacn16_density_lambda1_utd1_100k",
+    "a0_compact_onestep_utd1_100k",
+    "a1_compact_fastsacn8_lambda1_utd1_100k",
+    "a2_compact_sacn8_lambda1_utd1_100k"
+  ],
+  "arm_count": 12,
+  "policy_count": 60,
+  "selection_use": false,
+  "interpretation_limit": "The online evaluation uses twenty starts. Scalar losses, dormancy, and effective rank are descriptive health checks. They cannot replace locked off-grid evaluation or identify a causal mechanism.",
+  "terminal_means": {
+    "p0_simba_onestep_utd1_100k": {
+      "online_task_success": 0.692,
+      "online_mean_return": -160.72509874962506,
+      "actor_loss": 0.09679878812393836,
+      "q_loss": 2.931337918552678,
+      "max_dormant_fraction": 0.0,
+      "min_effective_rank_fraction": 0.06922532767057418
+    },
+    "p1_simba_fastsacn8_lambda1_utd1_100k": {
+      "online_task_success": 0.74,
+      "online_mean_return": -175.24402399139754,
+      "actor_loss": 0.09669476002454758,
+      "q_loss": 0.42939921021461486,
+      "max_dormant_fraction": 0.0,
+      "min_effective_rank_fraction": 0.06930174380540848
+    },
+    "p2_simba_sacn8_lambda1_utd1_100k": {
+      "online_task_success": 0.72,
+      "online_mean_return": -175.59207852948285,
+      "actor_loss": 0.09525939524173736,
+      "q_loss": 0.4459971308708191,
+      "max_dormant_fraction": 0.0,
+      "min_effective_rank_fraction": 0.06936286687850952
+    },
+    "p3_simba_sacn16_lambda1_utd1_100k": {
+      "online_task_success": 0.6,
+      "online_mean_return": -318.1017494558687,
+      "actor_loss": -1.6236557945609094,
+      "q_loss": 3.6010077953338624,
+      "max_dormant_fraction": 0.0,
+      "min_effective_rank_fraction": 0.0693660780787468
+    },
+    "p4_simba_fastsacn8_lambda1_utd2_actorutd1_100k": {
+      "online_task_success": 0.6799999999999999,
+      "online_mean_return": -172.31027536461335,
+      "actor_loss": 0.10505391806364059,
+      "q_loss": 0.48373670876026154,
+      "max_dormant_fraction": 0.0,
+      "min_effective_rank_fraction": 0.06816951930522919
+    },
+    "p5_simba_fastsacn8_lambda0p5_utd1_100k": {
+      "online_task_success": 0.8320000000000001,
+      "online_mean_return": -162.3035219708902,
+      "actor_loss": 0.13430282166286728,
+      "q_loss": 3.872735139485562,
+      "max_dormant_fraction": 0.0,
+      "min_effective_rank_fraction": 0.06917893439531327
+    },
+    "p6_simba_fastsacn8_density_lambda0p5_utd1_100k": {
+      "online_task_success": 0.778,
+      "online_mean_return": -162.63765417853477,
+      "actor_loss": 0.09574950678936309,
+      "q_loss": 1.6255130638441657,
+      "max_dormant_fraction": 0.0,
+      "min_effective_rank_fraction": 0.06929348856210708
+    },
+    "p7_simba_fastsacn8_lambda0p5_utd2_actorutd1_100k": {
+      "online_task_success": 0.76,
+      "online_mean_return": -164.11246098573605,
+      "actor_loss": 0.10034616589546204,
+      "q_loss": 0.5997013628482819,
+      "max_dormant_fraction": 0.0,
+      "min_effective_rank_fraction": 0.06889338046312332
+    },
+    "p9_simba_sacn16_density_lambda1_utd1_100k": {
+      "online_task_success": 0.828,
+      "online_mean_return": -162.82013205978404,
+      "actor_loss": 0.09441516053030323,
+      "q_loss": 0.6398501299165378,
+      "max_dormant_fraction": 0.0,
+      "min_effective_rank_fraction": 0.06885318607091903
+    },
+    "a0_compact_onestep_utd1_100k": {
+      "online_task_success": 0.64,
+      "online_mean_return": -171.2025350580273,
+      "actor_loss": 19.053865051269533,
+      "q_loss": 1.6769140481948852,
+      "max_dormant_fraction": 0.21796875,
+      "min_effective_rank_fraction": 0.038637685030698775
+    },
+    "a1_compact_fastsacn8_lambda1_utd1_100k": {
+      "online_task_success": 0.7,
+      "online_mean_return": -171.50237461328362,
+      "actor_loss": 36.62639694213867,
+      "q_loss": 182.14923095703125,
+      "max_dormant_fraction": 0.24375,
+      "min_effective_rank_fraction": 0.04079233556985855
+    },
+    "a2_compact_sacn8_lambda1_utd1_100k": {
+      "online_task_success": 0.6799999999999999,
+      "online_mean_return": -170.73697492215717,
+      "actor_loss": 26.900538635253906,
+      "q_loss": 101.55526428222656,
+      "max_dormant_fraction": 0.22578125,
+      "min_effective_rank_fraction": 0.04032294452190399
+    }
+  }
+}

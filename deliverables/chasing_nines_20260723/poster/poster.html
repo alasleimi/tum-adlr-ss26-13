@@ -11,7 +11,7 @@
       background: #0d2732; color: white; display: grid;
       grid-template-columns: 1.65fr 1fr; grid-template-rows: 1fr auto; gap: 9mm 16mm;
     }
-    header h1 { margin: 3mm 0 5mm; font: 800 27mm/1.04 Georgia, serif; letter-spacing: -1mm; }
+    header h1 { margin: 3mm 0 5mm; padding-bottom: 1.5mm; font: 800 26.5mm/1.04 Georgia, serif; letter-spacing: -1mm; }
     header p { margin: 0; font-size: 8mm; line-height: 1.28; color: #c7d6dc; max-width: 680mm; }
     .hero-numbers { display: grid; grid-template-columns: 1fr 1fr; gap: 8mm; align-content: center; }
     .hero-number { padding: 10mm; border-left: 3mm solid #16b8aa; background: #153a47; border-radius: 0 5mm 5mm 0; }
@@ -36,10 +36,16 @@
     .atlas .evidence-grid h3 { margin: 0 0 2mm; font-size: 7mm; color: #334155; }
     .consistency { grid-column: 1; grid-row: 2; display: grid; grid-template-rows: auto 1fr; }
     .ablation { grid-column: 2; grid-row: 2; display: grid; grid-template-rows: auto 1fr; }
-    .diagnosis { grid-column: 3; grid-row: 2; background: #102d39; color: white; border-color: #102d39; }
+    .diagnosis { grid-column: 3; grid-row: 2; background: #102d39; color: white; border-color: #102d39; display: grid; grid-template-rows: auto auto auto 1fr auto; }
     .diagnosis h2 { color: white; }
     .diagnosis h2 { font-size: 13mm; margin-bottom: 4mm; }
     .diagnosis p { color: #d1dde1; }
+    .diagnosis-plot { width: 100%; height: 76mm; object-fit: contain; border-radius: 3mm; background: white; margin: 1mm 0 3mm; }
+    .diagnosis-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 3mm; margin-bottom: 3mm; }
+    .diagnosis-point { padding: 3.5mm; border: .7mm solid rgba(255,255,255,.18); border-radius: 3mm; background: rgba(255,255,255,.06); font-size: 5.2mm; line-height: 1.22; color: #dbe7eb; }
+    .diagnosis-point strong { display: block; margin-bottom: 1.2mm; color: white; font-size: 7mm; }
+    .diagnosis .meter { margin: 3mm 0 4mm; }
+    .diagnosis .track { height: 6mm; }
     .meter { margin: 5mm 0 6mm; }
     .meter-top { display: flex; justify-content: space-between; font-size: 6mm; margin-bottom: 2mm; }
     .track { height: 8mm; border-radius: 5mm; background: #244551; overflow: hidden; }
@@ -49,17 +55,17 @@
     .atlas .plot { min-height: 0; }
     .consistency .plot, .ablation .plot { min-height: 0; }
     .mini-note { font-size: 5.6mm; color: #5c6a78; margin: -3mm 0 4mm; }
-    .recipe .step { font-size: 6.1mm; border-left: 1.5mm solid #0f766e; }
+    .recipe .step { font-size: 5.7mm; line-height: 1.2; border-left: 1.5mm solid #0f766e; }
     .recipe .step.blue { border-left-color: #2563eb; }
-    .recipe .step + .step { margin-top: 4mm; }
-    .recipe .divide { margin: 6mm 0; border-top: 1mm solid #dce4e9; }
+    .recipe .step + .step { margin-top: 3mm; }
+    .recipe .divide { margin: 4mm 0; border-top: 1mm solid #dce4e9; }
     .phase { display: inline-block; margin-right: 2mm; padding: 1mm 2mm; border-radius: 2mm; background: #dcefeb; color: #0f766e; font-size: 4mm; font-weight: 800; letter-spacing: .2mm; }
     .phase.deploy { background: #e4edff; color: #2563eb; }
-    .budget { margin-top: 4mm; padding: 4mm; border: .8mm solid #f97316; background: #fff5ea; border-radius: 4mm; font-size: 4.7mm; line-height: 1.18; }
-    .budget table { width: 100%; margin-top: 2mm; border-collapse: collapse; font-size: 4.7mm; line-height: 1.12; }
-    .budget th, .budget td { padding: 1.8mm 1mm; text-align: right; border-top: .4mm solid #efc79f; }
+    .budget { margin-top: 3mm; padding: 3mm; border: .8mm solid #f97316; background: #fff5ea; border-radius: 4mm; font-size: 4.2mm; line-height: 1.16; }
+    .budget table { width: 100%; margin-top: 1mm; border-collapse: collapse; font-size: 4.3mm; line-height: 1.08; }
+    .budget th, .budget td { padding: 1.2mm 1mm; text-align: right; border-top: .4mm solid #efc79f; }
     .budget th:first-child, .budget td:first-child { text-align: left; }
-    .takehome { margin-top: 5mm; padding: 5mm; border-radius: 4mm; background: #0f766e; color: white !important; font-size: 6mm !important; line-height: 1.24 !important; font-weight: 700; }
+    .takehome { margin-top: 3.5mm; padding: 4.5mm; border-radius: 4mm; background: #0f766e; color: white !important; font-size: 6mm !important; line-height: 1.24 !important; font-weight: 700; }
     .footer { position: absolute; left: 20mm; right: 20mm; bottom: 5mm; display: flex; justify-content: space-between; font-size: 5mm; color: #5f6f7c; }
   </style>
 </head>
@@ -67,9 +73,9 @@
 <div class="poster">
   <header>
     <div>
-      <div class="eyebrow">Chasing the nines: a Pendulum case study</div>
-      <h1>From 673 failures to nine.<br>Reliability must hold across seeds.</h1>
-      <p>The mixed method uses reference labels during training and more total resources. Both frozen winners deploy without reference access, angle routers, or checkpoint mixtures.</p>
+      <div class="eyebrow">Question: how close can one policy design get to perfect reliability across states and independently trained actors?</div>
+      <h1>Supervision nearly closes the observed reliability tail.<br>Pure RL still finds better trajectories.</h1>
+      <p>Across 12,505 seed-state trials, the selected mixed deployment has nine near-reference failures, compared with 673 for selected pure RL. Pure RL wins strictly against the stored reference more often.</p>
     </div>
     <div class="hero-numbers">
       <div class="hero-number"><strong>99.928%</strong><span>RL + supervised near-reference success<br>12,496 / 12,505 trials</span><div class="secondary">Task success 93.858% · strict wins 12.555%</div></div>
@@ -86,41 +92,41 @@
   <main>
     <section class="card recipe">
       <span class="tag">1 · Method</span>
-      <h2>Two clean routes to one frozen policy</h2>
-      <h3 class="mixed">RL + supervised</h3>
-      <div class="step"><span class="number">1</span><span class="phase">TRAIN</span>SimbaV2 learns full-circle actions from stored dynamic-programming and controller references.</div>
-      <div class="step"><span class="number">2</span><span class="phase">TRAIN</span>DAgger labels states visited by the actor. Three rounds add 30k transitions; a 20k follow-up prioritizes measured failures.</div>
-      <div class="step"><span class="number">3</span><span class="phase deploy">DEPLOY</span>A shared 50k reward-only critic checks actor ± {0, 0.05, 0.10}. Its mostly one-step FastSACN8 target includes a 0.775% eight-step auxiliary. Both critics must approve.</div>
+      <h2>Two routes, no reference at deployment</h2>
+      <h3 class="mixed">Mixed, RL + supervised</h3>
+      <div class="step"><span class="number">1</span><span class="phase">TRAIN</span>A SimbaV2 actor, with normalized residual network blocks, learns reference actions. Three DAgger rounds then request reference labels on 30,000 states visited by the learner.</div>
+      <div class="step"><span class="number">2</span><span class="phase">TRAIN</span>A 20,000-state follow-up automatically prioritizes starts where the frozen actor performs worst.</div>
+      <div class="step"><span class="number">3</span><span class="phase deploy">DEPLOY</span>A reward-only FastSACN8 critic, trained with one-step and eight-step return targets, checks the actor action and four nearby torques. Both critics must approve a change.</div>
       <div class="divide"></div>
       <h3 class="pure">Pure RL</h3>
-      <div class="step blue"><span class="number">1</span><span class="phase">TRAIN</span>SimbaV2 SAC learns from reward for 100,000 transitions.</div>
-      <div class="step blue"><span class="number">2</span><span class="phase deploy">DEPLOY</span>Project the actor through left-right symmetry: a<sub>sym</sub>(s) = [π(s) − π(Ms)] / 2.</div>
+      <div class="step blue"><span class="number">1</span><span class="phase">TRAIN</span>SimbaV2 SAC, with normalized residual network blocks, learns from reward for 100,000 transitions.</div>
+      <div class="step blue"><span class="number">2</span><span class="phase deploy">DEPLOY</span>Reflection averages the actor with its sign-flipped state and action counterpart: a<sub>sym</sub>(s) = [π(s) − π(Ms)] / 2.</div>
       <div class="step blue"><span class="number">3</span><span class="phase deploy">DEPLOY</span>Search 41 torques in [−2, 2]. Replace a<sub>sym</sub> only when both critics predict an improvement above 0.005.</div>
-      <div class="budget"><strong>Cost check</strong> · selected lineage per evaluated actor
+      <div class="budget"><strong>Selected-route ledger</strong>
         <table>
           <tr><th>Method</th><th>Learn</th><th>Discover</th><th>Labels</th></tr>
-          <tr><td>Automatic mixed</td><td>100k</td><td>800k</td><td>690k</td></tr>
-          <tr><td>Uniform mixed</td><td>100k</td><td>0</td><td>690k</td></tr>
+          <tr><td>Mixed</td><td>100k</td><td>800k</td><td>690k</td></tr>
           <tr><td>Pure RL</td><td>100k</td><td>0</td><td>0</td></tr>
         </table>
-        Mixed learning assigns 50k actor transitions plus one shared 50k critic. Uniform mixed removes discovery and still reaches <strong>99.848%</strong> near reference.
+        <strong>Units:</strong> Mixed Learn = 30k + 20k actor-state transitions and one shared 50k critic; pure Learn = 100k reward transitions. These learning events are not compute-equivalent. Discover = 800k candidate rollout interactions used only to rank starts. Labels = 400k initializer + 30k learner states + 240k labels from uniformly sampled reset states + 20k priority states.<br>
+        <strong>Sampler footnote:</strong> the mixed initializer oversampled near-upright states within 35°. Its deployed actor and Q-search use no angle rule or reference query.
       </div>
     </section>
 
     <section class="card atlas">
       <div>
         <span class="tag">2 · Primary evidence</span>
-        <h2>Nine failures versus 673</h2>
-        <p class="mini-note">The grid map localizes failures. The tolerance curve checks whether the conclusion depends on choosing ε = 5. Thin curves are individual actor seeds.</p>
+        <h2>Nine deployed failures versus 673</h2>
+        <p class="mini-note">The nine mixed failures occur across eight of 2,501 grid cells. These are retrospectively selected five-seed grid results from 404 standardized evaluations, not a held-out confirmation set. Pure RL discovers more trajectories that exceed the stored comparator.</p>
       </div>
       <div class="evidence-grid">
         <div>
-          <h3>Where do failures occur?</h3>
-          <img class="plot" src="../figures/02_reliability_maps_poster.png" alt="Pure RL and mixed reliability heat maps">
+          <h3>How large is the category gap?</h3>
+          <img class="plot" src="../../../reports/current_best_noncheating_20260723/figures/09_mixed_vs_pure_gap.png" alt="Mixed minus pure classification and return gaps">
         </div>
         <div>
-          <h3>Does the tolerance choice change the result?</h3>
-          <img class="plot" src="../figures/06_tolerance_curve_poster.png" alt="Near-reference success across return tolerances and actor seeds">
+          <h3>How do the main baselines compare?</h3>
+          <img class="plot" src="../figures/37_core_scorecard_large.png" alt="Five-seed scorecard">
         </div>
       </div>
     </section>
@@ -128,41 +134,36 @@
     <section class="card consistency">
       <div>
         <span class="tag">3 · Seed diagnosis</span>
-        <h2>Pure RL can solve most cells, but not reliably</h2>
-        <p class="mini-note">Near-reference range over actor seeds: mixed 99.720–100.000%; pure RL 93.323–96.242%.</p>
+        <h2>The gap is a consistency gap across seeds</h2>
+        <p class="mini-note">All five mixed actors succeed on 2,493 of 2,501 cells; per-seed rates span 99.72% to 100%. Pure RL reaches 2,255 all-seed cells, spans 93.32% to 96.24%, and has 207 seed-variable cells.</p>
       </div>
-      <img class="plot" src="../figures/03_seed_consistency_poster.png" alt="All seed and any seed consistency">
+      <img class="plot" src="../../../reports/current_best_noncheating_20260723/figures/08_cross_seed_cell_consistency.png" alt="All-seed and any-seed consistency">
     </section>
 
     <section class="card ablation">
       <div>
-        <span class="tag">4 · Matched component checks</span>
-        <h2>Which additions actually fix failures?</h2>
-        <p class="mini-note">Each bar adds the named component to its paired baseline over 12,505 paired seed-state cases. Net count equals fixed minus newly broken classifications.</p>
-        <p class="mini-note">Near-reference rate: mixed actor 99.720% → 99.928% with local search; plain SimbaV2 91.835% → 94.618% with global search and reflection.</p>
+        <span class="tag">4 · Matched ablations</span>
+        <h2>Different components repair different errors</h2>
+        <p class="mini-note">Bars show after minus before on the same 12,505 trials. In a separate locked off-grid combination test, FastSACN8 plus critic UTD2 lowers the raw actor from 91.86% to 89.94%, but the same reflection and Q-search raise 94.49% to 95.91%. It loses 25 task-success trials and misses the promotion gate.</p>
       </div>
-      <img class="plot" src="../figures/04_component_ablation_poster.png" alt="Component ablations">
+      <img class="plot" src="../figures/39_component_ablation_large.png" alt="Matched component ablations">
     </section>
 
     <section class="card diagnosis">
       <span class="tag">5 · Mechanism diagnostic</span>
-      <h2>Critic uncertainty is larger than the local signal</h2>
-      <div class="meter">
-        <div class="meter-top"><span>Pairwise action ordering</span><strong>84.4%</strong></div>
-        <div class="track"><div class="fill" style="width:84.4%"></div></div>
+      <h2>The pure tail is not a simple coverage hole</h2>
+      <img class="diagnosis-plot" src="../figures/38_sequence_diagnostic_large.png" alt="Pure RL sequence-control diagnostic">
+      <div class="diagnosis-grid">
+        <div class="diagnosis-point"><strong>98.9% nearby</strong>A reference-like action already occurs among the 256 nearest replay actions for 1,010 of 1,021 failed pre-intervention actor trials.</div>
+        <div class="diagnosis-point"><strong>11.7% repaired</strong>One reference action produces a return gain above five in only 119 failures.</div>
+        <div class="diagnosis-point"><strong>99.9% at 32 steps</strong>A state-matched reference prefix repairs almost every failed trial before control returns to the same frozen actor.</div>
+        <div class="diagnosis-point"><strong>0.5% shuffled</strong>Reference actions taken from other states do not reproduce the repair. Zero torque repairs none at 32 steps.</div>
       </div>
-      <div class="meter">
-        <div class="meter-top"><span>Harmful tested Q proposals</span><strong>19.0%</strong></div>
-        <div class="track"><div class="fill orange" style="width:19%"></div></div>
-      </div>
-      <div class="callout"><strong>Tail signal problem:</strong> median twin-critic disagreement is <strong>2.43 times</strong> the median local Q range. Typical rankings help, but harmful tested proposals occur 19.0% of the time on these targeted hard states.</div>
-      <p style="margin-top:4mm"><strong class="strict">Strict wins tell a different story.</strong> Pure RL beats the stored reference in 18.4% of trials, compared with 12.6% for the mixed method. Reliability and strict improvement are different operating points.</p>
-      <p class="source"><strong>Diagnostic scope:</strong> five seeds, 99 hard states, and 21 actions per state. Pairwise ordering compares Q with realized counterfactual return.</p>
-      <p class="source"><strong>Limits:</strong> one deterministic task and selected grid campaigns. Mechanism evidence is targeted, not causal or held out.</p>
-      <p class="takehome">Take-home: mixed training suppresses seed-dependent failures. Pure RL often finds excellent actions, but its critic cannot gate tail corrections reliably enough.</p>
+      <p class="source"><strong>Scope:</strong> these 1,021 failures come from five frozen pure-RL actors before reflection or Q-search. The 673 headline failures come after both deployment corrections. Reference actions are diagnostic only.</p>
+      <p class="takehome">Failed seeds do not have farther nearest training resets more often than chance, and useful nearby replay actions are usually present. One action rarely repairs the return, while a 32-step state-matched sequence repairs 99.9%. The evidence points to compounding sequence error and imperfect actor-critic transfer without identifying the training cause.</p>
     </section>
   </main>
-  <div class="footer"><span>Ala Sleimi · Technical University of Munich · Project 15 · 23 July 2026</span><span>SAC: Haarnoja et al. 2018 · DAgger: Ross et al. 2011 · SimbaV2: Lee et al. 2025 · SACn: Lyskawa et al. 2025</span><span>61 angles × 41 velocities × 5 actor seeds</span></div>
+  <div class="footer"><span>Ala Sleimi · Technical University of Munich · Project 15 · 25 July 2026</span><span>SAC: Haarnoja et al. 2018 · DAgger: Ross et al. 2011 · SimbaV2: Lee et al. 2025 · SACn: Łyskawa et al. 2025</span><span>61 angles × 41 velocities × 5 actor seeds</span></div>
 </div>
 </body>
 </html>
