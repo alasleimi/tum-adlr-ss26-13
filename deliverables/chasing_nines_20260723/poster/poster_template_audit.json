@@ -1,0 +1,24 @@
+{
+  "html": "C:\\Users\\Ala\\Desktop\\Project 15\\deliverables\\chasing_nines_20260723\\poster\\poster.html",
+  "pdf": "C:\\Users\\Ala\\Desktop\\Project 15\\deliverables\\chasing_nines_20260723\\poster\\poster.pdf",
+  "expected_page_mm": [
+    1189.0,
+    841.0
+  ],
+  "actual_page_mm": [
+    1189.228,
+    841.4173333333333
+  ],
+  "page_ok": true,
+  "orientation": "landscape",
+  "minimum_font_mm": 11.1,
+  "minimum_font_px": 41.952755905511815,
+  "observed_minimum_font_px": 42.3307,
+  "undersized_text": [],
+  "image_failures": 0,
+  "dom_body_px": [
+    4494,
+    3179
+  ],
+  "pass": true
+}

@@ -2,7 +2,7 @@
 \vspace{-1.5em}
 
 \begin{abstract}
-Reliable reinforcement learning must work across initial states and independent training seeds. We evaluate five trained actors on the same 2,501-state Pendulum grid. The selected reinforcement-learning-plus-supervision recipe combines learner-state DAgger, automatic follow-up on measured weak starts, and conservative local critic search. It succeeds near the reference on 12,496 of 12,505 seed-state trials, or 99.928\%. The selected pure-RL recipe combines SimbaV2, FastSACN8 critic training, symmetry, and twin-critic action search. It reaches 12,008 trials, or 96.026\%. Task-success rates are 93.858\% and 92.875\%; strict reference wins are 12.555\% and 22.823\%. Matched ablations show that critic search repairs many decisions missed by the pure-RL actor, while the raw actor becomes less reliable and more saturated. Corrective actions are present in replay, but a single corrected action rarely fixes a failed rollout. The critic can often identify a better action, but the actor does not turn those preferences into a reliable sequence of actions.
+Reliable reinforcement learning must work across initial states and independent training seeds. We evaluate five trained actors on the same 2,501-state Pendulum grid. The selected reinforcement-learning-plus-supervision recipe combines learner-state DAgger, automatic follow-up on measured weak starts, and conservative local critic search. It succeeds near the reference on 12,496 of 12,505 seed-state trials, or 99.928\%. The selected pure-RL recipe combines SimbaV2, FastSACN8 critic training, symmetry, and twin-critic action search. It reaches 12,008 trials, or 96.026\%. Task-success rates are 93.858\% and 92.875\%; strict reference wins are 12.555\% and 22.823\%. Matched ablations show that critic search repairs many decisions missed by the pure-RL actor, while the raw actor becomes less reliable and more saturated. On failure-conditioned states, multi-step actors retain about 7\% of a nominal local critic step after action-bound projection. The reference-prefix intervention repairs 19.1\% of failures with one state-matched action and 99.0\% with 32, showing that the selected raw-actor failures generally require an ordered, state-matched correction sequence.
 \end{abstract}
 
 \section{Reliability target and evidence}
@@ -36,7 +36,7 @@ The two-repository census contains 404 standardized evaluations. Every headline 
 \paragraph{Technical context and study design.}
 SAC trains a stochastic actor and twin critics from reward and entropy \cite{haarnoja2018sac}. SimbaV2 contributes normalized residual networks for stable deep RL \cite{lee2025simba}. DAgger supplies reference labels on learner-visited states to address sequential distribution shift \cite{ross2011dagger}. Our measured-regret priority stage is related to automatic curricula \cite{jiang2021plr}. Published SACn trains on several multi-step losses and uses importance weighting plus a lower-variance entropy estimate to control off-policy bias and target variance \cite{lyskawa2025sacn}. Our FastSACN variant is a simplified ablation: it retains only the one-step and longest losses, and the selected pure recipe does not use the paper's importance correction. Critic action search is a thresholded analogue of critic-guided action optimization \cite{kalashnikov2018qtopt}. Reflection and search are deployment projections rather than new training algorithms. Multi-seed evaluation is essential because aggregate means can conceal instability \cite{henderson2018matters,agarwal2021precipice}.
 
-The study combines these components into two deployments, measures the paired contribution of each retained component, and diagnoses the larger pure-RL tail. The analysis tests four explanations: missing experience, ineffective critic learning, failed actor extraction, and compounding closed-loop error.
+The study combines these components into two deployments, measures the paired contribution of each retained component, and diagnoses the larger pure-RL tail. The analysis tests four explanations: missing experience, ineffective critic learning, failed actor extraction, and error accumulation across several decisions.
 
 \clearpage
 \onecolumn
@@ -80,7 +80,7 @@ The study combines these components into two deployments, measures the paired co
 \vspace{1mm}
 \begin{multicols}{2}
 \paragraph{Mixed recipe in plain language.}
-A width-64, two-block SimbaV2 actor first learns reference actions. Three DAgger rounds then let the actor control the pendulum and label the states it actually reaches. The follow-up evaluates uniformly sampled starts, ranks them by measured regret, and collects 20,000 more transitions from weak starts plus a uniform fraction. This sequence turns observed closed-loop errors into new supervised examples. Tiny critic-based shifts of the action labels changed none of the requested classifications.
+A width-64, two-block SimbaV2 actor first learns reference actions. Three DAgger rounds then let the actor control the pendulum and label the states it actually reaches. The follow-up evaluates uniformly sampled starts, ranks them by measured regret, and collects 20,000 more transitions from weak starts plus a uniform fraction. The resulting dataset contains states reached after earlier actor errors. Tiny critic-based shifts of the action labels changed none of the requested classifications.
 
 The supervised actor minimizes
 \[
@@ -196,31 +196,37 @@ On the selected FastSACN8 plus SimbaV2 lineage, reflection adds 312 near-referen
 
 \clearpage
 \onecolumn
-\section{Why pure reinforcement learning leaves a larger tail}
+\section{Matched target ablations separate critic direction from actor sensitivity}
 
 \begin{center}
 \centering
-\includegraphics[width=.96\textwidth]{47_actor_critic_transfer.png}
-\captionof{figure}{Target ablations on five seeds and matched deployment interventions on the selected pure-RL lineage. The target and critic-update dose change together in the selected recipe, so their individual effects are not identified.}
+\includegraphics[width=.98\textwidth]{58_poster_target_family_internals_wide.png}
+\captionof{figure}{Matched 100k SimbaV2 target families with five actor-critic seeds each. SAC denotes one-step SAC, Fast denotes FastSACN8, and SACn denotes SACN8. Panels A and B use 5,553 locked states per seed. Panels C and D use 512 locked states per seed and report failure-conditioned interventions. In C, blue is critic-direction agreement with realized return change, green is helpful-reference-action recognition, and orange is the harmful projected-step rate. In D, gray is action-bound occupancy, blue is an outward critic direction, and orange is the fraction of a nominal 0.05 step retained after projection.}
 \end{center}
 
 \vspace{-1mm}
 \begin{multicols}{2}
 \small
-\paragraph{Multi-step losses improve critic-guided corrections, but the actors saturate.}
-At failed states, we move the action a small distance in the direction preferred by that run's critic, execute the changed action, and measure the resulting return. The change helps in 74.5\% of one-step SAC cases, 88.9\% for FastSACN8, and 89.7\% for SACN8. The corresponding $\lambda=1$ actors saturate at the torque bound on 86.8\% of diagnostic states and have substantially lower near-reference rates than the one-step actors. In the selected $\lambda=0.5$ recipe, the eight-step cross-entropy term has a normalized coefficient of 0.775\%. This coefficient alone cannot establish whether the long-horizon term is weak or strong after repeated nonlinear updates. The selected recipe also doubles critic updates, so the final gain cannot be attributed separately to the eight-step loss or the extra optimization.
+\paragraph{Target choice changes critic direction and actor sensitivity differently.}
+Relative to one-step SAC, FastSACN8 and SACN8 raise median torque-limit occupancy from 59.1\% to 86.9\% and 86.7\%. Median tanh sensitivity $1-\tanh^2(u)$ falls from 0.120 to 0.039 for both multi-step families. Their critics nevertheless improve local action-direction agreement from 73.1\% to 74.8\% and 76.2\%, while harmful projected steps fall from 27.8\% to 26.6\% and 24.6\%. Better local critic direction therefore coexists with a less responsive actor output.
 
-\paragraph{The selected gain is critic-guided repair.}
-On 27,765 locked off-grid trials, the selected FastSACN8-plus-UTD2 raw actors score 89.937\%, below the matched one-step actors at 91.864\%. Their median action-saturation fraction rises from 59.1\% to 70.3\% in all five paired seeds. After the same reflection and Q-search deployment, the ordering reverses from 94.489\% to 95.909\%. On the authority grid, reflection raises the selected lineage from 89.868\% to 92.363\%, and twin-Q search raises it to 96.026\%. The critics often rank a better action than the one produced by the raw actor.
+\paragraph{The action bound absorbs most local corrections on failures.}
+Among failure rows, 91.5\% of one-step actions, 98.5\% of FastSACN8 actions, and 98.9\% of SACN8 actions lie within 0.05 torque of the bound. Their critics point farther outward on 82.0\%, 94.6\%, and 95.1\% of those boundary rows. Projection retains 28.2\%, 7.1\%, and 6.9\% of a nominal 0.05 critic-gradient step. This is a post-training, failure-conditioned association. Saturated actions are often correct in Pendulum, so the result identifies a local projection constraint rather than proving that saturation caused failure.
 
-\paragraph{The residual error lasts for several decisions.}
-We temporarily apply a state-matched reference controller at the start of each of 1,267 selected raw-actor failures, then return control to the same actor. If only the first move were wrong, one correction would rescue most failures. It rescues 19.1\%. Eight steps rescue 47.7\%, 16 rescue 91.3\%, and 32 rescue 99.0\%. Shuffling the 32 actions across states rescues 0.6\%. The failed actor needs a state-dependent corrective segment, not an isolated torque.
+\paragraph{FastSACN8 critic ranking is useful but uneven.}
+At the first actor-reference disagreement, one reference action improves continuation return in 79.4\% of FastSACN8 failures, yet the FastSACN8 critic ranks that helpful action above the actor action in 54.5\% of cases. The corresponding recognition rates are 86.4\% for one-step SAC and 80.4\% for SACN8. Reference actions are used only after frozen-policy failures are identified. They never enter deployment.
 
-\paragraph{Coarse exploration and dead features do not explain the gap.}
-On the established five-seed one-step lineage, a reference-like action occurs among nearby replay actions for 1,010 of 1,021 failures. Failed and successful seeds also have similar nearest-reset distances on variable grid cells. Completed SimbaV2 arms record zero dormant units at the registered threshold. These tests weaken broad missing-coverage and widespread-dormancy explanations. They do not rule out poor weighting of rare transitions, local optimization errors, or plasticity mechanisms outside the measured statistic \cite{sokar2023redo,lyle2023plasticity,nikishin2022primacy}.
+\paragraph{The selected FastSACN8 gain appears after critic-guided selection.}
+On 27,765 locked off-grid trials, five one-step actors reach 91.864\% near-reference success before search, compared with 89.937\% for the selected $\lambda=0.5$, critic-UTD2 FastSACN8 actors. After the same reflection and Q-search rule, the ordering reverses from 94.489\% to 95.909\%. The selected recipe changes both the target and critic update dose, so the comparison does not identify their separate effects. Q-search evaluates candidate torques directly and does not depend on a small projected change to the saturated actor output.
 
-\paragraph{Mechanistic account and conclusion.}
-Direct labels on learner-visited states teach the mixed actor which action to take throughout a recovery, including states created by its own earlier mistakes. Automatic follow-up concentrates additional labels on measured weak starts. Pure RL already visits the relevant regions, and its critics can repair hundreds of decisions made by the actor. However, the raw actor is more saturated, and one repaired decision usually does not prevent later drift. These post-selection diagnostics support a mechanistic account in which critic search improves the current pure-RL decision, while supervision compresses the tail by labeling the following learner-visited states. The fixed grid gives exact benchmark counts rather than independent population trials, and the two pipelines use unequal supervision and discovery cost. Within those limits, the next pure-RL improvement should train the actor on critic-selected action sequences while controlling saturation.
+\paragraph{A naive joint imitation and SAC loss is badly scaled.}
+In the logged 25,000-step joint pilot, the joint BC plus SACN8 actor reaches 2,443 of 2,501 near-reference starts, compared with 1,757 for the matched reward-only actor. The median norm of the weighted behavior-cloning gradient is 37.2 times the SAC actor-gradient norm. Minibatch cosine similarity ranges from $-0.943$ to $0.935$, with interval median 0.075. The pilot shows that the tested joint loss is severely imbalanced. It does not rule out normalized, scheduled, or projection-based gradient combinations.
+
+\paragraph{Dormancy and replay absence do not explain the observed tail.}
+No dormant units are detected at the registered relative-activation threshold. A reference-like action appears among nearby replay actions for 1,010 of 1,021 failures in the established one-step lineage. These negative controls weaken explanations based on widespread dead features or complete absence of corrective actions from replay. They do not show whether rare corrective transitions receive sufficient update weight.
+
+\paragraph{Repair requires a state-matched sequence.}
+For each of 1,267 selected raw-actor failures, we use reference actions for the first $K$ decisions and then resume the same frozen actor. Repair rises from 19.1\% at $K=1$ to 47.7\%, 91.3\%, and 99.0\% at $K=8,16,32$. Shuffling the same 32 actions repairs 0.6\%. DAgger records $(s_t,a^\star(s_t))$ at states visited by the current actor, while the priority refit emphasizes starts with measured return deficits. This behavior-level intervention complements the internal diagnostics: local critic information can be useful, yet successful recovery requires a state-dependent action sequence.
 \end{multicols}
 
 \clearpage
