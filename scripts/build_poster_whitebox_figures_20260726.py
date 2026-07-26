@@ -645,6 +645,250 @@ def build_target_family_internal_diagnostics_wide() -> None:
     plt.close(fig)
 
 
+def build_target_family_internal_diagnostics_direct() -> None:
+    """Two-by-two white-box figure with direct labels for A0 viewing distance."""
+    geometry = json.loads(GEOMETRY.read_text(encoding="utf-8"))["arms"]
+    keys = [
+        "p0_simba_onestep_utd1_100k",
+        "p1_simba_fastsacn8_lambda1_utd1_100k",
+        "p2_simba_sacn8_lambda1_utd1_100k",
+    ]
+    labels = ["SAC", "Fast", "N8"]
+    colors = [GRAY, PURE, MIXED]
+    saturation = [
+        100
+        * np.asarray(
+            geometry[key]["metrics"][
+                "deterministic_action_saturation_fraction_abs_ge_0p995"
+            ]["seed_values"]
+        )
+        for key in keys
+    ]
+    sensitivity = [
+        np.asarray(geometry[key]["metrics"]["mean_tanh_derivative"]["seed_values"])
+        for key in keys
+    ]
+    critic_direction = np.asarray([73.09, 74.84, 76.21])
+    helpful_recognition = np.asarray([86.39, 54.47, 80.38])
+    harmful_step = np.asarray([27.77, 26.64, 24.61])
+    failure_boundary = np.asarray([91.50, 98.51, 98.92])
+    outward_at_boundary = np.asarray([81.97, 94.64, 95.06])
+    effective_fraction = np.asarray([28.17, 7.13, 6.94])
+
+    fig, axes = plt.subplots(2, 2, figsize=(18, 10.2), facecolor="white")
+    x = np.arange(3)
+
+    ax = axes[0, 0]
+    for seed in range(5):
+        ax.plot(
+            x,
+            [saturation[family][seed] for family in range(3)],
+            color="#b8c7ce",
+            linewidth=2.2,
+            marker="o",
+            markersize=5,
+            zorder=1,
+        )
+    medians = [np.median(values) for values in saturation]
+    ax.scatter(x, medians, s=150, color=colors, edgecolor="white", linewidth=1.8, zorder=3)
+    for i, value in enumerate(medians):
+        ax.text(i, value + 2.8, f"{value:.1f}%", ha="center", fontsize=23, fontweight="bold")
+    ax.set_ylim(40, 100)
+    ax.set_title("A  Actor output reaches the torque bound", fontsize=25, fontweight="bold", loc="left")
+    ax.set_ylabel("States at |a| ≥ 1.99 (%)", fontsize=19)
+
+    ax = axes[0, 1]
+    for seed in range(5):
+        ax.plot(
+            x,
+            [sensitivity[family][seed] for family in range(3)],
+            color="#b8c7ce",
+            linewidth=2.2,
+            marker="o",
+            markersize=5,
+            zorder=1,
+        )
+    medians = [np.median(values) for values in sensitivity]
+    ax.scatter(x, medians, s=150, color=colors, edgecolor="white", linewidth=1.8, zorder=3)
+    for i, value in enumerate(medians):
+        ax.text(i, value + 0.009, f"{value:.3f}", ha="center", fontsize=23, fontweight="bold")
+    ax.set_ylim(0, 0.17)
+    ax.set_title("B  Sensitivity through tanh collapses", fontsize=25, fontweight="bold", loc="left")
+    ax.set_ylabel(r"Median $1-\tanh^2(u)$", fontsize=19)
+
+    width = 0.24
+    ax = axes[1, 0]
+    series_c = (
+        (-width, critic_direction, PURE, "Gradient helps"),
+        (0, helpful_recognition, MIXED, "Helpful action ranked higher"),
+        (width, harmful_step, ORANGE, "Projected step hurts"),
+    )
+    for offset, values, color, label in series_c:
+        bars = ax.bar(x + offset, values, width, color=color, label=label)
+        ax.bar_label(bars, labels=[f"{v:.0f}" for v in values], padding=2, fontsize=18, fontweight="bold")
+    ax.set_ylim(0, 105)
+    ax.set_title("C  Frozen critic probes on failures", fontsize=25, fontweight="bold", loc="left")
+    ax.set_ylabel("Failure-state trials (%)", fontsize=19)
+    ax.legend(
+        loc="upper center",
+        bbox_to_anchor=(0.5, -0.13),
+        ncol=3,
+        frameon=False,
+        fontsize=15,
+        handlelength=1.0,
+        columnspacing=0.8,
+    )
+
+    ax = axes[1, 1]
+    series_d = (
+        (-width, failure_boundary, GRAY, "Actor at bound"),
+        (0, outward_at_boundary, PURE, "Critic points outward"),
+        (width, effective_fraction, ORANGE, "Step retained"),
+    )
+    for offset, values, color, label in series_d:
+        bars = ax.bar(x + offset, values, width, color=color, label=label)
+        ax.bar_label(bars, labels=[f"{v:.0f}" for v in values], padding=2, fontsize=18, fontweight="bold")
+    ax.set_ylim(0, 108)
+    ax.set_title("D  Action clipping removes the update", fontsize=25, fontweight="bold", loc="left")
+    ax.set_ylabel("Failure-state trials (%)", fontsize=19)
+    ax.legend(
+        loc="upper center",
+        bbox_to_anchor=(0.5, -0.13),
+        ncol=3,
+        frameon=False,
+        fontsize=15,
+        handlelength=1.0,
+        columnspacing=0.8,
+    )
+
+    for ax in axes.flat:
+        ax.set_xticks(x, labels)
+        style_axis(ax, "y")
+        ax.tick_params(labelsize=18)
+    fig.subplots_adjust(left=0.075, right=0.985, top=0.94, bottom=0.12, hspace=0.48, wspace=0.25)
+    fig.savefig(FIG / "69_poster_whitebox_direct.png", dpi=240, facecolor="white")
+    plt.close(fig)
+
+
+def build_target_family_internal_diagnostics_direct_wide() -> None:
+    """Four directly labeled white-box probes in one poster-width band."""
+    geometry = json.loads(GEOMETRY.read_text(encoding="utf-8"))["arms"]
+    keys = [
+        "p0_simba_onestep_utd1_100k",
+        "p1_simba_fastsacn8_lambda1_utd1_100k",
+        "p2_simba_sacn8_lambda1_utd1_100k",
+    ]
+    labels = ["SAC", "Fast", "N8"]
+    colors = [GRAY, PURE, MIXED]
+    saturation = [
+        100
+        * np.asarray(
+            geometry[key]["metrics"][
+                "deterministic_action_saturation_fraction_abs_ge_0p995"
+            ]["seed_values"]
+        )
+        for key in keys
+    ]
+    sensitivity = [
+        np.asarray(geometry[key]["metrics"]["mean_tanh_derivative"]["seed_values"])
+        for key in keys
+    ]
+    critic_direction = np.asarray([73.09, 74.84, 76.21])
+    helpful_recognition = np.asarray([86.39, 54.47, 80.38])
+    harmful_step = np.asarray([27.77, 26.64, 24.61])
+    failure_boundary = np.asarray([91.50, 98.51, 98.92])
+    outward_at_boundary = np.asarray([81.97, 94.64, 95.06])
+    effective_fraction = np.asarray([28.17, 7.13, 6.94])
+
+    fig, axes = plt.subplots(1, 4, figsize=(24, 5.8), facecolor="white")
+    x = np.arange(3)
+
+    ax = axes[0]
+    for seed in range(5):
+        ax.plot(
+            x,
+            [saturation[family][seed] for family in range(3)],
+            color="#b8c7ce",
+            linewidth=2.0,
+            marker="o",
+            markersize=4,
+            zorder=1,
+        )
+    medians = [np.median(values) for values in saturation]
+    ax.scatter(x, medians, s=125, color=colors, edgecolor="white", linewidth=1.5, zorder=3)
+    for i, value in enumerate(medians):
+        ax.text(i, value + 3.0, f"{value:.1f}", ha="center", fontsize=22, fontweight="bold")
+    ax.set_ylim(40, 100)
+    ax.set_title("A  At torque bound (%)", fontsize=23, fontweight="bold", loc="left")
+
+    ax = axes[1]
+    for seed in range(5):
+        ax.plot(
+            x,
+            [sensitivity[family][seed] for family in range(3)],
+            color="#b8c7ce",
+            linewidth=2.0,
+            marker="o",
+            markersize=4,
+            zorder=1,
+        )
+    medians = [np.median(values) for values in sensitivity]
+    ax.scatter(x, medians, s=125, color=colors, edgecolor="white", linewidth=1.5, zorder=3)
+    for i, value in enumerate(medians):
+        ax.text(i, value + 0.009, f"{value:.3f}", ha="center", fontsize=22, fontweight="bold")
+    ax.set_ylim(0, 0.17)
+    ax.set_title(r"B  Tanh sensitivity $1-\tanh^2(u)$", fontsize=23, fontweight="bold", loc="left")
+
+    width = 0.24
+    ax = axes[2]
+    for offset, values, color, label in (
+        (-width, critic_direction, PURE, "gradient helps"),
+        (0, helpful_recognition, MIXED, "ranks helpful"),
+        (width, harmful_step, ORANGE, "step hurts"),
+    ):
+        bars = ax.bar(x + offset, values, width, color=color, label=label)
+        ax.bar_label(bars, labels=[f"{v:.0f}" for v in values], padding=2, fontsize=17, fontweight="bold")
+    ax.set_ylim(0, 108)
+    ax.set_title("C  Frozen critic test (%)", fontsize=23, fontweight="bold", loc="left")
+    ax.legend(
+        loc="upper center",
+        bbox_to_anchor=(0.5, -0.18),
+        ncol=1,
+        frameon=False,
+        fontsize=13,
+        handlelength=1.0,
+        labelspacing=0.15,
+    )
+
+    ax = axes[3]
+    for offset, values, color, label in (
+        (-width, failure_boundary, GRAY, "actor at bound"),
+        (0, outward_at_boundary, PURE, "critic outward"),
+        (width, effective_fraction, ORANGE, "step retained"),
+    ):
+        bars = ax.bar(x + offset, values, width, color=color, label=label)
+        ax.bar_label(bars, labels=[f"{v:.0f}" for v in values], padding=2, fontsize=17, fontweight="bold")
+    ax.set_ylim(0, 112)
+    ax.set_title("D  Clipped critic step (%)", fontsize=23, fontweight="bold", loc="left")
+    ax.legend(
+        loc="upper center",
+        bbox_to_anchor=(0.5, -0.18),
+        ncol=1,
+        frameon=False,
+        fontsize=13,
+        handlelength=1.0,
+        labelspacing=0.15,
+    )
+
+    for ax in axes:
+        ax.set_xticks(x, labels)
+        style_axis(ax, "y")
+        ax.tick_params(labelsize=18)
+    fig.subplots_adjust(left=0.045, right=0.99, top=0.82, bottom=0.31, wspace=0.33)
+    fig.savefig(FIG / "70_poster_whitebox_direct_wide.png", dpi=240, facecolor="white")
+    plt.close(fig)
+
+
 def main() -> None:
     FIG.mkdir(parents=True, exist_ok=True)
     build_scorecard()
@@ -652,6 +896,8 @@ def main() -> None:
     build_joint_gradient_compact()
     build_target_family_internal_diagnostics()
     build_target_family_internal_diagnostics_wide()
+    build_target_family_internal_diagnostics_direct()
+    build_target_family_internal_diagnostics_direct_wide()
 
 
 if __name__ == "__main__":

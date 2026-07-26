@@ -1,8 +1,9 @@
 {
   "status": "FAIL_REQUIRES_USER_JUDGMENT",
-  "reviewed_poster_sha256": "6923971041ce07d8222b04d285e19cb5c9298828e81cb744189902dece1f5f7a",
-  "final_candidate_sha256": "bd2350d051566dee717e3106d2e3d38296ae5566d5e9534fe638e38067322f64",
-  "final_candidate_exactly_blind_tested": false,
+  "poster_sha256": "b0b23c1772fdb3d711e3c1c2cdb51404365c4871f271ec6a7775fd457a2af174",
+  "reviewed_poster_sha256": "b0b23c1772fdb3d711e3c1c2cdb51404365c4871f271ec6a7775fd457a2af174",
+  "final_candidate_sha256": "b0b23c1772fdb3d711e3c1c2cdb51404365c4871f271ec6a7775fd457a2af174",
+  "final_candidate_exactly_blind_tested": true,
   "comparisons": [
     {
       "id": "blind_final_production_20260726/three_set1",
@@ -51,5 +52,5 @@
     "3DPRAC": "0 of 3",
     "NEED": "0 of 3"
   },
-  "note": "Each reviewer saw only anonymous A.pdf and B.pdf and was asked which was the better poster. The reviewed production version lost both three-vote majorities. Afterward, production-only fixes replaced the small raster scorecard with native poster text, shortened plot labels, and added export padding. Those fixes changed the final PDF hash, so the current candidate is not claimed as exactly blind tested. The rubric-free preference gate is still unmet."
+  "note": "Each reviewer saw only anonymous A.pdf and B.pdf and was asked which was the better poster. The exact final candidate lost both three-vote majorities. The rubric-free preference gate is unmet."
 }

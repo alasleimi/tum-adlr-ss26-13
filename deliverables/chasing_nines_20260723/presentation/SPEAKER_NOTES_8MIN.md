@@ -1,97 +1,89 @@
 # Chasing the Nines: 8-minute presentation path
 
-Target speaking time: 7 minutes 40 seconds to 8 minutes. The remaining margin allows for starting the videos and moving between poster regions.
+Target speaking time: 7 minutes 40 seconds. The remaining 20 seconds allow for starting the video and moving between poster regions.
 
-## 0:00 to 0:45 | Question
+## 0:00 to 0:45 | Question and result
 
-Our project asks a reliability question. Can a policy succeed not only on average, but across difficult initial states and independent training seeds?
+Point to the dark headline.
 
-We call this “chasing the nines.” Moving from 96% to 99.9% success changes the problem. Average return is no longer enough because a small, seed-dependent failure tail dominates the result.
+Our question is whether one learned policy can succeed across difficult initial states and independent training seeds. We call this “chasing the nines.” Moving from 96% to 99.9% reliability changes the problem because a small failure tail dominates the conclusion.
 
-We studied Pendulum because it gives us a controlled setting where every initial angle and angular velocity can be evaluated systematically. The broader question is relevant whenever an RL policy must recover reliably rather than perform well on a typical episode.
+On the same 12,505 seed-state trials, our best RL plus supervised recipe has 9 near-reference failures. Our best five-seed pure-RL recipe has 497. Pure RL wins strictly against the reference more often, so reliability and return dominance are different objectives.
 
-## 0:45 to 1:30 | Evaluation
+## 0:45 to 1:35 | Evaluation
 
-Point to panel 01.
+Point to panel 01 and its fixed-evaluation box.
 
-We evaluate five independently trained actors on the same grid of 2,501 starts. That produces 12,505 seed-state trials for each recipe.
+We train five independent actors and evaluate every actor on 2,501 starts from a 61 by 41 grid. Each rollout lasts 200 steps.
 
-Our main metric is near-reference success. A trial succeeds when its return is within five points of a strong reference controller. We also report task success, which asks whether the pendulum stays upright and slow for most of the episode, and strict wins, where the learned policy obtains a higher return than the reference.
+Near-reference success means that return is within five points of the better reference controller. Task success asks whether the pendulum stays upright and slow for at least 80 percent of the rollout. A strict win means that the learned policy beats both reference controllers.
 
-The grid matters because it shows whether failures form a stable region or appear only for particular seeds.
+The fixed grid exposes two sources of unreliability: hard states and disagreement between training seeds.
 
-## 1:30 to 2:35 | The two selected recipes
+## 1:35 to 2:45 | The two selected routes
 
-Point to the method boxes in panel 01.
+Point to the two colored method boxes in panel 02.
 
-The mixed recipe has three stages. First, DAgger labels states visited by the learner, so the actor learns corrections on its own state distribution. Second, an automatic follow-up stage revisits starts where measured performance is weak. It does not use a hand-coded angle range. Third, a reward-trained critic performs conservative local action search.
+The mixed route has three training stages. DAgger asks the reference controller to label states actually visited by the learner. Priority refit automatically samples the starts with the largest measured return deficits. Local Q-search then scores the actor torque and four nearby torques with both learned critics.
 
-The selected pure-RL recipe uses 100,000 reward transitions. It combines a SimbaV2 network, FastSACN8 critic training, physical symmetry, and twin-critic action search.
+The pure-RL route uses 100,000 reward transitions. Its actor and critics use SimbaV2 networks. FastSACN8 is our reduced SACn-inspired critic objective that combines one-step and eight-step targets. The selected recipe also uses symmetry reflection and a 41-action twin-critic search.
 
-FastSACN8 is our simplified multi-step critic variant. Published SACn averages losses from multiple return horizons and adds importance weighting and a lower-variance entropy estimate. Our variant keeps only one-step and eight-step categorical critic targets. It also performs two critic updates per transition.
+Reference labels and discovery rollouts are used only while training the mixed route. At deployment, each route is one actor/critic pipeline. It receives the current state and does not query the reference.
 
-The eight-step term has an explicit normalized coefficient of 0.775% in the selected implementation. That number is not a measured gradient share and does not show that the term is negligible. A small coefficient can still have a cumulative effect through repeated nonlinear updates and shared features. Our current experiments also couple the target change with twice as many critic updates, so they do not isolate those two effects.
+## 2:45 to 3:35 | What each component contributes
 
-## 2:35 to 3:25 | Main result
+Point to the matched controls and pure-RL path in panel 02.
 
-Point to the percentages and then panel 02.
+The top row contains three separate five-seed controls for the mixed route. Learner-state refitting reduces 38 failures to 9. Priority sampling reduces 19 to 9 relative to uniform starts. Local Q-search reduces 35 to 9 relative to the same actor. These comparisons share the final method, but they are separate controls rather than a temporal chain.
 
-The mixed recipe reaches 99.928% near-reference success, with nine failures out of 12,505 trials. The selected pure-RL recipe reaches 96.026%, with 497 failures.
+The bottom row is a sequential deployment path. The raw FastSACN8 actor has 1,267 failures. Reflection removes 312, then 41-action Q-search removes another 458, leaving 497. The headline reports task success and strict wins as separate objectives, including the reliability versus strict-win tradeoff.
 
-The heat maps reveal more than the aggregate rates. All five mixed actors succeed on 2,493 of 2,501 starts. For pure RL, all five succeed on 2,293 starts, and another 195 starts depend on which seed was trained.
+## 3:35 to 4:15 | Failure geography and video
 
-This is the reliability gap we want to explain. Supervision almost removes both the state-space tail and the seed-to-seed variation.
+Point to the stacked heatmaps in panel 01, then play `01_same_hard_start_learning_gap.mp4`.
 
-## 3:25 to 4:25 | Closed-loop recovery
+All five mixed actors pass 2,493 of the 2,501 starts. All five pure-RL actors pass 2,293 starts, and another 195 starts depend on which seed was trained.
 
-Play `01_same_hard_start_learning_gap.mp4`, then point to panel 03.
+The video begins both policies from the same difficult state. The mixed policy recovers, while the raw pure-RL actor drifts away. The heatmap and video show the same phenomenon at different scales: the gap is concentrated in a small but reproducible recovery tail.
 
-This video begins every policy from the same hard state. By step 64, the reference and mixed policy have recovered to the upright region. The raw pure-RL actor is still drifting and finishes 103.7 return points lower.
+## 4:15 to 5:10 | Baselines and one difficult recovery
 
-This example illustrates a closed-loop issue. A corrective action changes the next state. The policy must then choose the right next action from that new state, and continue doing so for several decisions. DAgger directly labels these learner-visited recovery states.
+Point to the comparator row in panel 01, then to the three pendulum snapshots in panel 03.
 
-## 4:25 to 5:20 | One action versus a sequence
+The supervised actor reaches 99.72 percent near-reference success on one seed. Plain five-seed SimbaV2 reaches 91.84 percent, and clean DAgger reaches 84.53 percent. The selected mixed route therefore does more than imitate a fixed dataset: it labels learner states, revisits measured deficits, and then uses learned critics.
 
-Point to panel 04.
+The snapshots show one post hoc difficult start at step 81. The diagnostic reference and mixed actor are upright, while the raw pure-RL actor has drifted. Their final returns are −280.9, −280.6, and −384.3. This example is not an aggregate estimate; it makes the failure mode visible before we inspect the networks.
 
-We tested this idea on 1,267 failures of the selected raw pure-RL actor. We temporarily apply a state-matched reference correction for a fixed number of steps and then return control to the same actor.
+The aggregate heatmap and this trajectory point to the same question: why can the pure-RL critics identify useful actions while the raw actor still fails to execute them?
 
-One corrected action repairs only 19.1% of failures. Eight steps repair 47.7%, 16 repair 91.3%, and 32 repair 99.0%. If the same actions are shuffled across states, the repair rate collapses.
+## 5:10 to 6:35 | White-box network test
 
-The result is not simply that the reference uses stronger torque. The ordering and state matching matter. Failed rollouts require a coherent corrective segment.
+Point to the four large white-box probes in panel 03.
 
-## 5:20 to 6:35 | What the critic knows and what the actor executes
+This is a matched network intervention. Architecture, five seeds, 100,000 transitions, and update ratio are fixed. Only the critic target changes. SAC uses one-step targets, Fast denotes FastSACN8 and averages one-step and eight-step targets, and N8 denotes SACN8 and uses the eight-step target.
 
-Point to panel 05.
+Panel A shows that the multistep variants push actor outputs to the torque bound on about 87 percent of tested states, compared with 59 percent for one-step SAC. Panel B shows that the median derivative through the tanh output falls from 0.120 to 0.039.
 
-Several diagnostics narrow the explanation.
+Panels C and D test 512 fixed failures per seed. The critics often point toward or rank a higher-return controller action, but the actor is already near its torque bound. After projection and clipping, only about 7 percent of the proposed local critic step survives for Fast and N8.
 
-First, small critic-guided action changes improve the realized return more often after multi-step critic training. Reflection and twin-Q search together repair 770 seed-state classifications on the authority grid. This means the critics contain useful local action information that the raw actor does not consistently express.
+This is a white-box actor bottleneck. Multi-step targets can improve critic direction while simultaneously making the actor output harder to change. Scoring 41 torques bypasses that local projection and raises the five-seed fixed-grid near-reference rate from 92.363 percent after reflection to 96.026 percent.
 
-Second, 98.9% of diagnosed failures already have a reference-like action among nearby replay transitions. Broad missing experience therefore does not explain most failures.
+## 6:35 to 7:25 | Why the losses were not simply mixed
 
-Third, the selected raw actor reaches the torque limit on 70.3% of matched diagnostic states, compared with 59.1% for the matched one-step actor. The stronger critic does not automatically produce a better raw actor.
+Point to the joint-loss pilot at the bottom of panel 02.
 
-Completed SimbaV2 runs also show no dormant units under our registered threshold. This does not eliminate every plasticity explanation, but it weakens a simple dead-feature account.
+We also tested simultaneous behavior-cloning and SACN8 actor updates. On one 25,000-step pilot, joint training reaches 2,443 near-reference starts versus 1,757 for reward-only SACN8.
 
-## 6:35 to 7:25 | Mechanistic account
+The gradient diagnostic explains why one fixed coefficient is not a complete solution. The weighted cloning gradient is 37.2 times larger than the SAC gradient at the median. Their cosine ranges from strongly opposed to strongly aligned during training. A single scalar coefficient therefore changes both the effective scale and the amount of interference over time.
 
-Point to the bottom conclusion.
+The next controlled test is normalized or projected gradient mixing, not an assumption that a small nominal coefficient is negligible.
 
-The evidence supports a specific account.
+## 7:25 to 8:00 | Conclusion
 
-Multi-step targets can improve critic-side ranking because they connect an action with consequences several transitions later. Critic search can exploit that ranking at the current state.
+Point to the footer.
 
-The actor still has to produce a full closed-loop recovery. Learner-state supervision teaches what to do at each state created by the actor’s earlier decisions. That is why supervision reduces the failure tail much more strongly than one-step critic-guided repair.
+The main empirical result is 9 failures for RL plus supervision versus 497 for the strongest five-seed pure-RL recipe.
 
-This account also explains why strict wins and reliability have different orderings. Pure RL can outperform the reference on many easy or favorable trials while still failing badly on a smaller set of difficult recoveries.
+The diagnostic result is more specific. Pure-RL critics often contain useful local action information, but multistep training pushes the actor toward saturated outputs where only a small fraction of that local update survives. Supervision nearly removes the state and seed failure tail, while critic search partially recovers pure RL by acting directly in action space.
 
-## 7:25 to 8:00 | Conclusion and next experiment
-
-The main result is nine failures for RL plus supervision versus 497 for the strongest five-seed pure-RL recipe we found.
-
-The main scientific result is that the pure-RL gap is not well described as a total absence of useful actions. The actions exist in replay, and the critics often rank better immediate actions. The larger problem is turning those local preferences into a stable sequence under closed-loop state changes.
-
-The cleanest next experiment is a factorial comparison of one-step versus eight-step targets and one versus two critic updates, followed by an actor objective that distills critic-selected corrective sequences while controlling torque saturation.
-
-If there is time for a second demonstration, play `02_pure_rl_qsearch_repairs_failure.mp4` to show one failure repaired by reflection and twin-Q search.
+If time permits after the talk, play `02_pure_rl_qsearch_repairs_failure.mp4` to show a failure repaired by reflection and twin-Q search.

@@ -5,7 +5,7 @@
     "main_pages": 4,
     "references_page": 5,
     "annex_start_page": 6,
-    "sha256": "445a2a792e983fb9d176a3d095c4454d9051b43183720222efd6d08fe46bcb70",
+    "sha256": "aae19e367fa8cc98278cf54a9cd027422f8dd662f779c4d4bc2ddb70b0314a12",
     "font_rows": 22
   },
   "poster": {
@@ -14,8 +14,8 @@
       3371.0400390625,
       2385.119873046875
     ],
-    "sha256": "9aaccf305a43ee7634f0dbc800cc4f5dd1b3f2294c7d5f6ec48952061fd1a5e2",
-    "font_rows": 3,
+    "sha256": "b0b23c1772fdb3d711e3c1c2cdb51404365c4871f271ec6a7775fd457a2af174",
+    "font_rows": 5,
     "template_audit": {
       "html": "C:\\Users\\Ala\\Desktop\\Project 15\\deliverables\\chasing_nines_20260723\\poster\\poster.html",
       "pdf": "C:\\Users\\Ala\\Desktop\\Project 15\\deliverables\\chasing_nines_20260723\\poster\\poster.pdf",
@@ -77,45 +77,48 @@
   },
   "blind_gate": {
     "status": "FAIL_REQUIRES_USER_JUDGMENT",
-    "poster_sha256": "9aaccf305a43ee7634f0dbc800cc4f5dd1b3f2294c7d5f6ec48952061fd1a5e2",
+    "poster_sha256": "b0b23c1772fdb3d711e3c1c2cdb51404365c4871f271ec6a7775fd457a2af174",
+    "reviewed_poster_sha256": "b0b23c1772fdb3d711e3c1c2cdb51404365c4871f271ec6a7775fd457a2af174",
+    "final_candidate_sha256": "b0b23c1772fdb3d711e3c1c2cdb51404365c4871f271ec6a7775fd457a2af174",
+    "final_candidate_exactly_blind_tested": true,
     "comparisons": [
       {
-        "id": "final_geo_a",
+        "id": "blind_final_production_20260726/three_set1",
         "reference": "3DPRAC",
         "project_position": "A",
         "choice": "B",
         "project_poster_preferred": false
       },
       {
-        "id": "final_geo_b",
+        "id": "blind_final_production_20260726/three_set2",
         "reference": "3DPRAC",
         "project_position": "B",
         "choice": "A",
         "project_poster_preferred": false
       },
       {
-        "id": "final_geo_c",
+        "id": "blind_final_production_20260726/three_set3",
         "reference": "3DPRAC",
         "project_position": "A",
         "choice": "B",
         "project_poster_preferred": false
       },
       {
-        "id": "final_need_a",
+        "id": "blind_final_production_20260726/need_set1",
         "reference": "NEED",
         "project_position": "A",
         "choice": "B",
         "project_poster_preferred": false
       },
       {
-        "id": "final_need_b",
+        "id": "blind_final_production_20260726/need_set2",
         "reference": "NEED",
         "project_position": "B",
-        "choice": "B",
-        "project_poster_preferred": true
+        "choice": "A",
+        "project_poster_preferred": false
       },
       {
-        "id": "final_need_c",
+        "id": "blind_final_production_20260726/need_set3",
         "reference": "NEED",
         "project_position": "A",
         "choice": "B",
@@ -124,14 +127,14 @@
     ],
     "vote_summary": {
       "3DPRAC": "0 of 3",
-      "NEED": "1 of 3"
+      "NEED": "0 of 3"
     },
-    "note": "The final poster passes the official A0 template and visual-production checks. The rubric-free preference gate did not pass. Two NEED judgments and one 3DPRAC judgment criticized the mandatory header whitespace, which cannot be removed. Other criticisms concerned density and finish. The result is recorded without inventing a win."
+    "note": "Each reviewer saw only anonymous A.pdf and B.pdf and was asked which was the better poster. The exact final candidate lost both three-vote majorities. The rubric-free preference gate is unmet."
   },
   "blind_preference_pass": false,
   "blind_preference_votes": {
     "3DPRAC": 0,
-    "NEED": 1
+    "NEED": 0
   },
   "evidence_claims": [
     "C01",

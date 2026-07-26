@@ -61,7 +61,7 @@ def style_axis(ax: plt.Axes, grid_axis: str = "y") -> None:
     ax.spines[["top", "right"]].set_visible(False)
     ax.spines[["left", "bottom"]].set_color(INK)
     ax.spines[["left", "bottom"]].set_linewidth(1.8)
-    ax.tick_params(labelsize=14, colors=INK, width=1.5, length=5)
+    ax.tick_params(labelsize=32, colors=INK, width=1.8, length=7)
     ax.grid(axis=grid_axis, color=GRID, linewidth=1.2)
     ax.set_axisbelow(True)
 
@@ -365,12 +365,12 @@ def build_sequence_chart_compact() -> None:
     ax.plot(x, y_matched, "-o", color=PURE_BLUE, linewidth=5, markersize=12, label="State-matched")
     ax.plot(x, y_shuffled, "-o", color=GOLD, linewidth=4, markersize=11, label="Wrong order or state")
     for xi, yi in zip(x, y_matched):
-        ax.text(xi, yi + 3.2, f"{yi:.1f}%", ha="center", fontsize=14, fontweight="bold", color=PURE_BLUE)
-    ax.set_ylabel("Failures repaired (%)", fontsize=15, color=INK)
-    ax.set_xlabel("Corrective steps before returning control", fontsize=15, color=INK)
+        ax.text(xi, yi + 3.2, f"{yi:.1f}%", ha="center", fontsize=32, fontweight="bold", color=PURE_BLUE)
+    ax.set_ylabel("Failures repaired (%)", fontsize=32, color=INK)
+    ax.set_xlabel("Corrective steps", fontsize=32, color=INK)
     ax.set_xticks(x, steps)
     ax.set_ylim(0, 106)
-    ax.legend(frameon=False, fontsize=13, loc="upper left", ncol=2)
+    ax.legend(frameon=False, fontsize=32, loc="upper left", ncol=1)
     style_axis(ax)
     fig.subplots_adjust(left=0.12, right=0.985, top=0.92, bottom=0.23)
     fig.savefig(FIG / "50_sequence_repair_compact.png", dpi=220, facecolor="white")
@@ -412,13 +412,13 @@ def build_failure_footprints_clean() -> None:
         )
         ax.set_title(
             f"{name}\n{failures} failures across {starts} starts",
-            fontsize=21,
+            fontsize=36,
             fontweight="bold",
             color=INK,
             pad=9,
         )
-        ax.set_xlabel("Initial angle (degrees)", fontsize=15, fontweight="bold", color=INK)
-        ax.tick_params(labelsize=13, width=1.5, length=5, colors=INK)
+        ax.set_xlabel("Initial angle (degrees)", fontsize=32, fontweight="bold", color=INK)
+        ax.tick_params(labelsize=32, width=1.8, length=7, colors=INK)
         for spine in ax.spines.values():
             spine.set_color(accent)
             spine.set_linewidth(3)
@@ -429,7 +429,7 @@ def build_failure_footprints_clean() -> None:
             transform=ax.transAxes,
             ha="center",
             va="center",
-            fontsize=16,
+            fontsize=32,
             fontweight="bold",
             color=accent,
             bbox={
@@ -441,7 +441,7 @@ def build_failure_footprints_clean() -> None:
             },
         )
 
-    axes[0].set_ylabel("Initial angular velocity", fontsize=15, fontweight="bold", color=INK, labelpad=10)
+    axes[0].set_ylabel("Initial angular velocity", fontsize=32, fontweight="bold", color=INK, labelpad=10)
     axes[1].set_yticklabels([])
     colorbar = fig.colorbar(
         image,
@@ -452,17 +452,76 @@ def build_failure_footprints_clean() -> None:
         pad=0.24,
         aspect=60,
     )
-    colorbar.set_label("Number of the five actors that fail", fontsize=14, fontweight="bold", color=INK)
-    colorbar.ax.tick_params(labelsize=13, colors=INK)
-    fig.suptitle(
-        "Supervision compresses a seed-dependent failure tail",
-        fontsize=26,
-        fontweight="bold",
-        color=INK,
-        y=0.99,
-    )
-    fig.subplots_adjust(left=0.09, right=0.985, top=0.75, bottom=0.34, wspace=0.10)
+    colorbar.set_label("Number of the five actors that fail", fontsize=32, fontweight="bold", color=INK)
+    colorbar.ax.tick_params(labelsize=32, colors=INK)
+    fig.subplots_adjust(left=0.13, right=0.97, top=0.80, bottom=0.38, wspace=0.12)
     fig.savefig(FIG / "49_failure_footprints_clean.png", dpi=220, facecolor="white")
+    plt.close(fig)
+
+
+def build_failure_footprints_clean() -> None:
+    """Text-free heat-map ink; all labels are HTML at the A0 minimum size."""
+    mixed = failure_grid(MIXED)
+    pure = failure_grid(PURE)
+    colors = ["#fffdf8", "#9de4dc", "#f5df83", "#f3a43b", "#e85c38", "#8f1d24"]
+    cmap = ListedColormap(colors)
+    norm = BoundaryNorm(np.arange(-0.5, 6.5, 1), cmap.N)
+
+    fig, axes = plt.subplots(1, 2, figsize=(16.5, 2.65), facecolor="white")
+    for ax, data, accent in (
+        (axes[0], mixed, MIXED_TEAL),
+        (axes[1], pure, PURE_BLUE),
+    ):
+        angles, velocities, grid, _, _ = data
+        ax.imshow(
+            grid,
+            origin="lower",
+            aspect="auto",
+            interpolation="nearest",
+            cmap=cmap,
+            norm=norm,
+            extent=[angles.min(), angles.max(), velocities.min(), velocities.max()],
+        )
+        ax.set_xticks([])
+        ax.set_yticks([])
+        for spine in ax.spines.values():
+            spine.set_color(accent)
+            spine.set_linewidth(5)
+    fig.subplots_adjust(left=0.006, right=0.994, top=0.98, bottom=0.02, wspace=0.08)
+    fig.savefig(FIG / "49_failure_footprints_clean.png", dpi=220, facecolor="white")
+    plt.close(fig)
+
+
+def build_failure_footprints_stacked() -> None:
+    """Two vertically stacked text-free maps for a narrow A0 column."""
+    mixed = failure_grid(MIXED)
+    pure = failure_grid(PURE)
+    colors = ["#e8f5f2", "#8edbd2", "#f5df83", "#f3a43b", "#e85c38", "#8f1d24"]
+    cmap = ListedColormap(colors)
+    norm = BoundaryNorm(np.arange(-0.5, 6.5, 1), cmap.N)
+
+    fig, axes = plt.subplots(2, 1, figsize=(8.0, 5.4), facecolor="white")
+    for ax, data, accent in (
+        (axes[0], mixed, MIXED_TEAL),
+        (axes[1], pure, PURE_BLUE),
+    ):
+        angles, velocities, grid, _, _ = data
+        ax.imshow(
+            grid,
+            origin="lower",
+            aspect="auto",
+            interpolation="nearest",
+            cmap=cmap,
+            norm=norm,
+            extent=[angles.min(), angles.max(), velocities.min(), velocities.max()],
+        )
+        ax.set_xticks([])
+        ax.set_yticks([])
+        for spine in ax.spines.values():
+            spine.set_color(accent)
+            spine.set_linewidth(5)
+    fig.subplots_adjust(left=0.012, right=0.988, top=0.988, bottom=0.012, hspace=0.15)
+    fig.savefig(FIG / "71_failure_footprints_stacked.png", dpi=240, facecolor="white")
     plt.close(fig)
 
 
@@ -473,11 +532,13 @@ def main() -> None:
     build_sequence_intervention()
     build_sequence_chart_compact()
     build_failure_footprints_clean()
+    build_failure_footprints_stacked()
     for name in (
         "47_actor_critic_transfer.png",
         "48_sequence_intervention_explained.png",
         "49_failure_footprints_clean.png",
         "50_sequence_repair_compact.png",
+        "71_failure_footprints_stacked.png",
     ):
         print(FIG / name)
 
