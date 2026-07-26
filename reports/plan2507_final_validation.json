@@ -1,0 +1,181 @@
+{
+  "status": "TECHNICAL_PASS_BLIND_PREFERENCE_UNMET",
+  "report": {
+    "pages": 13,
+    "main_pages": 4,
+    "references_page": 5,
+    "annex_start_page": 6,
+    "sha256": "445a2a792e983fb9d176a3d095c4454d9051b43183720222efd6d08fe46bcb70",
+    "font_rows": 22
+  },
+  "poster": {
+    "pages": 1,
+    "page_size_points": [
+      3371.0400390625,
+      2385.119873046875
+    ],
+    "sha256": "9aaccf305a43ee7634f0dbc800cc4f5dd1b3f2294c7d5f6ec48952061fd1a5e2",
+    "font_rows": 3,
+    "template_audit": {
+      "html": "C:\\Users\\Ala\\Desktop\\Project 15\\deliverables\\chasing_nines_20260723\\poster\\poster.html",
+      "pdf": "C:\\Users\\Ala\\Desktop\\Project 15\\deliverables\\chasing_nines_20260723\\poster\\poster.pdf",
+      "expected_page_mm": [
+        1189.0,
+        841.0
+      ],
+      "actual_page_mm": [
+        1189.228,
+        841.4173333333333
+      ],
+      "page_ok": true,
+      "orientation": "landscape",
+      "minimum_font_mm": 11.1,
+      "minimum_font_px": 41.952755905511815,
+      "observed_minimum_font_px": 41.9528,
+      "undersized_text": [],
+      "image_failures": 0,
+      "dom_body_px": [
+        4494,
+        3179
+      ],
+      "pass": true
+    }
+  },
+  "videos": {
+    "01_same_hard_start_learning_gap.mp4": {
+      "codec": "h264",
+      "duration_seconds": 12.0,
+      "file_bytes": 791379,
+      "fps": 20.0,
+      "height": 1080,
+      "sha256": "f5aabdac99c60446acdb6b4337d03b51acda899e07acb79dab0a7c07dcf090d1",
+      "width": 1920
+    },
+    "02_pure_rl_qsearch_repairs_failure.mp4": {
+      "codec": "h264",
+      "duration_seconds": 12.0,
+      "file_bytes": 570811,
+      "fps": 20.0,
+      "height": 1080,
+      "sha256": "f01086ab9a417ad04d77782de6c27a25262c06e61df26eb7daaafda63d6da8f5",
+      "width": 1920
+    }
+  },
+  "mainline": {
+    "mixed": {
+      "trials": 12505,
+      "near": 12496,
+      "task": 11737,
+      "strict": 1570
+    },
+    "pure": {
+      "trials": 12505,
+      "near": 12008,
+      "task": 11614,
+      "strict": 2854
+    }
+  },
+  "blind_gate": {
+    "status": "FAIL_REQUIRES_USER_JUDGMENT",
+    "poster_sha256": "9aaccf305a43ee7634f0dbc800cc4f5dd1b3f2294c7d5f6ec48952061fd1a5e2",
+    "comparisons": [
+      {
+        "id": "final_geo_a",
+        "reference": "3DPRAC",
+        "project_position": "A",
+        "choice": "B",
+        "project_poster_preferred": false
+      },
+      {
+        "id": "final_geo_b",
+        "reference": "3DPRAC",
+        "project_position": "B",
+        "choice": "A",
+        "project_poster_preferred": false
+      },
+      {
+        "id": "final_geo_c",
+        "reference": "3DPRAC",
+        "project_position": "A",
+        "choice": "B",
+        "project_poster_preferred": false
+      },
+      {
+        "id": "final_need_a",
+        "reference": "NEED",
+        "project_position": "A",
+        "choice": "B",
+        "project_poster_preferred": false
+      },
+      {
+        "id": "final_need_b",
+        "reference": "NEED",
+        "project_position": "B",
+        "choice": "B",
+        "project_poster_preferred": true
+      },
+      {
+        "id": "final_need_c",
+        "reference": "NEED",
+        "project_position": "A",
+        "choice": "B",
+        "project_poster_preferred": false
+      }
+    ],
+    "vote_summary": {
+      "3DPRAC": "0 of 3",
+      "NEED": "1 of 3"
+    },
+    "note": "The final poster passes the official A0 template and visual-production checks. The rubric-free preference gate did not pass. Two NEED judgments and one 3DPRAC judgment criticized the mandatory header whitespace, which cannot be removed. Other criticisms concerned density and finish. The result is recorded without inventing a win."
+  },
+  "blind_preference_pass": false,
+  "blind_preference_votes": {
+    "3DPRAC": 0,
+    "NEED": 1
+  },
+  "evidence_claims": [
+    "C01",
+    "C02",
+    "C03",
+    "C04",
+    "C05",
+    "C06",
+    "C07",
+    "C08",
+    "C09",
+    "C10",
+    "C11",
+    "C12",
+    "C13",
+    "C14",
+    "C15",
+    "C16",
+    "C17",
+    "C18",
+    "C19",
+    "C20",
+    "C21",
+    "C22",
+    "C23",
+    "C24",
+    "C25",
+    "C26",
+    "C27",
+    "C28",
+    "C29",
+    "C30",
+    "C31",
+    "C32",
+    "C33",
+    "C34",
+    "C35",
+    "C36",
+    "C37",
+    "C38",
+    "C39",
+    "C40",
+    "C41",
+    "C42",
+    "C43"
+  ]
+}
