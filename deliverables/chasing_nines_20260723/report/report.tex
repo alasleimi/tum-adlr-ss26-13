@@ -28,7 +28,7 @@
 
 \title{\vspace{-1.2em}\textbf{Chasing the Nines: Reliability Across States and Seeds}\\[-1mm]\large A Fixed-Grid Pendulum Case Study}
 \author{Project 15}
-\date{25 July 2026}
+\date{26 July 2026}
 
 \begin{document}
 \input{report_compact_body}
@@ -64,7 +64,7 @@ Dataset Aggregation, or DAgger, repeatedly lets the learner control the system, 
 SimbaV2 uses hyperspherical normalization and residual structure to stabilize scalable deep reinforcement learning \cite{lee2025simba}. Both winning actors use SimbaV2 backbones, although the matched DAgger backbone ablation shows that the architecture name alone does not explain the result.
 
 \paragraph{Multi-step SAC critics.}
-SACn trains SAC critics with multi-step returns \cite{lyskawa2025sacn}. FastSACN reduces the number of active horizons. The historical FastSACN8 critic used by the mixed method activates one-step and eight-step endpoints with $\lambda=0.5$. The normalized nominal weight of the eight-step endpoint is only $0.5^7/(1+0.5^7)=0.7752\%$. It is therefore mostly a one-step critic with a small long-horizon auxiliary. This detail prevents an unsupported conclusion that eight-step credit assignment caused the mixed result.
+Published SACn trains SAC critics on multi-step losses, using importance weighting and a lower-variance entropy estimate to address off-policy bias and target variance \cite{lyskawa2025sacn}. Our FastSACN variant keeps only the one-step and longest squared residuals. With $\lambda=0.5$, the normalized coefficient on the eight-step residual is $0.5^7/(1+0.5^7)=0.7752\%$. This coefficient is not a measured gradient share or cumulative learning effect because the residual scales and shared-feature gradients can differ. The selected pure recipe also omits the paper's importance correction and doubles critic updates, so it should be described as a SACn-inspired ablation rather than a faithful implementation of the published algorithm.
 
 \paragraph{Reliable evaluation and hybrid improvement.}
 Deep reinforcement learning comparisons are sensitive to random seeds, implementation choices, and aggregate statistics \cite{henderson2018matters,agarwal2021precipice}. We therefore report exact paired grid counts and cross-seed cell consistency instead of only a mean and standard error. Demonstration-augmented policy gradients provide a related route for combining imitation and reward optimization \cite{rajeswaran2018dapg}. Critic-guided action optimization has also been used in large-scale continuous-control systems such as QT-Opt \cite{kalashnikov2018qtopt}. Our deployment search differs by using a fixed candidate set and an explicit twin-critic agreement gate.

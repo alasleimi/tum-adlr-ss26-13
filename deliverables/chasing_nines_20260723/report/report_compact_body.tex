@@ -2,10 +2,10 @@
 \vspace{-1.5em}
 
 \begin{abstract}
-Reliable reinforcement learning must work across initial states and independent training seeds. We evaluate five trained actors on the same 2,501-state Pendulum grid. The selected reinforcement-learning-plus-supervision recipe combines 30,000 learner-controlled DAgger transitions, a 20,000-transition automatically prioritized DAgger follow-up, and a shared 50,000-transition FastSACN8 critic for conservative local Q-search. It succeeds near the reference on 12,496 of 12,505 seed-state trials, or 99.928\%. The selected pure-RL pipeline uses 100,000-step SimbaV2 SAC actors with reflection and unanimous global Q-search. It reaches 11,832 trials, or 94.618\%. Task-success rates are 93.858\% and 92.499\%; strict reference wins are 12.555\% and 18.417\%. The comparison is descriptive because supervision, discovery cost, and critic replication differ. Seed-resolved diagnostics weaken broad missing-coverage and widespread-dormancy explanations. They instead identify a selected pure-RL tail associated with compounding trajectory drift and imperfect critic ranking.
+Reliable reinforcement learning must work across initial states and independent training seeds. We evaluate five trained actors on the same 2,501-state Pendulum grid. The selected reinforcement-learning-plus-supervision recipe combines learner-state DAgger, automatic follow-up on measured weak starts, and conservative local critic search. It succeeds near the reference on 12,496 of 12,505 seed-state trials, or 99.928\%. The selected pure-RL recipe combines SimbaV2, FastSACN8 critic training, symmetry, and twin-critic action search. It reaches 12,008 trials, or 96.026\%. Task-success rates are 93.858\% and 92.875\%; strict reference wins are 12.555\% and 22.823\%. Matched ablations show that critic search repairs many decisions missed by the pure-RL actor, while the raw actor becomes less reliable and more saturated. Corrective actions are present in replay, but a single corrected action rarely fixes a failed rollout. The critic can often identify a better action, but the actor does not turn those preferences into a reliable sequence of actions.
 \end{abstract}
 
-\section{Question, evidence, and protocol}
+\section{Reliability target and evidence}
 
 \paragraph{Chasing two kinds of nines.}
 The project asks how to increase reliability within one trained model and across random training seeds. A high pooled score can conceal different failures in different seeds. Every mainline method is therefore evaluated on 61 angles in $[-\pi,\pi]$ and 41 angular velocities in $[-1,1]$. Five actor seeds yield 12,505 deterministic 200-step rollouts in Gymnasium \texttt{Pendulum-v1}.
@@ -30,18 +30,17 @@ For policy return $R_\pi(s)$, near-reference and strict-win indicators are
 \]
 Task success requires at least 80\% of steps near upright and no not-upright streak longer than 50 steps. A step is near upright when $\cos\theta\ge0.95$ and $|\dot\theta|\le1$.
 
-\paragraph{Evidence selection.}
-The two-repository census contains 404 standardized evaluations. Headline methods require the common grid, five actor seeds, no inference-time reference, no angle router, no policy-checkpoint mixture, and no more than 100,000 selected-route learning transitions. Automatic performance-based training-state selection and reference-free Q-search are allowed. Every displayed scorecard row contains five actors and 12,505 trials. Method and checkpoint selection was retrospective on the standardized grid campaign, with no independent held-out confirmation.
+\paragraph{Evidence set.}
+The two-repository census contains 404 standardized evaluations. Every headline row uses the common grid, five independently trained actors, and at most 100,000 selected-route learning transitions. Every displayed scorecard therefore contains 12,505 rollouts. Method and checkpoint selection was retrospective on the standardized campaign, with no independent held-out confirmation. The mixed initializer oversamples a near-upright region in 20\% of its 400,000 static labels. Its later 20,000-transition priority stage selects starts from measured performance.
 
-The mixed initializer used a manually biased supervised sampler: 20\% of its 400,000 static labels came from $|\theta|\le35^\circ$ and $|\dot\theta|\le1$. The result stays in the mainline under the final project decision, with this limitation disclosed. The 20,000-transition priority stage selects starts from measured performance rather than angle. Deployment uses no reference or angle-dependent rule.
+\paragraph{Technical context and study design.}
+SAC trains a stochastic actor and twin critics from reward and entropy \cite{haarnoja2018sac}. SimbaV2 contributes normalized residual networks for stable deep RL \cite{lee2025simba}. DAgger supplies reference labels on learner-visited states to address sequential distribution shift \cite{ross2011dagger}. Our measured-regret priority stage is related to automatic curricula \cite{jiang2021plr}. Published SACn trains on several multi-step losses and uses importance weighting plus a lower-variance entropy estimate to control off-policy bias and target variance \cite{lyskawa2025sacn}. Our FastSACN variant is a simplified ablation: it retains only the one-step and longest losses, and the selected pure recipe does not use the paper's importance correction. Critic action search is a thresholded analogue of critic-guided action optimization \cite{kalashnikov2018qtopt}. Reflection and search are deployment projections rather than new training algorithms. Multi-seed evaluation is essential because aggregate means can conceal instability \cite{henderson2018matters,agarwal2021precipice}.
 
-\paragraph{Technical context and contribution.}
-SAC trains a stochastic actor and twin critics from reward and entropy \cite{haarnoja2018sac}. SimbaV2 contributes normalized residual networks for stable deep RL \cite{lee2025simba}. DAgger supplies reference labels on learner-visited states to address sequential distribution shift \cite{ross2011dagger}. Our measured-regret priority stage is related to automatic curricula \cite{jiang2021plr}. SACn contributes multi-step critic targets, while FastSACN keeps fewer horizons \cite{lyskawa2025sacn}. Critic action search is a small gated analogue of critic-guided action optimization \cite{kalashnikov2018qtopt}. Reflection and search are deployment projections rather than new training algorithms. Multi-seed evaluation is essential because aggregate means can conceal instability \cite{henderson2018matters,agarwal2021precipice}.
-
-This work contributes a systematic two-repository evidence census, combines the inherited components into two reference-free deployments, measures the paired contribution of each retained component, and diagnoses the remaining pure-RL tail. The analysis tests three explanations for that tail: missing experience, failed actor extraction, and critic-ranking error. It does not claim a new SAC or DAgger algorithm.
+The study combines these components into two deployments, measures the paired contribution of each retained component, and diagnoses the larger pure-RL tail. The analysis tests four explanations: missing experience, ineffective critic learning, failed actor extraction, and compounding closed-loop error.
 
 \clearpage
 \onecolumn
+\small
 \section{The two selected recipes}
 \vspace{2mm}
 
@@ -64,7 +63,7 @@ This work contributes a systematic two-repository evidence census, combines the 
 \draw[arrow] (mpriority) -- (mactor);
 \draw[arrow] (mactor) -- (mlocal);
 
-\node[purebox,below=14mm of mstatic] (psac) {Reward-only\\SimbaV2 SAC, 100k};
+\node[purebox,below=14mm of mstatic] (psac) {Reward-only SimbaV2\\FastSACN8, 100k};
 \node[purebox,right=12mm of psac] (preflect) {Global reflection\\projection};
 \node[purebox,right=12mm of preflect] (pq) {41-action\\twin-Q search};
 \node[purebox,right=12mm of pq] (paccept) {Both critics must\\improve by 0.005};
@@ -75,13 +74,13 @@ This work contributes a systematic two-repository evidence census, combines the 
 \node[font=\bfseries\small,text=mixed!80!black,left=3mm of mstatic] {Mixed};
 \node[font=\bfseries\small,text=pure!80!black,left=3mm of psac] {Pure RL};
 \end{tikzpicture}
-\captionof{figure}{The mixed actor receives direct action labels during training and a reward-only critic corrects its action locally at deployment. Its separate reset-support and priority queries are detailed below. Pure RL learns from reward and uses symmetry plus a wider critic search. Both deployments are reference-free.}
+\captionof{figure}{The mixed actor receives direct actions on the states it visits, then a reward critic makes small local corrections. Pure RL learns from reward, imposes the Pendulum symmetry, and searches a wider action set with its critics.}
 \end{center}
 
 \vspace{1mm}
 \begin{multicols}{2}
 \paragraph{Mixed recipe in plain language.}
-A width-64, two-block SimbaV2 actor first learns reference actions. Three learner-controlled DAgger rounds add the states that the current actor actually visits. A follow-up evaluates uniformly sampled candidate starts, ranks them by measured reference regret, and collects 20,000 transitions from the worst measured starts plus a uniform fraction. The chosen actor keeps the reference action as its supervised target. Tiny critic-based label shifts changed none of the requested classifications.
+A width-64, two-block SimbaV2 actor first learns reference actions. Three DAgger rounds then let the actor control the pendulum and label the states it actually reaches. The follow-up evaluates uniformly sampled starts, ranks them by measured regret, and collects 20,000 more transitions from weak starts plus a uniform fraction. This sequence turns observed closed-loop errors into new supervised examples. Tiny critic-based shifts of the action labels changed none of the requested classifications.
 
 The supervised actor minimizes
 \[
@@ -94,16 +93,33 @@ At deployment, the actor proposes $a_0=\pi_\theta(s)$. A shared reward-only Fast
 \mathcal A_{\rm local}=
 \operatorname{clip}\!\left(a_0+\{-0.10,-0.05,0,0.05,0.10\},-2,2\right).
 \]
-The maximizing proposal replaces $a_0$ only when both critics prefer it. The critic target combines one-step and eight-step endpoints. With $\lambda=0.5$, the normalized eight-step coefficient is
+The maximizing proposal replaces $a_0$ only when both critics prefer it. The categorical critic loss contains one-step and eight-step cross-entropy terms. Using $w_n=\lambda^{n-1}$ with $\lambda=0.5$, the normalized coefficient on the eight-step term is
 \[
 \frac{0.5^7}{1+0.5^7}=0.775\%.
 \]
-This critic is therefore dominated by its one-step endpoint.
+This number describes the explicit weighting inside one critic update. It is not a measured gradient share or an effect size. The two cross-entropy terms can have different magnitudes and gradient directions, both update shared critic features, and the update is repeated throughout training. A small explicit coefficient can therefore have a substantial accumulated effect.
 
 \paragraph{Pure-RL recipe in plain language.}
-Five independent SimbaV2 actor-critic systems train for 100,000 reward-only transitions. No reference action, reference return, demonstration, or manually selected training region enters learning. Each actor has width 32 and one residual block. Each twin categorical critic has width 64, two residual blocks, and 51 return atoms \cite{bellemare2017distributional}.
+Five independent SimbaV2 actor-critic systems train for 100,000 reward-only transitions. Each actor has width 32 and one residual block. Each twin categorical critic has width 64, two residual blocks, and 51 return atoms \cite{bellemare2017distributional}. Ordinary SAC bootstraps after one reward. Our SACN8 implementation trains on the losses from every horizon from one through eight. FastSACN8 keeps only the one-step and eight-step losses. The selected recipe assigns the eight-step loss coefficient $\lambda^7$ and trains each critic twice per transition. At deployment, symmetry reduces actor inconsistency, then both critics must agree before a searched action replaces the actor proposal.
 
-SAC minimizes $\mathbb E[\alpha\log\pi_\theta(a|s)-\min_iQ_i(s,a)]$ for the actor and fits each critic to $r+\gamma(\min_i\bar Q_i(s',a')-\alpha\log\pi(a'|s'))$. Seeds are 0--4. Adam uses batch 256, replay capacity 100k, $\gamma=.99$, $\tau=.005$, and actor/critic rates decaying from $10^{-4}$ to $5{\times}10^{-5}$; critics update once per transition and the actor every second update.
+SAC minimizes $\mathbb E[\alpha\log\pi_\theta(a|s)-\min_iQ_i(s,a)]$ for the actor. For $n\in\{1,8\}$, let $Y_t^{(n)}$ be the $n$-step soft return and let $Z_t^{(n)}$ be its categorical projection:
+\[
+\begin{aligned}
+Y_t^{(n)}={}&\sum_{j=0}^{n-1}\gamma^j
+\left(r_{t+j}+\gamma\alpha\widehat H_n(\pi(\cdot|s_{t+j+1}))\right)\\
+&+\gamma^n\min_i\bar Q_i(s_{t+n},a'),\qquad a'\sim\pi(\cdot|s_{t+n}).
+\end{aligned}
+\]
+If $\operatorname{CE}(Z,Q_i)$ is the cross-entropy between the projected target distribution and critic $i$, FastSACN8 uses
+\[
+\mathcal L_Q=
+\frac{1}{1+\lambda^7}
+\sum_{i=1}^{2}\mathbb E\!\left[
+\operatorname{CE}\!\left(Z^{(1)},Q_i\right)+
+\lambda^7\operatorname{CE}\!\left(Z^{(8)},Q_i\right)
+\right].
+\]
+Seeds are 0--4. Adam uses batch 256, replay capacity 100k, $\gamma=.99$, $\tau=.005$, and actor/critic rates decaying from $10^{-4}$ to $5{\times}10^{-5}$. The critic receives two updates and the actor one update per environment transition after learning starts.
 
 The deployment projection uses Pendulum sign symmetry:
 \[
@@ -138,6 +154,7 @@ Pure RL & 100k & 500k & 0 & 0\\
 \end{center}
 \end{multicols}
 
+\normalsize
 \clearpage
 \onecolumn
 \section{Reliability and component results}
@@ -148,33 +165,33 @@ Pure RL & 100k & 500k & 0 & 0\\
 \end{center}
 
 \vspace{-2mm}
-\begin{minipage}[t]{.43\textwidth}
+\begin{minipage}[t]{.46\textwidth}
 \centering
-\includegraphics[width=\linewidth]{02_reliability_maps.png}
-\captionof{figure}{Near-reference success fraction across five actor seeds at every initial state.}
+\includegraphics[width=\linewidth]{49_failure_footprints_clean.png}
+\captionof{figure}{Initial states where at least one of five actors falls more than five return points below the reference.}
 \end{minipage}\hfill
-\begin{minipage}[t]{.54\textwidth}
+\begin{minipage}[t]{.51\textwidth}
 \footnotesize
 \paragraph{The mixed method controls the reliability tail.}
-The selected mixed pipeline reaches 12,496 of 12,505 near-reference trials, compared with 11,832 for pure RL. It also records 11,737 task successes versus 11,567. The selected pure pipeline records 2,303 strict wins versus 1,570 for the mixed pipeline. This descriptive difference shows that reliability and exceeding the stored comparator induce different pipeline rankings.
+The selected mixed pipeline reaches 12,496 of 12,505 near-reference trials, compared with 12,008 for pure RL. It records 11,737 task successes versus 11,614. Pure RL records 2,854 strict wins versus 1,570. Reliability and exceeding the stored comparator therefore rank the pipelines differently.
 
 \paragraph{The gap is seed-dependent.}
-Mixed near-reference counts range from 2,494 to 2,501 of 2,501 states per seed. Pure counts range from 2,334 to 2,407. The mixed pipeline succeeds for all five seeds on 2,493 cells, or 99.680\%, and every cell succeeds for at least one seed. Pure RL succeeds for all five on 2,255 cells, fails for all five on 39, and varies by seed on the remaining 207 cells.
+Mixed near-reference counts range from 2,494 to 2,501 of 2,501 states per seed. Pure counts range from 2,333 to 2,457. The mixed pipeline succeeds for all five seeds on 2,493 cells, or 99.680\%. Pure RL succeeds for all five on 2,293 cells, fails for all five on 13, and varies by seed on the remaining 195 cells.
 \end{minipage}
 
 \vspace{1mm}
-\begin{minipage}[t]{.42\textwidth}
+\begin{minipage}[t]{.44\textwidth}
 \centering
 \includegraphics[width=\linewidth]{04_component_ablation_report.png}
 \captionof{figure}{Matched fixed-minus-broken classification counts.}
 \end{minipage}\hfill
-\begin{minipage}[t]{.55\textwidth}
+\begin{minipage}[t]{.54\textwidth}
 \footnotesize
 \paragraph{Mixed ablations.}
 The 20k learner follow-up adds a net 29 near-reference, seven task-success, and 442 strict-win classifications. Automatic priority adds ten, two, and 111 relative to uniform starts. Local FastSACN8 Q-search adds 26 near-reference and 32 task-success classifications, but loses 243 strict wins. Tiny critic shifts to supervised labels change zero requested classifications.
 
 \paragraph{Pure ablations.}
-Reflection adds 93 near-reference and 27 task-success classifications, together with 1,197 strict wins. Global unanimous Q-search adds another 255 near-reference, 103 task-success, and 40 strict-win classifications. These paired deployment interventions show that the actor leaves useful critic and symmetry information unexpressed.
+On the selected FastSACN8 plus SimbaV2 lineage, reflection adds 312 near-reference, ten task-success, and 376 strict-win classifications. Global unanimous Q-search then adds another 458 near-reference, 242 task-success, and 333 strict-win classifications. These paired authority-grid interventions show that the critics and symmetry rule can correct many actions chosen by the actor.
 \end{minipage}
 
 \clearpage
@@ -183,33 +200,27 @@ Reflection adds 93 near-reference and 27 task-success classifications, together 
 
 \begin{center}
 \centering
-\includegraphics[width=.78\textwidth]{38_sequence_diagnostic_large.png}
-\captionof{figure}{Frozen-policy interventions on five pure-RL actors before reflection and Q-search. Reference actions are diagnostic only.}
+\includegraphics[width=.96\textwidth]{47_actor_critic_transfer.png}
+\captionof{figure}{Target ablations on five seeds and matched deployment interventions on the selected pure-RL lineage. The target and critic-update dose change together in the selected recipe, so their individual effects are not identified.}
 \end{center}
 
 \vspace{-1mm}
 \begin{multicols}{2}
 \small
-\paragraph{Broad reset coverage is not the separator.}
-Among 321 cells containing successful and failed pure seeds, the failed seed has a farther nearest training reset in 51.1\% of cells, with sign-test $p=0.738$. Its 256-neighbor replay radius is larger in only 24.9\%. A reference-like action occurs among nearby replay actions for 1,010 of 1,021 ordinary-actor failures, or 98.9\%. In 2,500 exact-start comparisons, a stored training trajectory beats the terminal actor by more than five return units in only 1.16\%. These tests weaken explanations based on coarse reset absence or wholesale failure to reuse complete trajectories.
+\paragraph{Multi-step losses improve critic-guided corrections, but the actors saturate.}
+At failed states, we move the action a small distance in the direction preferred by that run's critic, execute the changed action, and measure the resulting return. The change helps in 74.5\% of one-step SAC cases, 88.9\% for FastSACN8, and 89.7\% for SACN8. The corresponding $\lambda=1$ actors saturate at the torque bound on 86.8\% of diagnostic states and have substantially lower near-reference rates than the one-step actors. In the selected $\lambda=0.5$ recipe, the eight-step cross-entropy term has a normalized coefficient of 0.775\%. This coefficient alone cannot establish whether the long-horizon term is weak or strong after repeated nonlinear updates. The selected recipe also doubles critic updates, so the final gain cannot be attributed separately to the eight-step loss or the extra optimization.
 
-\paragraph{Reliable repair is sequential.}
-A reference first action produces any positive return change in 78.3\% of ordinary-actor failures, but a practically decisive realized gain above five occurs in only 11.7\%. A separate state-matched prefix experiment asks whether the whole trajectory becomes near-reference after control returns to the actor. It repairs 18.0\%, 54.5\%, 90.3\%, and 99.9\% after 1, 8, 16, and 32 reference-controlled steps. At 32 steps, shuffled reference actions repair 0.5\% and zero torque repairs none. The result supports a sustained state-dependent correction rather than a generic interruption.
+\paragraph{The selected gain is critic-guided repair.}
+On 27,765 locked off-grid trials, the selected FastSACN8-plus-UTD2 raw actors score 89.937\%, below the matched one-step actors at 91.864\%. Their median action-saturation fraction rises from 59.1\% to 70.3\% in all five paired seeds. After the same reflection and Q-search deployment, the ordering reverses from 94.489\% to 95.909\%. On the authority grid, reflection raises the selected lineage from 89.868\% to 92.363\%, and twin-Q search raises it to 96.026\%. The critics often rank a better action than the one produced by the raw actor.
 
-\paragraph{The critic is useful and imperfect.}
-On 2,259 pure first-disagreement failures, the critic-ranking diagnostic records 0.782 precision, 0.703 recall, 0.623 balanced accuracy, and 0.655 ROC AUC for helpful local proposals. Global Q-search therefore has useful net value while retaining ranking errors in the tail.
+\paragraph{The residual error lasts for several decisions.}
+We temporarily apply a state-matched reference controller at the start of each of 1,267 selected raw-actor failures, then return control to the same actor. If only the first move were wrong, one correction would rescue most failures. It rescues 19.1\%. Eight steps rescue 47.7\%, 16 rescue 91.3\%, and 32 rescue 99.0\%. Shuffling the 32 actions across states rescues 0.6\%. The failed actor needs a state-dependent corrective segment, not an isolated torque.
 
-\paragraph{Optimization and representation checks.}
-Completed SimbaV2 arms log zero dormant units at the registered threshold. This rules out widespread measured dormancy rather than all plasticity or optimization problems \cite{sokar2023redo,lyle2023plasticity,nikishin2022primacy}. Effective-rank and local parameter-plane diagnostics vary across checkpoints but do not currently separate the selected categories strongly enough for a causal claim. They stay in the annex.
+\paragraph{Coarse exploration and dead features do not explain the gap.}
+On the established five-seed one-step lineage, a reference-like action occurs among nearby replay actions for 1,010 of 1,021 failures. Failed and successful seeds also have similar nearest-reset distances on variable grid cells. Completed SimbaV2 arms record zero dormant units at the registered threshold. These tests weaken broad missing-coverage and widespread-dormancy explanations. They do not rule out poor weighting of rare transitions, local optimization errors, or plasticity mechanisms outside the measured statistic \cite{sokar2023redo,lyle2023plasticity,nikishin2022primacy}.
 
-\paragraph{What the FastSACN8 combination changed.}
-With the same 100k budget, SimbaV2 architecture, and deployment, but a changed target and critic dose, FastSACN8 plus critic UTD2 lowers ordinary-actor near-reference reliability from 91.864\% to 89.937\% on 27,765 locked off-grid trials. The same reflection and Q-search instead raise 94.489\% to 95.909\%; Q-search adds 3.584 points after reflection versus 1.080. Task success loses 25 trials, so the registered gate fails and the authority grid is not queried. Frozen geometry shows higher saturation and lower action sensitivity in all five paired seeds. The combination strengthens critic-guided repair without improving raw actor reliability.
-
-\paragraph{Best-supported account.}
-Pure RL visits relevant regions, stores nearby corrective actions, and often learns critics with useful local rankings. Its remaining errors concentrate in a seed-dependent state tail where one action rarely repairs the trajectory. The selected mixed pipeline supplies direct corrective labels on learner states and automatically concentrates its follow-up on measured failures. The observed gap is therefore consistent with more reliable sequence control under supervision, combined with imperfect actor-critic transfer in pure RL.
-
-\paragraph{Limits and conclusion.}
-The pipelines differ in labels, discovery interactions, update histories, critic replication, and sampler design. The fixed grid gives exact benchmark counts rather than independent population trials. Frozen-policy diagnostics localize failure mechanisms but cannot identify the optimizer update that created them. Within those limits, the selected mixed method reaches 99.928\% near-reference reliability with nine failures, compared with 673 for the selected pure-RL deployment at 94.618\%. Pure RL produces more strict wins. Chasing the next nine requires better actor-side sequence control; stronger critic-guided deployment did not close the reliability gap.
+\paragraph{Mechanistic account and conclusion.}
+Direct labels on learner-visited states teach the mixed actor which action to take throughout a recovery, including states created by its own earlier mistakes. Automatic follow-up concentrates additional labels on measured weak starts. Pure RL already visits the relevant regions, and its critics can repair hundreds of decisions made by the actor. However, the raw actor is more saturated, and one repaired decision usually does not prevent later drift. These post-selection diagnostics support a mechanistic account in which critic search improves the current pure-RL decision, while supervision compresses the tail by labeling the following learner-visited states. The fixed grid gives exact benchmark counts rather than independent population trials, and the two pipelines use unequal supervision and discovery cost. Within those limits, the next pure-RL improvement should train the actor on critic-selected action sequences while controlling saturation.
 \end{multicols}
 
 \clearpage

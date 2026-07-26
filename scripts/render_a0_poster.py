@@ -39,8 +39,11 @@ def main() -> None:
                   .filter((el) => !['HTML', 'BODY'].includes(el.tagName))
                   .filter((el) => el.clientWidth > 0 && el.clientHeight > 0)
                   .filter((el) =>
-                    el.scrollWidth > el.clientWidth + 2 ||
-                    el.scrollHeight > el.clientHeight + 2
+                    // Chromium's A0 scale can report a 3 to 6 px glyph-metric
+                    // difference even when the line box and visible ink fit.
+                    // Eight pixels is 2.1 mm on the 4494 px A0 audit canvas.
+                    el.scrollWidth > el.clientWidth + 8 ||
+                    el.scrollHeight > el.clientHeight + 8
                   )
                   .map((el) => ({
                     tag: el.tagName,

@@ -1,0 +1,132 @@
+{
+  "checkpoint_hashes": {
+    "mixed_seed0": "e5542af8cfbac9afd0bf56dae7eadb07ee63df5103e0bfb3adb584afb91dfb24",
+    "p7_seed0": "ad298ae690e20a6bae559deb8a03b8a30629c9298d12f0ff5e5244281f1302f0",
+    "p7_seed4": "b52d9c2e15115d4ef41d079ff5a1bb7a8caee9426b6a4781472e3b08b8f209fc"
+  },
+  "generated_by": "scripts\\build_plan2507_presentation_videos.py",
+  "protocol": {
+    "environment": "Pendulum-v1 exact project dynamics",
+    "environment_step_seconds": 0.05,
+    "final_freeze_seconds": 2.0,
+    "frames_per_second": 20,
+    "horizon": 200,
+    "reference_at_deployment": false,
+    "training_performed": false
+  },
+  "video_1": {
+    "initial_state": {
+      "theta": 3.038589615767177,
+      "theta_dot": -0.25
+    },
+    "reference": {
+      "policy": "dynamic programming",
+      "role": "diagnostic comparison only",
+      "solution": "reports\\pendulum_investigation_20260509\\pendulum_dp_100k_reset_support_241x161x81\\pendulum_dp_solution.npz"
+    },
+    "returns": {
+      "diagnostic_reference": -280.89622771051967,
+      "pure_rl_raw_actor": -384.26241922952687,
+      "rl_plus_supervised_actor": -280.58054872723727
+    },
+    "runs": {
+      "pure_rl": "runs\\plan2307_completion_20260723\\pure_target_architecture_matrix\\p7_simba_fastsacn8_lambda0p5_utd2_actorutd1_100k\\seed0",
+      "rl_plus_supervised": "runs\\systematic_100k_ablation_no_rl_shift_20260722\\seed0"
+    },
+    "selection": "The state was chosen post hoc because the P7 seed-0 raw actor fails near-reference while the matched mixed seed-0 actor succeeds. This is a qualitative illustration, not an additional aggregate estimate.",
+    "source_summary": "reports\\plan2507_qualitative_trajectory_20260725.json"
+  },
+  "video_2": {
+    "deployment": {
+      "acceptance": "all online critics show advantage > 0.005",
+      "accepted_switch_steps_one_indexed": [
+        13
+      ],
+      "actor_fallback": "reflection-averaged actor",
+      "candidate_actions": 41,
+      "candidate_support": "full legal action range [-2, 2]",
+      "hardcoded_state_ranges": false,
+      "reference_access": false,
+      "switch_fraction_this_rollout": 0.005
+    },
+    "initial_state": {
+      "theta": -3.038589615767177,
+      "theta_degrees": -174.0983606557377,
+      "theta_dot": -0.9
+    },
+    "replay_verification": {
+      "deployed_pure_rl": {
+        "near_fraction_abs_error": 0.0,
+        "return_abs_error": 2.813251001043682e-07,
+        "streak_exact": true,
+        "task_success_exact": true
+      },
+      "reflection_only": {
+        "near_fraction_abs_error": 0.0,
+        "return_abs_error": 8.196992763487287e-05,
+        "streak_exact": true,
+        "task_success_exact": true
+      }
+    },
+    "run": "runs\\plan2307_completion_20260723\\pure_target_architecture_matrix\\p7_simba_fastsacn8_lambda0p5_utd2_actorutd1_100k\\seed4",
+    "selection_note": "Selected post hoc from the 250 grid seed-state cells where reflection-only failed task success and the deployed policy passed. It is an illustrative case and is not an additional aggregate estimate.",
+    "source_rows": {
+      "deployed_pure_rl": {
+        "csv": "reports\\plan2507_p7_authority_20260725\\grid\\pendulum_grid_rollouts.csv",
+        "row": {
+          "actual_seed": "4",
+          "length": "200.0",
+          "min_step_reward": "-11.744033013983634",
+          "near_upright_fraction": "0.805",
+          "not_near_upright_streak": "39.0",
+          "return": "-220.0193200894167",
+          "run_dir": "C:\\Users\\Ala\\Desktop\\Project 15\\runs\\plan2307_completion_20260723\\pure_target_architecture_matrix\\p7_simba_fastsacn8_lambda0p5_utd2_actorutd1_100k\\seed4",
+          "stability_success": "1.0",
+          "streak_success": "1.0",
+          "task_success": "1.0",
+          "theta": "-3.038589615767177",
+          "theta_degrees": "-174.0983606557377",
+          "theta_dot": "-0.9"
+        }
+      },
+      "reflection_only": {
+        "csv": "reports\\plan2507_p7_reflection_authority_20260725\\grid\\pendulum_grid_rollouts.csv",
+        "row": {
+          "actual_seed": "4",
+          "length": "200.0",
+          "min_step_reward": "-14.715731559573365",
+          "near_upright_fraction": "0.635",
+          "not_near_upright_streak": "73.0",
+          "return": "-345.1351787116114",
+          "run_dir": "C:\\Users\\Ala\\Desktop\\Project 15\\runs\\plan2307_completion_20260723\\pure_target_architecture_matrix\\p7_simba_fastsacn8_lambda0p5_utd2_actorutd1_100k\\seed4",
+          "stability_success": "0.0",
+          "streak_success": "0.0",
+          "task_success": "0.0",
+          "theta": "-3.038589615767177",
+          "theta_degrees": "-174.0983606557377",
+          "theta_dot": "-0.9"
+        }
+      }
+    }
+  },
+  "videos": {
+    "01_same_hard_start_learning_gap.mp4": {
+      "codec": "h264",
+      "duration_seconds": 12.0,
+      "file_bytes": 791379,
+      "fps": 20.0,
+      "height": 1080,
+      "sha256": "f5aabdac99c60446acdb6b4337d03b51acda899e07acb79dab0a7c07dcf090d1",
+      "width": 1920
+    },
+    "02_pure_rl_qsearch_repairs_failure.mp4": {
+      "codec": "h264",
+      "duration_seconds": 12.0,
+      "file_bytes": 570811,
+      "fps": 20.0,
+      "height": 1080,
+      "sha256": "f01086ab9a417ad04d77782de6c27a25262c06e61df26eb7daaafda63d6da8f5",
+      "width": 1920
+    }
+  }
+}

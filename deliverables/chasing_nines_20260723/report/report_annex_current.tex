@@ -26,7 +26,7 @@ The inventory is useful for identifying missing seeds, aliases, deployment varia
 
 \begin{center}
 \includegraphics[width=.96\textwidth]{36_fastsacn_objective_share.png}
-\captionof{figure}{Normalized horizon weights for FastSACN target variants. The $\lambda=0.5$ FastSACN8 recipe assigns 0.775\% of normalized target mass to the eight-step endpoint.}
+\captionof{figure}{Normalized loss coefficients for FastSACN target variants. The $\lambda=0.5$ FastSACN8 recipe assigns 0.775\% of the normalized coefficient to the eight-step categorical cross-entropy term. This is not a measured share of the gradient or cumulative learning effect.}
 \end{center}
 
 \begin{center}
@@ -34,14 +34,14 @@ The inventory is useful for identifying missing seeds, aliases, deployment varia
 \captionof{figure}{Stored loss and evaluation traces for the earlier FastSACN8 family. Loss scales differ across objectives, so the curves describe optimization history rather than provide a direct cross-objective ranking.}
 \end{center}
 
-The historical FastSACN8 result changes training length, critic update dose, and deployment relative to the selected one-step pure method. The completed P7 combination keeps the 100k budget, SimbaV2 architecture, and deployment fixed while changing both the target family and critic update dose. On 27,765 locked off-grid trials per arm, its selected deployment improves near-reference reliability from 94.489\% to 95.909\% and strict wins from 17.792\% to 21.930\%, while task success decreases from 93.038\% to 92.948\%. The registered no-regression gate therefore blocks authority-grid evaluation. This comparison tests the combined recipe rather than the target family alone.
+The historical FastSACN8 result changes training length, critic update dose, and deployment relative to the selected one-step pure method. The completed five-seed combination keeps the 100k budget, SimbaV2 architecture, and deployment fixed while changing both the target family and critic update dose. On 27,765 locked off-grid trials per arm, its selected deployment improves near-reference reliability from 94.489\% to 95.909\% and strict wins from 17.792\% to 21.930\%, while task success decreases from 93.038\% to 92.948\%. The authority grid records 12,008 of 12,505 near-reference successes, 11,614 task successes, and 2,854 strict wins. This comparison tests the combined target-and-dose recipe rather than the target family alone.
 
 \begin{center}
-\includegraphics[width=.96\textwidth]{25_terminal_fastsacn_gate.png}
-\captionof{figure}{Five-seed locked off-grid comparison under the same reflection and Q-search deployment. P7 changes both the FastSACN8 target and critic update dose. The authority grid was not queried.}
+\includegraphics[width=.96\textwidth]{47_actor_critic_transfer.png}
+\captionof{figure}{Five-seed target ablations and the selected pure-RL deployment intervention. FastSACN8 changes both the target and critic update dose. Action search then uses critic preferences to replace many actions chosen by the actor.}
 \end{center}
 
-The P8 seed-zero actor-UTD2 screen improves strict wins and mean return relative to P7 seed zero, but lowers near-reference reliability from 96.668\% to 96.128\% and task success from 92.527\% to 92.112\%. It fails its registered seed-zero gate and receives no four-seed promotion.
+The seed-zero actor-UTD2 screen improves strict wins and mean return relative to the selected seed-zero configuration, but lowers near-reference reliability from 96.668\% to 96.128\% and task success from 92.527\% to 92.112\%. It was not extended to four more seeds and is not a mainline result.
 
 \clearpage
 \subsection{Actor geometry and saturation}
@@ -117,13 +117,13 @@ Closed-loop amplification tests whether small early deviations grow into a relia
 \subsection{Reference-prefix specificity}
 
 \begin{center}
-\includegraphics[width=.95\textwidth]{09_sequence_control_diagnostic.png}
-\captionof{figure}{Repair rate as a state-matched reference policy controls the first 1, 8, 16, or 32 steps and then returns control to the same frozen actor.}
+\includegraphics[width=.95\textwidth]{40_p7_reference_prefix_intervention.png}
+\captionof{figure}{Exact-lineage repair rate as a state-matched reference policy controls an initial prefix and then returns control to each selected P7 raw actor.}
 \end{center}
 
 \begin{center}
-\includegraphics[width=.92\textwidth]{10_reference_prefix_specificity.png}
-\captionof{figure}{Specificity controls at 1, 8, 16, and 32 steps. Shuffled reference actions and zero torque do not reproduce the state-matched repair at longer prefixes.}
+\includegraphics[width=.92\textwidth]{41_p7_reference_prefix_specificity.png}
+\captionof{figure}{Exact-lineage specificity controls. Shuffled reference actions and zero torque do not reproduce state-matched repair at longer prefixes.}
 \end{center}
 
 The intervention demonstrates sufficiency on the tested frozen failures. A sustained state-matched prefix repairs nearly every trial, while generic interruptions do not. The reference is diagnostic only and is unavailable at deployment. This result does not show which training update would teach the same corrective sequence.
