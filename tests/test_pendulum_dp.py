@@ -41,14 +41,14 @@ def test_tiny_dp_prefers_upright_state():
         solution,
         theta_values=np.asarray([0.0, -np.pi]),
         velocity_values=np.asarray([0.0]),
-        reliability=ReliabilityConfig(success_return_threshold=-200.0),
+        reliability=ReliabilityConfig(),
     )
     upright = rows[0]
     downward = rows[1]
 
     assert solution.values_by_remaining.shape == (5, 17 * 9)
     assert upright["dp_policy_return"] > downward["dp_policy_return"]
-    assert upright["dp_policy_return_success"] == 1.0
+    assert upright["dp_policy_task_success"] == 1.0
 
 
 def test_dp_comparison_separates_signed_gap_from_regret():
@@ -58,8 +58,7 @@ def test_dp_comparison_separates_signed_gap_from_regret():
             "theta_degrees": "0.0",
             "theta_dot": "0.0",
             "dp_policy_return": "-100.0",
-            "dp_policy_return_success": "1.0",
-            "dp_policy_strict_success": "1.0",
+            "dp_policy_task_success": "1.0",
         }
     ]
     sac_rows = [
@@ -67,8 +66,7 @@ def test_dp_comparison_separates_signed_gap_from_regret():
             "theta": "0.0",
             "theta_dot": "0.0",
             "mean_return": "-90.0",
-            "return_success_rate": "1.0",
-            "strict_success_rate": "1.0",
+            "task_success_rate": "1.0",
         }
     ]
 

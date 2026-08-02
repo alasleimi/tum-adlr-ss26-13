@@ -8,7 +8,7 @@ from typing import Any
 import numpy as np
 
 from last_nine_rl.config import ExperimentConfig
-from last_nine_rl.evaluate import evaluate_policy, fixed_eval_seeds, threshold_fractions
+from last_nine_rl.evaluate import evaluate_policy, fixed_eval_seeds
 
 
 class PendulumEnergySwingupController:
@@ -100,14 +100,12 @@ def evaluate_pendulum_reference(config: ExperimentConfig) -> dict[str, Any]:
         seeds=eval_seeds,
     )
     scalar_eval = {k: v for k, v in evaluation.items() if not isinstance(v, list)}
-    scalar_eval.update(threshold_fractions(evaluation["returns"], config.reliability.strict_return_thresholds))
     return {
         "controller": "pendulum_energy_swingup_pd",
         "controller_params": controller.to_dict(),
         "env_id": config.env.env_id,
         "eval_seeds": eval_seeds,
         "success_definition": {
-            "return_threshold": config.reliability.success_return_threshold,
             "near_upright_fraction_threshold": config.reliability.success_near_upright_fraction_threshold,
             "max_not_near_upright_streak": config.reliability.success_max_not_near_upright_streak,
         },

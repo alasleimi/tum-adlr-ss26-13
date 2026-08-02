@@ -1,0 +1,115 @@
+\onecolumn
+\section{Evidence and diagnostics annex}
+\small
+
+\subsection{Evaluation protocol}
+
+Each headline percentage comes from five trained actors evaluated on the same 61 by 41 grid. The diagnostic experiments reuse those actors on fixed state sets to examine the observed failure patterns.
+
+The mixed actor family uses DAgger followed by 20,000 additional transitions from automatically selected high-regret starts. The pure deployment combines SimbaV2 FastSACN8 actors, symmetry projection, and a 41-candidate search that accepts a change only when both critics favor it. Both evaluations contain five actors and 12,505 common-grid rollouts.
+
+The mixed initializer used 400,000 static labels and three learner-controlled DAgger rounds. During data collection, 20\% of initial states came from within 35 degrees of upright. The follow-up added 240,000 reference labels covering the sampled start distribution and 20,000 transitions from automatically selected high-regret starts. Deployment uses the learned actor and critic.
+
+Demonstration-augmented policy gradients combine imitation and reward optimization \cite{rajeswaran2018dapg}. Our mixed pipeline trains the actor from reference actions and trains the deployment critic from reward.
+
+\subsection{FastSACN8 loss and standard-network comparison}
+
+\begin{center}
+\includegraphics[width=.96\textwidth]{36_fastsacn_objective_share.png}
+\captionof{figure}{Normalized loss coefficients for FastSACN target variants. The selected $\lambda=0.5$ FastSACN8 recipe assigns 0.775\% of the explicit coefficient to the eight-step categorical cross-entropy term. Repeated updates let both losses shape shared critic features.}
+\end{center}
+
+The completed five-seed configurations share the 100k budget, SimbaV2 architecture, and deployment rule. Each critic uses the update frequency evaluated for that configuration. On a fixed 5,553-state diagnostic set per seed, the selected FastSACN8 deployment improves near-reference reliability from 94.489\% to 95.909\% and strict wins from 17.792\% to 21.930\%. On the common evaluation grid it records 12,008 of 12,505 near-reference successes, 11,614 task successes, and 2,854 strict wins.
+
+\subsubsection{Standard-MLP target-family check}
+
+Three completed configurations use standard MLP actors and twin critics, seeds 0--4, 100,000 transitions, and one update per transition. SimbaV2 is disabled throughout; the return target changes from one-step SAC to FastSACN8 or SACN8. Their actor-only results on the common grid are:
+
+\begin{center}
+\begin{tabular}{lrrr}
+\toprule
+Target family & Near reference & Task success & Strict win\\
+\midrule
+SAC & 8,243 / 12,505 (65.918\%) & 9,780 (78.209\%) & 218 (1.743\%)\\
+FastSACN8 & 9,124 / 12,505 (72.963\%) & 10,070 (80.528\%) & 566 (4.526\%)\\
+SACN8 & 9,189 / 12,505 (73.483\%) & 10,054 (80.400\%) & 642 (5.134\%)\\
+\bottomrule
+\end{tabular}
+\end{center}
+
+Plain SAC trails FastSACN8 by 881 near-reference trials and SACN8 by 946. SACN8 has the strongest near-reference and strict-win counts; FastSACN8 records 16 more task successes. For the standard-MLP FastSACN8 configuration, reflection plus Q41 search reaches 9,217 near-reference and 10,649 task-success trials.
+
+\clearpage
+\subsection{Search width and reflection}
+
+Every row below uses the same 5,553 fixed diagnostic states per seed and five seeds. The 0.005 twin-critic acceptance threshold is unchanged.
+
+\begin{center}
+\begin{tabular}{llrr}
+\toprule
+Pipeline & Deployment & Near reference & Rate\\
+\midrule
+Mixed & Q5 & 27,751 / 27,765 & 99.950\%\\
+Mixed & Q5 after reflection & 27,749 / 27,765 & 99.942\%\\
+Mixed & Q41 & 26,975 / 27,765 & 97.155\%\\
+Pure FastSACN8 & Reflection + Q5 & 25,657 / 27,765 & 92.408\%\\
+Pure FastSACN8 & Reflection + Q41 & 26,629 / 27,765 & 95.909\%\\
+\bottomrule
+\end{tabular}
+\end{center}
+
+Q41 loses 776 mixed successes relative to Q5 and adds 972 pure-RL successes relative to Q5. Reflection changes the mixed Q5 result by two trials. These direct measurements determine the selected deployment: local Q5 for mixed actors and full-range Q41 after reflection for pure actors.
+
+\raggedbottom
+\subsection{Reliability beyond one return threshold}
+
+\begin{center}
+\includegraphics[width=.96\textwidth]{111_tolerance_curve_wide.png}
+\captionof{figure}{Near-reference success as the permitted return gap varies. Thick lines pool all five seeds; thin lines show individual seeds. The dashed line marks the reported tolerance of five return units.}
+\end{center}
+
+The mixed pipeline has the higher near-reference rate throughout the displayed tolerance range. At the reported tolerance of five, it reaches 99.928\% and pure RL reaches 96.026\%. The separation is largest under stricter return tolerances, where the pure-RL seeds also spread farther apart.
+
+\subsection{Worst-seed return margin across initial states}
+
+\begin{center}
+\includegraphics[width=.96\textwidth]{79_worst_seed_return_margin.png}
+\captionof{figure}{For each initial state, color shows the lowest return margin across the five seeds. A margin of $-5$ is the near-reference boundary. The mixed failures are isolated; pure-RL failures form broad, repeated bands.}
+\end{center}
+
+This view asks whether every trained seed succeeds from each initial state. The mixed pipeline falls below the near-reference boundary in eight isolated cells. Pure RL falls below it in 208 cells, including 13 where all five seeds fail.
+
+\clearpage
+\subsection{Actor outputs approach the torque limits}
+
+\begin{center}
+\includegraphics[width=.96\textwidth]{16_completed_target_actor_geometry.png}
+\captionof{figure}{Torque-limit occupancy, remaining tanh slope, and reflection error for the completed five-seed target configurations. Each point is one trained seed; horizontal bars show medians.}
+\end{center}
+
+Relative to the five one-step actors, FastSACN8 raises the median fraction of actions at a torque limit from 59.1\% to 86.9\% and lowers the median remaining tanh slope from 0.120 to 0.039. Both changes occur in all five indexed seeds. Small changes before the tanh therefore produce little change in the final torque. Q41 avoids this restriction by evaluating 41 torque values directly.
+
+\subsection{Ordered correction sequences}
+
+\begin{center}
+\includegraphics[width=.95\textwidth]{40_p7_reference_prefix_intervention.png}
+\captionof{figure}{Repair rate when the reference policy controls the first $K$ decisions of a failed rollout and then returns control to the same selected FastSACN8 actor.}
+\end{center}
+
+\clearpage
+\begin{center}
+\includegraphics[width=.92\textwidth]{41_p7_reference_prefix_specificity.png}
+\captionof{figure}{A state-matched corrective sequence repairs failures as its length grows. Shuffling those actions or applying zero torque removes the long-sequence benefit.}
+\end{center}
+
+One state-matched reference action repairs 19.1\% of the failed rollouts. The repair rate rises to 47.7\% after eight actions, 91.3\% after 16, and 99.0\% after 32. Shuffling the same 32 actions repairs 0.6\%, and zero torque repairs none. Recovery therefore depends on an ordered sequence of state-appropriate corrections.
+
+\subsection{Evidence summary}
+
+The diagnostics support three design choices:
+
+\begin{itemize}
+\item \textbf{Multi-step targets.} One reference action repairs 19.1\% of pure-actor failures. An ordered 32-action prefix repairs 99.0\%, whereas shuffling the same actions repairs 0.6\%. This supports the multi-step targets in SACN8 and FastSACN8.
+\item \textbf{Full-range Q-search.} FastSACN8 places 98.5\% of its failed actions near the torque bounds. Clipping preserves only 7.1\% of a nominal local critic step. Q41 evaluates the full torque interval and adds 972 successes relative to Q5.
+\item \textbf{Twin-critic agreement.} On FastSACN8 failures, one reference action improves continuation return in 79.4\% of cases. Among those helpful interventions, the learned critic assigns the reference action a higher Q-value than the actor's action in 54.5\% of cases. Deployment accepts a searched action only when both critics value it at least 0.005 above the actor proposal.
+\end{itemize}

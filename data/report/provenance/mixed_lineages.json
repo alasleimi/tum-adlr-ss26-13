@@ -1,0 +1,128 @@
+{
+  "schema_version": 1,
+  "scope": "Preserved provenance caveats for the mixed-pipeline headline and component comparisons.",
+  "shared_initializer_sampler": {
+    "reset_support_fraction": 0.6,
+    "near_upright_fraction": 0.2,
+    "near_upright_abs_theta_degrees": 35.0,
+    "remaining_fraction": 0.2,
+    "status": "historical_angle_targeted_initializer",
+    "interpretation": "This recovered creation protocol is not a full-domain-uniform clean initializer. Deployment does not query the reference and does not apply an angle rule."
+  },
+  "initializer_families": {
+    "seed0_original": "runs/reference_assisted_large_simba_reset60_dagger3_seed0_20260717",
+    "seeds1to4_frozen": "runs/general_hybrid_frozen_initializer_5seed_20260718"
+  },
+  "methods": {
+    "mixed_selected": {
+      "initializer_by_seed": {
+        "0": "seed0_original",
+        "1": "seeds1to4_frozen",
+        "2": "seeds1to4_frozen",
+        "3": "seeds1to4_frozen",
+        "4": "seeds1to4_frozen"
+      },
+      "rollout_run_dir_by_seed": {
+        "0": "runs/systematic_100k_ablation_no_rl_shift_20260722/seed0",
+        "1": "runs/systematic_100k_ablation_no_rl_shift_20260722/seed1",
+        "2": "runs/systematic_100k_ablation_no_rl_shift_20260722/seed2",
+        "3": "runs/systematic_100k_ablation_no_rl_shift_20260722/seed3",
+        "4": "runs/systematic_100k_ablation_no_rl_shift_20260722/seed4"
+      }
+    },
+    "mixed_actor_only": {
+      "initializer_by_seed": {
+        "0": "seed0_original",
+        "1": "seeds1to4_frozen",
+        "2": "seeds1to4_frozen",
+        "3": "seeds1to4_frozen",
+        "4": "seeds1to4_frozen"
+      },
+      "rollout_run_dir_by_seed": {
+        "0": "runs/systematic_100k_ablation_no_rl_shift_20260722/seed0",
+        "1": "runs/systematic_100k_ablation_no_rl_shift_20260722/seed1",
+        "2": "runs/systematic_100k_ablation_no_rl_shift_20260722/seed2",
+        "3": "runs/systematic_100k_ablation_no_rl_shift_20260722/seed3",
+        "4": "runs/systematic_100k_ablation_no_rl_shift_20260722/seed4"
+      }
+    },
+    "mixed_uniform": {
+      "initializer_by_seed": {
+        "0": "seed0_original",
+        "1": "seeds1to4_frozen",
+        "2": "seeds1to4_frozen",
+        "3": "seeds1to4_frozen",
+        "4": "seeds1to4_frozen"
+      },
+      "rollout_run_dir_by_seed": {
+        "0": "runs/systematic_100k_ablation_uniform_dagger_20260722/seed0",
+        "1": "runs/systematic_100k_ablation_uniform_dagger_20260722/seed1",
+        "2": "runs/systematic_100k_ablation_uniform_dagger_20260722/seed2",
+        "3": "runs/systematic_100k_ablation_uniform_dagger_20260722/seed3",
+        "4": "runs/systematic_100k_ablation_uniform_dagger_20260722/seed4"
+      }
+    },
+    "mixed_priority_shifted": {
+      "initializer_by_seed": {
+        "0": "seed0_original",
+        "1": "seeds1to4_frozen",
+        "2": "seeds1to4_frozen",
+        "3": "seeds1to4_frozen",
+        "4": "seeds1to4_frozen"
+      },
+      "rollout_run_dir_by_seed": {
+        "0": "runs/systematic_100k_budget_g6c_round1_qsearch_20260722/seed0",
+        "1": "runs/systematic_100k_budget_g6c_round1_qsearch_20260722/seed1",
+        "2": "runs/systematic_100k_budget_g6c_round1_qsearch_20260722/seed2",
+        "3": "runs/systematic_100k_budget_g6c_round1_qsearch_20260722/seed3",
+        "4": "runs/systematic_100k_budget_g6c_round1_qsearch_20260722/seed4"
+      }
+    },
+    "mixed_base_q5": {
+      "initializer_by_seed": {
+        "0": "seed0_original",
+        "1": "seeds1to4_frozen",
+        "2": "seeds1to4_frozen",
+        "3": "seeds1to4_frozen",
+        "4": "seeds1to4_frozen"
+      },
+      "rollout_run_dir_by_seed": {
+        "0": "runs/reference_assisted_large_simba_reset60_dagger3_seed0_20260717/seed0",
+        "1": "runs/general_hybrid_frozen_initializer_5seed_20260718/seed1",
+        "2": "runs/general_hybrid_frozen_initializer_5seed_20260718/seed2",
+        "3": "runs/general_hybrid_frozen_initializer_5seed_20260718/seed3",
+        "4": "runs/general_hybrid_frozen_initializer_5seed_20260718/seed4"
+      }
+    }
+  },
+  "contrasts": [
+    {
+      "id": "mixed_local_qsearch",
+      "left": "mixed_actor_only",
+      "right": "mixed_selected",
+      "status": "matched",
+      "declared_difference": "Five-candidate local FastSACN Q-search at deployment"
+    },
+    {
+      "id": "mixed_priority_vs_uniform",
+      "left": "mixed_uniform",
+      "right": "mixed_selected",
+      "status": "historical_with_initializer_caveat",
+      "reason": "The follow-up sampler comparison shares the recovered angle-targeted initializer and is not evidence for a clean full-domain initializer."
+    },
+    {
+      "id": "mixed_learner_state_labels",
+      "left": "mixed_base_q5",
+      "right": "mixed_selected",
+      "status": "historical_not_strictly_matched",
+      "reason": "The no-learner-state input directly combines the distinct seed-0 and seed-1--4 source families; it is historical component evidence, not a clean five-seed causal contrast."
+    },
+    {
+      "id": "mixed_tiny_target_shift",
+      "left": "mixed_selected",
+      "right": "mixed_priority_shifted",
+      "status": "historical_result_alias",
+      "reason": "The preserved rollout outcomes are numerically identical although their recorded continuation run identities differ."
+    }
+  ]
+}

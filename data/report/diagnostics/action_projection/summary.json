@@ -1,0 +1,85 @@
+{
+  "schema_version": 1,
+  "diagnostic_scope": "Read-only decomposition of the registered C32 frozen first-action critic-gradient intervention. It measures how the bounded action space changes the realized size of a nominal critic-directed step.",
+  "protocol": {
+    "input_rows": "reports/plan2307_pure_target_architecture_20260723/p0_p1_p2_action_gradient_alignment/critic_action_gradient_rows.csv",
+    "input_rows_sha256": "f43f204efa0f93447721eed491dd57cb7f058c74da60a1fa7babc2e03a846f55",
+    "source_summary": "reports/plan2307_pure_target_architecture_20260723/p0_p1_p2_action_gradient_alignment/summary.json",
+    "source_summary_sha256": "455a3a7e90f4510b630be22fb75acbf2bf4f8b0583417962c233ae87cdb8e28d",
+    "locked_dataset_sha256": "6ecb65c0721b5a3671dfe8cd6241158ce9aaed2b5a59b2fcecabdba0efe50e8f",
+    "selected_indices_sha256": "2f7f8b2799c3c61994d40542340e50ae64820966b6c1481c172eb09374a4256c",
+    "sample_count_per_seed": 512,
+    "boundary_threshold": 1.95,
+    "nominal_step": 0.05,
+    "reference_access_during_inference": false,
+    "authority_grid_used": false
+  },
+  "pooled": [
+    {
+      "condition": "P0 one-step",
+      "outcome": "failure",
+      "rows": 200,
+      "boundary_rate": 0.915,
+      "outward_among_boundary_rate": 0.819672131147541,
+      "mean_effective_step": 0.014083110280334949,
+      "mean_effective_step_fraction": 0.28166220560669897,
+      "mean_discounted_gain": 0.00036198304230104837
+    },
+    {
+      "condition": "P0 one-step",
+      "outcome": "success",
+      "rows": 2360,
+      "boundary_rate": 0.722457627118644,
+      "outward_among_boundary_rate": 0.8609970674486803,
+      "mean_effective_step": 0.02187303746024431,
+      "mean_effective_step_fraction": 0.43746074920488615,
+      "mean_discounted_gain": -0.0016692668548561166
+    },
+    {
+      "condition": "P1 FastSACN8",
+      "outcome": "failure",
+      "rows": 606,
+      "boundary_rate": 0.9851485148514851,
+      "outward_among_boundary_rate": 0.9463986599664992,
+      "mean_effective_step": 0.0035640927148435767,
+      "mean_effective_step_fraction": 0.07128185429687153,
+      "mean_discounted_gain": -0.0044227866512083925
+    },
+    {
+      "condition": "P1 FastSACN8",
+      "outcome": "success",
+      "rows": 1954,
+      "boundary_rate": 0.861310133060389,
+      "outward_among_boundary_rate": 0.8181818181818182,
+      "mean_effective_step": 0.01609480182164584,
+      "mean_effective_step_fraction": 0.3218960364329168,
+      "mean_discounted_gain": -0.002817118419737094
+    },
+    {
+      "condition": "P2 SACn8",
+      "outcome": "failure",
+      "rows": 553,
+      "boundary_rate": 0.9891500904159132,
+      "outward_among_boundary_rate": 0.9506398537477148,
+      "mean_effective_step": 0.0034681563796121863,
+      "mean_effective_step_fraction": 0.06936312759224372,
+      "mean_discounted_gain": -0.004317928381210841
+    },
+    {
+      "condition": "P2 SACn8",
+      "outcome": "success",
+      "rows": 2007,
+      "boundary_rate": 0.8644743398106627,
+      "outward_among_boundary_rate": 0.846685878962536,
+      "mean_effective_step": 0.01443539057567337,
+      "mean_effective_step_fraction": 0.2887078115134674,
+      "mean_discounted_gain": -0.002453269650755796
+    }
+  ],
+  "interpretation": "The multi-step failure trials are concentrated at the action bound, where the critic usually points farther outward and projection makes the nominal local step very small. This explains why favorable local direction frequency need not produce an available corrective action.",
+  "limitations": [
+    "The diagnostic is conditioned on post-training outcomes and does not establish that saturation caused a failure.",
+    "Many correct pendulum actions are saturated. The result concerns the interaction between the action bound and a local intervention, not whether saturated control is generally undesirable.",
+    "The intervention changes the first action only. The registered prefix experiment shows that the larger failure tail is sequential."
+  ]
+}

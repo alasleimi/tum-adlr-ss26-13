@@ -17,9 +17,8 @@ def test_wilson_interval_is_bounded_and_informative():
     assert high > 0.0
 
 
-def test_episode_outcomes_keep_return_and_strict_success_separate():
+def test_episode_outcomes_report_task_success_without_return_threshold_success():
     reliability = ReliabilityConfig(
-        success_return_threshold=-200.0,
         success_near_upright_fraction_threshold=0.8,
         success_max_not_near_upright_streak=50,
     )
@@ -31,9 +30,12 @@ def test_episode_outcomes_keep_return_and_strict_success_separate():
         reliability=reliability,
     )
 
-    assert metrics["success_rate"] == 2 / 3
-    assert metrics["return_success_rate"] == 2 / 3
     assert metrics["stability_success_rate"] == 2 / 3
     assert metrics["streak_success_rate"] == 1.0
-    assert metrics["strict_success_rate"] == 1 / 3
-    assert metrics["strict_reliability_nines_wilson95_low"] >= 0.0
+    assert metrics["task_success_rate"] == 2 / 3
+    assert metrics["num_task_successes"] == 2.0
+    assert metrics["task_reliability_nines_wilson95_low"] >= 0.0
+    allowed_success_metrics = {"stability_success_rate", "streak_success_rate", "task_success_rate"}
+    assert {
+        key for key in metrics if key.endswith("_success_rate")
+    } == allowed_success_metrics

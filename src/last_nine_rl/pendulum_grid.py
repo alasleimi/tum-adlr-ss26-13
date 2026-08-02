@@ -18,7 +18,45 @@ import matplotlib.pyplot as plt
 from last_nine_rl.checkpoints import expand_run_dirs, load_agent_from_run
 from last_nine_rl.config import ReliabilityConfig
 from last_nine_rl.envs import UprightDetector
+from last_nine_rl.hybrid_qsearch import ReflectionAveragedActorPolicy
 from last_nine_rl.sac import SACAgent
+
+
+class CriticSearchPolicy:
+    def __init__(
+        self,
+        agent: SACAgent,
+        num_actions: int,
+        margin: float,
+        filter_mode: str = "clipped_value",
+        blend_fraction: float = 1.0,
+        max_action_delta: float | None = None,
+    ):
+        self.agent = agent
+        self.num_actions = int(num_actions)
+        self.margin = float(margin)
+        self.filter_mode = str(filter_mode)
+        self.blend_fraction = float(blend_fraction)
+        self.max_action_delta = (
+            None if max_action_delta is None else float(max_action_delta)
+        )
+
+    def act_batch(self, observations: np.ndarray, deterministic: bool = True) -> np.ndarray:
+        del deterministic
+        actor = np.asarray(
+            self.agent.act_batch(observations, deterministic=True), dtype=np.float32
+        ).reshape(-1, 1)
+        proposed = np.asarray(self.agent.act_batch_critic_search(
+            observations,
+            num_actions=self.num_actions,
+            margin=self.margin,
+            filter_mode=self.filter_mode,
+            blend_fraction=self.blend_fraction,
+        ), dtype=np.float32).reshape(-1, 1)
+        if self.max_action_delta is None:
+            return proposed
+        rejected = np.abs(proposed - actor) > self.max_action_delta
+        return np.where(rejected, actor, proposed)
 
 
 def main() -> None:
@@ -37,6 +75,12 @@ def main() -> None:
         velocity_limit=args.velocity_limit,
         device=args.device,
         checkpoint=args.checkpoint,
+        action_selection=args.action_selection,
+        critic_search_num_actions=args.critic_search_num_actions,
+        critic_search_margin=args.critic_search_margin,
+        critic_search_filter_mode=args.critic_search_filter_mode,
+        critic_search_blend_fraction=args.critic_search_blend_fraction,
+        critic_search_max_action_delta=args.critic_search_max_action_delta,
     )
     print(json.dumps(result["summary"], indent=2, sort_keys=True))
 
@@ -50,6 +94,42 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--velocity-limit", type=float, default=8.0)
     parser.add_argument("--device", default="cpu")
     parser.add_argument("--checkpoint", default="final.pt")
+    parser.add_argument(
+        "--action-selection",
+        choices=("actor", "reflection", "critic_search"),
+        default="actor",
+    )
+    parser.add_argument("--critic-search-num-actions", type=int, default=41)
+    parser.add_argument("--critic-search-margin", type=float, default=0.0)
+    parser.add_argument("--critic-search-blend-fraction", type=float, default=1.0)
+    parser.add_argument("--critic-search-max-action-delta", type=float, default=None)
+    parser.add_argument(
+        "--critic-search-filter-mode",
+        choices=(
+            "clipped_value",
+            "unanimous_advantage",
+            "online_target_unanimous_advantage",
+            "online_target_joint_unanimous_advantage",
+            "mean_proposal_unanimous_advantage",
+            "mid0125_proposal_unanimous_advantage",
+            "mid025_proposal_unanimous_advantage",
+            "mid0375_proposal_unanimous_advantage",
+            "unc025_increase_unanimous_advantage",
+            "unc05_increase_unanimous_advantage",
+            "unc1_increase_unanimous_advantage",
+            "unc2_increase_unanimous_advantage",
+            "target_unanimous_advantage",
+            "target_proposal_online_unanimous_advantage",
+            "target_proposal_online_target_unanimous_advantage",
+            "lcb025_proposal_unanimous_advantage",
+            "lcb05_proposal_unanimous_advantage",
+            "lcb1_proposal_unanimous_advantage",
+            "symmetric_actor_unanimous_advantage",
+            "symmetric_critic_unanimous_advantage",
+            "symmetric_actor_critic_unanimous_advantage",
+        ),
+        default="clipped_value",
+    )
     return parser.parse_args()
 
 
@@ -61,7 +141,52 @@ def evaluate_grid(
     velocity_limit: float,
     device: str | None,
     checkpoint: str,
+    action_selection: str = "actor",
+    critic_search_num_actions: int = 41,
+    critic_search_margin: float = 0.0,
+    critic_search_filter_mode: str = "clipped_value",
+    critic_search_blend_fraction: float = 1.0,
+    critic_search_max_action_delta: float | None = None,
 ) -> dict[str, Any]:
+    if action_selection not in {"actor", "reflection", "critic_search"}:
+        raise ValueError(
+            "action_selection must be one of: actor, reflection, critic_search"
+        )
+    if critic_search_num_actions <= 0:
+        raise ValueError("critic_search_num_actions must be positive")
+    if critic_search_margin < 0.0:
+        raise ValueError("critic_search_margin must be nonnegative")
+    if not 0.0 < critic_search_blend_fraction <= 1.0:
+        raise ValueError("critic_search_blend_fraction must be in (0, 1]")
+    if (
+        critic_search_max_action_delta is not None
+        and critic_search_max_action_delta <= 0.0
+    ):
+        raise ValueError("critic_search_max_action_delta must be positive")
+    if critic_search_filter_mode not in {
+        "clipped_value",
+        "unanimous_advantage",
+        "online_target_unanimous_advantage",
+        "online_target_joint_unanimous_advantage",
+        "mean_proposal_unanimous_advantage",
+        "mid0125_proposal_unanimous_advantage",
+        "mid025_proposal_unanimous_advantage",
+        "mid0375_proposal_unanimous_advantage",
+        "unc025_increase_unanimous_advantage",
+        "unc05_increase_unanimous_advantage",
+        "unc1_increase_unanimous_advantage",
+        "unc2_increase_unanimous_advantage",
+        "target_unanimous_advantage",
+        "target_proposal_online_unanimous_advantage",
+        "target_proposal_online_target_unanimous_advantage",
+        "lcb025_proposal_unanimous_advantage",
+        "lcb05_proposal_unanimous_advantage",
+        "lcb1_proposal_unanimous_advantage",
+        "symmetric_actor_unanimous_advantage",
+        "symmetric_critic_unanimous_advantage",
+        "symmetric_actor_critic_unanimous_advantage",
+    }:
+        raise ValueError("invalid critic_search_filter_mode")
     loaded = [load_agent_from_run(run_dir, device=device, checkpoint=checkpoint) for run_dir in run_dirs]
     configs = [item[1] for item in loaded]
     agents = [item[0] for item in loaded]
@@ -78,31 +203,42 @@ def evaluate_grid(
     )
 
     rollout_rows: list[dict[str, Any]] = []
-    env = gym.make("Pendulum-v1")
-    try:
-        for velocity in velocity_values:
-            for theta in theta_values:
-                for (agent, config, _payload), run_dir in zip(loaded, run_dirs):
-                    rollout = rollout_from_state(
-                        agent=agent,
-                        env=env,
-                        theta=float(theta),
-                        theta_dot=float(velocity),
-                        detector=detector,
-                        reliability=config.reliability,
-                    )
-                    rollout_rows.append(
-                        {
-                            "run_dir": str(run_dir),
-                            "actual_seed": int(config.seed),
-                            "theta": float(theta),
-                            "theta_degrees": float(np.degrees(theta)),
-                            "theta_dot": float(velocity),
-                            **rollout,
-                        }
-                    )
-    finally:
-        env.close()
+    grid_theta = np.tile(theta_values, len(velocity_values))
+    grid_velocity = np.repeat(velocity_values, len(theta_values))
+    horizon = pendulum_horizon(configs[0].env.max_episode_steps)
+    for (agent, config, _payload), run_dir in zip(loaded, run_dirs):
+        if action_selection == "critic_search":
+            rollout_policy = CriticSearchPolicy(
+                agent,
+                critic_search_num_actions,
+                critic_search_margin,
+                filter_mode=critic_search_filter_mode,
+                blend_fraction=critic_search_blend_fraction,
+                max_action_delta=critic_search_max_action_delta,
+            )
+        elif action_selection == "reflection":
+            rollout_policy = ReflectionAveragedActorPolicy(agent)
+        else:
+            rollout_policy = agent
+        run_rollouts = rollout_pendulum_grid_vectorized(
+            agent=rollout_policy,
+            theta_values=grid_theta,
+            theta_dot_values=grid_velocity,
+            detector=detector,
+            reliability=config.reliability,
+            horizon=horizon,
+        )
+        for theta, velocity, rollout in zip(grid_theta, grid_velocity, run_rollouts):
+            rollout_rows.append(
+                {
+                    "run_dir": str(run_dir),
+                    "actual_seed": int(config.seed),
+                    "theta": float(theta),
+                    "theta_degrees": float(np.degrees(theta)),
+                    "theta_dot": float(velocity),
+                    **rollout,
+                }
+            )
 
     grid_rows = summarize_cells(rollout_rows, theta_values, velocity_values)
     write_csv(output_dir / "pendulum_grid_rollouts.csv", rollout_rows)
@@ -115,6 +251,85 @@ def evaluate_grid(
     )
     write_index(output_dir, figures, summary)
     return {"summary": summary, "grid_rows": grid_rows, "rollout_rows": rollout_rows}
+
+
+def pendulum_horizon(configured_max_steps: int | None) -> int:
+    return int(configured_max_steps or 200)
+
+
+def rollout_pendulum_grid_vectorized(
+    agent: Any,
+    theta_values: np.ndarray,
+    theta_dot_values: np.ndarray,
+    detector: UprightDetector,
+    reliability: ReliabilityConfig,
+    horizon: int,
+) -> list[dict[str, float]]:
+    theta = np.asarray(theta_values, dtype=np.float64).copy()
+    theta_dot = np.asarray(theta_dot_values, dtype=np.float64).copy()
+    episode_return = np.zeros_like(theta, dtype=np.float64)
+    min_reward = np.full_like(theta, np.inf, dtype=np.float64)
+    near_count = np.zeros_like(theta, dtype=np.int64)
+    current_not_near_streak = np.zeros_like(theta, dtype=np.int64)
+    longest_not_near_streak = np.zeros_like(theta, dtype=np.int64)
+
+    for _step in range(horizon):
+        obs = pendulum_obs_batch(theta, theta_dot)
+        actions = agent.act_batch(obs, deterministic=True).reshape(-1)
+        theta, theta_dot, reward = pendulum_step_batch(theta, theta_dot, actions)
+        episode_return += reward
+        min_reward = np.minimum(min_reward, reward)
+
+        next_obs = pendulum_obs_batch(theta, theta_dot)
+        near = detector.near_upright(next_obs)
+        near_count += near.astype(np.int64)
+        current_not_near_streak = np.where(near, 0, current_not_near_streak + 1)
+        longest_not_near_streak = np.maximum(longest_not_near_streak, current_not_near_streak)
+
+    near_fraction = near_count / max(horizon, 1)
+    stability_success = near_fraction >= reliability.success_near_upright_fraction_threshold
+    streak_success = longest_not_near_streak <= reliability.success_max_not_near_upright_streak
+    task_success = stability_success & streak_success
+    return [
+        {
+            "return": float(episode_return[idx]),
+            "length": float(horizon),
+            "near_upright_fraction": float(near_fraction[idx]),
+            "min_step_reward": float(min_reward[idx]),
+            "not_near_upright_streak": float(longest_not_near_streak[idx]),
+            "stability_success": float(stability_success[idx]),
+            "streak_success": float(streak_success[idx]),
+            "task_success": float(task_success[idx]),
+        }
+        for idx in range(len(theta_values))
+    ]
+
+
+def pendulum_obs_batch(theta: np.ndarray, theta_dot: np.ndarray) -> np.ndarray:
+    return np.stack([np.cos(theta), np.sin(theta), theta_dot], axis=1).astype(np.float32)
+
+
+def pendulum_step_batch(
+    theta: np.ndarray,
+    theta_dot: np.ndarray,
+    action: np.ndarray,
+    g: float = 10.0,
+    m: float = 1.0,
+    length: float = 1.0,
+    dt: float = 0.05,
+    max_speed: float = 8.0,
+    max_torque: float = 2.0,
+) -> tuple[np.ndarray, np.ndarray, np.ndarray]:
+    torque = np.clip(np.asarray(action, dtype=np.float64), -max_torque, max_torque)
+    costs = angle_normalize(theta) ** 2 + 0.1 * theta_dot**2 + 0.001 * torque**2
+    new_theta_dot = theta_dot + (3.0 * g / (2.0 * length) * np.sin(theta) + 3.0 / (m * length**2) * torque) * dt
+    new_theta_dot = np.clip(new_theta_dot, -max_speed, max_speed)
+    new_theta = theta + new_theta_dot * dt
+    return new_theta, new_theta_dot, -costs
+
+
+def angle_normalize(theta: np.ndarray) -> np.ndarray:
+    return ((theta + np.pi) % (2.0 * np.pi)) - np.pi
 
 
 def rollout_from_state(
@@ -150,7 +365,6 @@ def rollout_from_state(
         done = bool(terminated or truncated)
 
     near_fraction = near_count / max(length, 1)
-    return_success = episode_return >= reliability.success_return_threshold
     stability_success = near_fraction >= reliability.success_near_upright_fraction_threshold
     streak_success = longest_not_near_streak <= reliability.success_max_not_near_upright_streak
     return {
@@ -159,10 +373,9 @@ def rollout_from_state(
         "near_upright_fraction": float(near_fraction),
         "min_step_reward": float(min_reward),
         "not_near_upright_streak": float(longest_not_near_streak),
-        "return_success": float(return_success),
         "stability_success": float(stability_success),
         "streak_success": float(streak_success),
-        "strict_success": float(return_success and stability_success and streak_success),
+        "task_success": float(stability_success and streak_success),
     }
 
 
@@ -198,8 +411,7 @@ def summarize_cells(
                     "median_return": float(np.median(returns)),
                     "worst_return": float(np.min(returns)),
                     "best_return": float(np.max(returns)),
-                    "return_success_rate": float(np.mean([row["return_success"] for row in cell_rows])),
-                    "strict_success_rate": float(np.mean([row["strict_success"] for row in cell_rows])),
+                    "task_success_rate": float(np.mean([row["task_success"] for row in cell_rows])),
                     "mean_near_upright_fraction": float(
                         np.mean([row["near_upright_fraction"] for row in cell_rows])
                     ),
@@ -218,8 +430,7 @@ def write_heatmaps(
     velocity_values: np.ndarray,
 ) -> list[Path]:
     specs = [
-        ("return_success_rate", "Return Success Rate", 0.0, 1.0, "return_success_rate_map.png"),
-        ("strict_success_rate", "Strict Success Rate", 0.0, 1.0, "strict_success_rate_map.png"),
+        ("task_success_rate", "Task Success Rate", 0.0, 1.0, "task_success_rate_map.png"),
         ("mean_return", "Mean Return", None, None, "mean_return_map.png"),
         ("worst_return", "Worst Return", None, None, "worst_return_map.png"),
         ("mean_near_upright_fraction", "Near-Upright Fraction", 0.0, 1.0, "near_upright_fraction_map.png"),
@@ -286,20 +497,17 @@ def grid_summary(
     velocity_bins: int,
     velocity_limit: float,
 ) -> dict[str, Any]:
-    strict = np.asarray([row["strict_success_rate"] for row in grid_rows], dtype=np.float64)
-    ret = np.asarray([row["return_success_rate"] for row in grid_rows], dtype=np.float64)
-    worst_cells = sorted(grid_rows, key=lambda row: (row["strict_success_rate"], row["mean_return"]))[:20]
+    task = np.asarray([row["task_success_rate"] for row in grid_rows], dtype=np.float64)
+    worst_cells = sorted(grid_rows, key=lambda row: (row["task_success_rate"], row["mean_return"]))[:20]
     return {
         "num_training_seeds": len(run_dirs),
         "theta_bins": theta_bins,
         "velocity_bins": velocity_bins,
         "velocity_limit": velocity_limit,
         "num_initial_condition_cells": len(grid_rows),
-        "cell_mean_return_success_rate": float(np.mean(ret)),
-        "cell_mean_strict_success_rate": float(np.mean(strict)),
-        "cell_fraction_all_training_seeds_return_success": float(np.mean(ret >= 1.0)),
-        "cell_fraction_all_training_seeds_strict_success": float(np.mean(strict >= 1.0)),
-        "cell_fraction_any_training_seed_strict_success": float(np.mean(strict > 0.0)),
+        "cell_mean_task_success_rate": float(np.mean(task)),
+        "cell_fraction_all_training_seeds_task_success": float(np.mean(task >= 1.0)),
+        "cell_fraction_any_training_seed_task_success": float(np.mean(task > 0.0)),
         "worst_cells": worst_cells,
     }
 

@@ -1,0 +1,99 @@
+\documentclass[10pt,twocolumn]{article}
+\usepackage[a4paper,margin=16mm,columnsep=6mm]{geometry}
+\usepackage{amsmath,amssymb}
+\usepackage{booktabs}
+\usepackage{graphicx}
+\usepackage{microtype}
+\usepackage{xcolor}
+\usepackage{hyperref}
+\usepackage{caption}
+\usepackage{subcaption}
+\usepackage{enumitem}
+\usepackage{array}
+\usepackage{tabularx}
+\usepackage{multicol}
+\usepackage{tikz}
+\usetikzlibrary{arrows.meta,positioning,fit}
+\hypersetup{colorlinks=true,linkcolor=teal!55!black,citecolor=teal!55!black,urlcolor=teal!55!black}
+\graphicspath{{figures/}}
+\captionsetup{font=small,labelfont=bf}
+\setlist{nosep,leftmargin=*}
+\setlength{\parindent}{1em}
+\setlength{\parskip}{0.25em}
+
+\definecolor{mixed}{HTML}{0F766E}
+\definecolor{pure}{HTML}{2563EB}
+\definecolor{strict}{HTML}{EA580C}
+\definecolor{ink}{HTML}{172033}
+
+\title{\vspace{-1.2em}\textbf{Chasing the Nines: Reliability Across States and Seeds}\\[-1mm]\large A Fixed-Grid Pendulum Case Study}
+\author{Ala Sleimi \and \href{https://www.moodle.tum.de/user/view.php?id=261287\&course=117206}{Mykhailo Shtandenko}\\
+\small Supervisor: \href{https://www.moodle.tum.de/user/view.php?id=140042\&course=117206}{Lennart R\"ostel}}
+\date{30 July 2026}
+
+\begin{document}
+\input{report_body}
+
+\clearpage
+\begin{multicols}{2}
+\begin{thebibliography}{10}
+\bibitem{haarnoja2018sac}
+T. Haarnoja, A. Zhou, P. Abbeel, and S. Levine.
+\newblock Soft Actor-Critic: Off-policy maximum entropy deep reinforcement learning with a stochastic actor.
+\newblock \emph{ICML}, 2018.
+
+\bibitem{bellemare2017distributional}
+M. Bellemare, W. Dabney, and R. Munos.
+\newblock A distributional perspective on reinforcement learning.
+\newblock \emph{ICML}, 2017.
+
+\bibitem{ross2011dagger}
+S. Ross, G. Gordon, and D. Bagnell.
+\newblock A reduction of imitation learning and structured prediction to no-regret online learning.
+\newblock \emph{AISTATS}, 2011.
+
+\bibitem{jiang2021plr}
+M. Jiang, E. Grefenstette, and T. Rockt\"{a}schel.
+\newblock Prioritized level replay.
+\newblock \emph{ICML}, 2021.
+
+\bibitem{rajeswaran2018dapg}
+A. Rajeswaran et al.
+\newblock Learning complex dexterous manipulation with deep reinforcement learning and demonstrations.
+\newblock \emph{RSS}, 2018.
+
+\bibitem{kalashnikov2018qtopt}
+D. Kalashnikov et al.
+\newblock QT-Opt: Scalable deep reinforcement learning for vision-based robotic manipulation.
+\newblock arXiv:1806.10293, 2018.
+
+\bibitem{lee2025simba}
+H. Lee, Y. Lee, T. Seno, D. Kim, P. Stone, and J. Choo.
+\newblock Hyperspherical normalization for scalable deep reinforcement learning.
+\newblock \emph{ICML}, 2025.
+
+\bibitem{lyskawa2025sacn}
+J. {\L}yskawa, J. Lewandowski, and P. Wawrzy{\'n}ski.
+\newblock SACn: Soft Actor-Critic with n-step returns.
+\newblock arXiv:2512.13165, 2025.
+
+\bibitem{henderson2018matters}
+P. Henderson et al.
+\newblock Deep reinforcement learning that matters.
+\newblock \emph{AAAI}, 2018.
+
+\bibitem{agarwal2021precipice}
+R. Agarwal, M. Schwarzer, P. Castro, A. Courville, and M. Bellemare.
+\newblock Deep reinforcement learning at the edge of the statistical precipice.
+\newblock \emph{NeurIPS}, 2021.
+
+\end{thebibliography}
+\end{multicols}
+
+\ifdefined\REPORTBODYONLY
+\else
+\clearpage
+\appendix
+\input{report_annex}
+\fi
+\end{document}

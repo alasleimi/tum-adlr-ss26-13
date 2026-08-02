@@ -1,0 +1,557 @@
+{
+  "schema_version": 1,
+  "diagnostic_scope": "Frozen-policy intervention at the first actor action that differs from its initial-state-selected reference by more than the fixed gap.",
+  "protocol": {
+    "spec": "configs/plan2307_p0_p1_p2_action_gradient_diagnostic_20260724.json",
+    "protocol": "configs/pure_rl_offgrid_validation_protocol_20260722.json",
+    "locked_dataset_sha256": "6ecb65c0721b5a3671dfe8cd6241158ce9aaed2b5a59b2fcecabdba0efe50e8f",
+    "selected_indices_sha256": "2f7f8b2799c3c61994d40542340e50ae64820966b6c1481c172eb09374a4256c",
+    "sample_count_per_seed": 512,
+    "sample_seed": 230723,
+    "action_gap": 0.5,
+    "horizon": 200,
+    "reference_epsilon": 5.0,
+    "dp_solution": "reports/pendulum_investigation_20260509/pendulum_dp_100k_reset_support_241x161x81/pendulum_dp_solution.npz",
+    "dp_solution_sha256": "3e301387f3cca22a280fb9e8d13840483cdcf2bf4492b41a3802b9c51307cd51",
+    "dp_solution_size_bytes": 27079337,
+    "selected_dp_initial_states": 493,
+    "selected_controller_initial_states": 19,
+    "reference_policy_selected_from_initial_state": true,
+    "reference_access_during_inference": false,
+    "authority_grid_used": false
+  },
+  "conditions": {
+    "P0 one-step": {
+      "pooled": {
+        "failure": {
+          "rows": 200,
+          "median_first_action_gap_step": 7.0,
+          "critic_prefers_reference_rate": 0.75,
+          "critic_gradient_points_toward_reference_rate": 0.655,
+          "reference_one_step_beneficial_rate": 0.73,
+          "critic_prefers_helpful_reference_rate": 0.863013698630137,
+          "reference_one_step_discounted_gain_mean": 3.974888608212966,
+          "reference_one_step_discounted_gain_median": 2.1416610633257847,
+          "actor_boundary_rate": 0.795,
+          "twin_gradient_sign_agreement": 0.81
+        },
+        "success": {
+          "rows": 2286,
+          "median_first_action_gap_step": 9.0,
+          "critic_prefers_reference_rate": 0.28390201224846895,
+          "critic_gradient_points_toward_reference_rate": 0.4444444444444444,
+          "reference_one_step_beneficial_rate": 0.531933508311461,
+          "critic_prefers_helpful_reference_rate": 0.30756578947368424,
+          "reference_one_step_discounted_gain_mean": -0.3187962437110391,
+          "reference_one_step_discounted_gain_median": 0.0009037017507372708,
+          "actor_boundary_rate": 0.3731408573928259,
+          "twin_gradient_sign_agreement": 0.541994750656168
+        },
+        "all_initial_states": {
+          "rows": 2560,
+          "first_gap_found_rate": 0.97109375,
+          "near_reference_rate": 0.921875
+        }
+      },
+      "per_seed": [
+        {
+          "replicate": 0,
+          "failure": {
+            "rows": 46,
+            "median_first_action_gap_step": 8.0,
+            "critic_prefers_reference_rate": 0.8043478260869565,
+            "critic_gradient_points_toward_reference_rate": 0.6956521739130435,
+            "reference_one_step_beneficial_rate": 0.8260869565217391,
+            "critic_prefers_helpful_reference_rate": 0.868421052631579,
+            "reference_one_step_discounted_gain_mean": 4.976068324676525,
+            "reference_one_step_discounted_gain_median": 3.950738409467533,
+            "actor_boundary_rate": 0.8260869565217391,
+            "twin_gradient_sign_agreement": 0.8260869565217391
+          }
+        },
+        {
+          "replicate": 1,
+          "failure": {
+            "rows": 20,
+            "median_first_action_gap_step": 0.5,
+            "critic_prefers_reference_rate": 0.65,
+            "critic_gradient_points_toward_reference_rate": 0.7,
+            "reference_one_step_beneficial_rate": 0.65,
+            "critic_prefers_helpful_reference_rate": 0.9230769230769231,
+            "reference_one_step_discounted_gain_mean": 0.6639224038943524,
+            "reference_one_step_discounted_gain_median": 1.9795383142759562,
+            "actor_boundary_rate": 0.7,
+            "twin_gradient_sign_agreement": 0.65
+          }
+        },
+        {
+          "replicate": 2,
+          "failure": {
+            "rows": 48,
+            "median_first_action_gap_step": 8.0,
+            "critic_prefers_reference_rate": 0.7708333333333334,
+            "critic_gradient_points_toward_reference_rate": 0.7291666666666666,
+            "reference_one_step_beneficial_rate": 0.75,
+            "critic_prefers_helpful_reference_rate": 0.9166666666666666,
+            "reference_one_step_discounted_gain_mean": 2.7199349935644275,
+            "reference_one_step_discounted_gain_median": 2.1148516733094453,
+            "actor_boundary_rate": 0.9791666666666666,
+            "twin_gradient_sign_agreement": 0.8333333333333334
+          }
+        },
+        {
+          "replicate": 3,
+          "failure": {
+            "rows": 50,
+            "median_first_action_gap_step": 8.0,
+            "critic_prefers_reference_rate": 0.68,
+            "critic_gradient_points_toward_reference_rate": 0.54,
+            "reference_one_step_beneficial_rate": 0.7,
+            "critic_prefers_helpful_reference_rate": 0.8,
+            "reference_one_step_discounted_gain_mean": 4.526926086482791,
+            "reference_one_step_discounted_gain_median": 2.0887638426083583,
+            "actor_boundary_rate": 0.94,
+            "twin_gradient_sign_agreement": 0.88
+          }
+        },
+        {
+          "replicate": 4,
+          "failure": {
+            "rows": 36,
+            "median_first_action_gap_step": 9.5,
+            "critic_prefers_reference_rate": 0.8055555555555556,
+            "critic_gradient_points_toward_reference_rate": 0.6388888888888888,
+            "reference_one_step_beneficial_rate": 0.6666666666666666,
+            "critic_prefers_helpful_reference_rate": 0.8333333333333334,
+            "reference_one_step_discounted_gain_mean": 5.441581850398723,
+            "reference_one_step_discounted_gain_median": 0.5562557312756127,
+            "actor_boundary_rate": 0.3611111111111111,
+            "twin_gradient_sign_agreement": 0.75
+          }
+        }
+      ]
+    },
+    "P1 FastSACN8": {
+      "pooled": {
+        "failure": {
+          "rows": 606,
+          "median_first_action_gap_step": 9.0,
+          "critic_prefers_reference_rate": 0.504950495049505,
+          "critic_gradient_points_toward_reference_rate": 0.45874587458745875,
+          "reference_one_step_beneficial_rate": 0.8003300330033003,
+          "critic_prefers_helpful_reference_rate": 0.5402061855670103,
+          "reference_one_step_discounted_gain_mean": 3.018833674531274,
+          "reference_one_step_discounted_gain_median": 1.1666930062162493,
+          "actor_boundary_rate": 0.9785478547854786,
+          "twin_gradient_sign_agreement": 0.5907590759075908
+        },
+        "success": {
+          "rows": 1895,
+          "median_first_action_gap_step": 8.0,
+          "critic_prefers_reference_rate": 0.16939313984168866,
+          "critic_gradient_points_toward_reference_rate": 0.42321899736147756,
+          "reference_one_step_beneficial_rate": 0.6221635883905013,
+          "critic_prefers_helpful_reference_rate": 0.17557251908396945,
+          "reference_one_step_discounted_gain_mean": -0.3668802316681962,
+          "reference_one_step_discounted_gain_median": 0.005516079109833649,
+          "actor_boundary_rate": 0.48126649076517153,
+          "twin_gradient_sign_agreement": 0.6110817941952507
+        },
+        "all_initial_states": {
+          "rows": 2560,
+          "first_gap_found_rate": 0.976953125,
+          "near_reference_rate": 0.76328125
+        }
+      },
+      "per_seed": [
+        {
+          "replicate": 0,
+          "failure": {
+            "rows": 126,
+            "median_first_action_gap_step": 8.0,
+            "critic_prefers_reference_rate": 0.4603174603174603,
+            "critic_gradient_points_toward_reference_rate": 0.31746031746031744,
+            "reference_one_step_beneficial_rate": 0.7380952380952381,
+            "critic_prefers_helpful_reference_rate": 0.4946236559139785,
+            "reference_one_step_discounted_gain_mean": 2.037030935252435,
+            "reference_one_step_discounted_gain_median": 1.1188687015507242,
+            "actor_boundary_rate": 0.9682539682539683,
+            "twin_gradient_sign_agreement": 0.7142857142857143
+          }
+        },
+        {
+          "replicate": 1,
+          "failure": {
+            "rows": 117,
+            "median_first_action_gap_step": 9.0,
+            "critic_prefers_reference_rate": 0.5555555555555556,
+            "critic_gradient_points_toward_reference_rate": 0.41025641025641024,
+            "reference_one_step_beneficial_rate": 0.8547008547008547,
+            "critic_prefers_helpful_reference_rate": 0.54,
+            "reference_one_step_discounted_gain_mean": 3.5927840580319836,
+            "reference_one_step_discounted_gain_median": 1.61206246004744,
+            "actor_boundary_rate": 0.9743589743589743,
+            "twin_gradient_sign_agreement": 0.5470085470085471
+          }
+        },
+        {
+          "replicate": 2,
+          "failure": {
+            "rows": 107,
+            "median_first_action_gap_step": 9.0,
+            "critic_prefers_reference_rate": 0.4205607476635514,
+            "critic_gradient_points_toward_reference_rate": 0.5046728971962616,
+            "reference_one_step_beneficial_rate": 0.8130841121495327,
+            "critic_prefers_helpful_reference_rate": 0.4482758620689655,
+            "reference_one_step_discounted_gain_mean": 5.941224691837888,
+            "reference_one_step_discounted_gain_median": 1.2227378218919682,
+            "actor_boundary_rate": 0.9719626168224299,
+            "twin_gradient_sign_agreement": 0.5981308411214953
+          }
+        },
+        {
+          "replicate": 3,
+          "failure": {
+            "rows": 130,
+            "median_first_action_gap_step": 9.0,
+            "critic_prefers_reference_rate": 0.6230769230769231,
+            "critic_gradient_points_toward_reference_rate": 0.4153846153846154,
+            "reference_one_step_beneficial_rate": 0.7769230769230769,
+            "critic_prefers_helpful_reference_rate": 0.693069306930693,
+            "reference_one_step_discounted_gain_mean": 1.5024537835756846,
+            "reference_one_step_discounted_gain_median": 1.0684878350916733,
+            "actor_boundary_rate": 0.9923076923076923,
+            "twin_gradient_sign_agreement": 0.5461538461538461
+          }
+        },
+        {
+          "replicate": 4,
+          "failure": {
+            "rows": 126,
+            "median_first_action_gap_step": 9.0,
+            "critic_prefers_reference_rate": 0.4523809523809524,
+            "critic_gradient_points_toward_reference_rate": 0.6507936507936508,
+            "reference_one_step_beneficial_rate": 0.8253968253968254,
+            "critic_prefers_helpful_reference_rate": 0.5096153846153846,
+            "reference_one_step_discounted_gain_mean": 2.550488414626268,
+            "reference_one_step_discounted_gain_median": 1.1129143993384503,
+            "actor_boundary_rate": 0.9841269841269841,
+            "twin_gradient_sign_agreement": 0.5476190476190477
+          }
+        }
+      ]
+    },
+    "P2 SACn8": {
+      "pooled": {
+        "failure": {
+          "rows": 553,
+          "median_first_action_gap_step": 9.0,
+          "critic_prefers_reference_rate": 0.6781193490054249,
+          "critic_gradient_points_toward_reference_rate": 0.5081374321880651,
+          "reference_one_step_beneficial_rate": 0.7667269439421338,
+          "critic_prefers_helpful_reference_rate": 0.7924528301886793,
+          "reference_one_step_discounted_gain_mean": 4.182001347178902,
+          "reference_one_step_discounted_gain_median": 1.0854715254764926,
+          "actor_boundary_rate": 0.9801084990958409,
+          "twin_gradient_sign_agreement": 0.674502712477396
+        },
+        "success": {
+          "rows": 1965,
+          "median_first_action_gap_step": 8.0,
+          "critic_prefers_reference_rate": 0.20254452926208652,
+          "critic_gradient_points_toward_reference_rate": 0.5226463104325699,
+          "reference_one_step_beneficial_rate": 0.6132315521628499,
+          "critic_prefers_helpful_reference_rate": 0.24398340248962655,
+          "reference_one_step_discounted_gain_mean": -0.3301107155932811,
+          "reference_one_step_discounted_gain_median": 0.004273289705358119,
+          "actor_boundary_rate": 0.4447837150127226,
+          "twin_gradient_sign_agreement": 0.6055979643765903
+        },
+        "all_initial_states": {
+          "rows": 2560,
+          "first_gap_found_rate": 0.98359375,
+          "near_reference_rate": 0.783984375
+        }
+      },
+      "per_seed": [
+        {
+          "replicate": 0,
+          "failure": {
+            "rows": 105,
+            "median_first_action_gap_step": 9.0,
+            "critic_prefers_reference_rate": 0.6476190476190476,
+            "critic_gradient_points_toward_reference_rate": 0.37142857142857144,
+            "reference_one_step_beneficial_rate": 0.8095238095238095,
+            "critic_prefers_helpful_reference_rate": 0.7529411764705882,
+            "reference_one_step_discounted_gain_mean": 5.5300823756555735,
+            "reference_one_step_discounted_gain_median": 0.8226406243789341,
+            "actor_boundary_rate": 1.0,
+            "twin_gradient_sign_agreement": 0.6571428571428571
+          }
+        },
+        {
+          "replicate": 1,
+          "failure": {
+            "rows": 105,
+            "median_first_action_gap_step": 8.0,
+            "critic_prefers_reference_rate": 0.6666666666666666,
+            "critic_gradient_points_toward_reference_rate": 0.4095238095238095,
+            "reference_one_step_beneficial_rate": 0.6857142857142857,
+            "critic_prefers_helpful_reference_rate": 0.8472222222222222,
+            "reference_one_step_discounted_gain_mean": 3.069890256870302,
+            "reference_one_step_discounted_gain_median": 1.1227757069385689,
+            "actor_boundary_rate": 0.9619047619047619,
+            "twin_gradient_sign_agreement": 0.7714285714285715
+          }
+        },
+        {
+          "replicate": 2,
+          "failure": {
+            "rows": 116,
+            "median_first_action_gap_step": 9.0,
+            "critic_prefers_reference_rate": 0.7672413793103449,
+            "critic_gradient_points_toward_reference_rate": 0.6637931034482759,
+            "reference_one_step_beneficial_rate": 0.8793103448275862,
+            "critic_prefers_helpful_reference_rate": 0.803921568627451,
+            "reference_one_step_discounted_gain_mean": 5.688828104501291,
+            "reference_one_step_discounted_gain_median": 1.330174892763381,
+            "actor_boundary_rate": 0.9827586206896551,
+            "twin_gradient_sign_agreement": 0.6810344827586207
+          }
+        },
+        {
+          "replicate": 3,
+          "failure": {
+            "rows": 102,
+            "median_first_action_gap_step": 8.0,
+            "critic_prefers_reference_rate": 0.5392156862745098,
+            "critic_gradient_points_toward_reference_rate": 0.5490196078431373,
+            "reference_one_step_beneficial_rate": 0.6470588235294118,
+            "critic_prefers_helpful_reference_rate": 0.7272727272727273,
+            "reference_one_step_discounted_gain_mean": 4.0663257368106205,
+            "reference_one_step_discounted_gain_median": 0.8922404873207341,
+            "actor_boundary_rate": 0.9705882352941176,
+            "twin_gradient_sign_agreement": 0.5098039215686274
+          }
+        },
+        {
+          "replicate": 4,
+          "failure": {
+            "rows": 125,
+            "median_first_action_gap_step": 9.0,
+            "critic_prefers_reference_rate": 0.744,
+            "critic_gradient_points_toward_reference_rate": 0.528,
+            "reference_one_step_beneficial_rate": 0.792,
+            "critic_prefers_helpful_reference_rate": 0.8181818181818182,
+            "reference_one_step_discounted_gain_mean": 2.6798426663830606,
+            "reference_one_step_discounted_gain_median": 1.125390737565624,
+            "actor_boundary_rate": 0.984,
+            "twin_gradient_sign_agreement": 0.736
+          }
+        }
+      ]
+    }
+  },
+  "checkpoint_identities": [
+    {
+      "condition": "P0 one-step",
+      "replicate": 0,
+      "seed": 0,
+      "sample_rows": 512,
+      "near_reference_successes": 466,
+      "first_gap_found": 462,
+      "first_gap_found_failures": 46,
+      "actor_run": "runs/week3_simbav2_scale_100k_20260526/simba_full_official_opt/seed0",
+      "critic_run": "runs/week3_simbav2_scale_100k_20260526/simba_full_official_opt/seed0",
+      "actor_checkpoint_sha256": "fd89fdd7a27915447886647421370401f143bc6931ec6a0b1c884055ad15c1fa",
+      "critic_checkpoint_sha256": "fd89fdd7a27915447886647421370401f143bc6931ec6a0b1c884055ad15c1fa"
+    },
+    {
+      "condition": "P0 one-step",
+      "replicate": 1,
+      "seed": 1,
+      "sample_rows": 512,
+      "near_reference_successes": 492,
+      "first_gap_found": 508,
+      "first_gap_found_failures": 20,
+      "actor_run": "runs/week3_simbav2_scale_100k_20260526/simba_full_official_opt/seed1",
+      "critic_run": "runs/week3_simbav2_scale_100k_20260526/simba_full_official_opt/seed1",
+      "actor_checkpoint_sha256": "54d83cccf2882ff80be903d9bf742bd5e3a1a3708e846c63c3dc78e2bddd82b6",
+      "critic_checkpoint_sha256": "54d83cccf2882ff80be903d9bf742bd5e3a1a3708e846c63c3dc78e2bddd82b6"
+    },
+    {
+      "condition": "P0 one-step",
+      "replicate": 2,
+      "seed": 2,
+      "sample_rows": 512,
+      "near_reference_successes": 464,
+      "first_gap_found": 508,
+      "first_gap_found_failures": 48,
+      "actor_run": "runs/week3_simbav2_scale_100k_20260526/simba_full_official_opt/seed2",
+      "critic_run": "runs/week3_simbav2_scale_100k_20260526/simba_full_official_opt/seed2",
+      "actor_checkpoint_sha256": "b49a46e91b7f2cc7afd3c83593a2678e16f038f7870fc260ce91543be3410467",
+      "critic_checkpoint_sha256": "b49a46e91b7f2cc7afd3c83593a2678e16f038f7870fc260ce91543be3410467"
+    },
+    {
+      "condition": "P0 one-step",
+      "replicate": 3,
+      "seed": 3,
+      "sample_rows": 512,
+      "near_reference_successes": 462,
+      "first_gap_found": 509,
+      "first_gap_found_failures": 50,
+      "actor_run": "runs/week3_100k_component_ablation_20260527/simba_full_official_opt/seed3",
+      "critic_run": "runs/week3_100k_component_ablation_20260527/simba_full_official_opt/seed3",
+      "actor_checkpoint_sha256": "9fe53c9dbff07eaa44bb0d4cb45f72680aa8be4c5b2fa270a70153ed4c4441cf",
+      "critic_checkpoint_sha256": "9fe53c9dbff07eaa44bb0d4cb45f72680aa8be4c5b2fa270a70153ed4c4441cf"
+    },
+    {
+      "condition": "P0 one-step",
+      "replicate": 4,
+      "seed": 4,
+      "sample_rows": 512,
+      "near_reference_successes": 476,
+      "first_gap_found": 499,
+      "first_gap_found_failures": 36,
+      "actor_run": "runs/week3_100k_component_ablation_20260527/simba_full_official_opt/seed4",
+      "critic_run": "runs/week3_100k_component_ablation_20260527/simba_full_official_opt/seed4",
+      "actor_checkpoint_sha256": "28f40d48795976639dba541273013898dad310fcbc8c3302cb124d4774ae2623",
+      "critic_checkpoint_sha256": "28f40d48795976639dba541273013898dad310fcbc8c3302cb124d4774ae2623"
+    },
+    {
+      "condition": "P1 FastSACN8",
+      "replicate": 0,
+      "seed": 0,
+      "sample_rows": 512,
+      "near_reference_successes": 386,
+      "first_gap_found": 504,
+      "first_gap_found_failures": 126,
+      "actor_run": "runs/systematic_pure_rl_improvements_20260722/p51_clean_sacn_fastlast8_lambda1_utd1_100k/seed0",
+      "critic_run": "runs/systematic_pure_rl_improvements_20260722/p51_clean_sacn_fastlast8_lambda1_utd1_100k/seed0",
+      "actor_checkpoint_sha256": "d05c3eeaf164254eb9b439dfb0fffe6fb570d3c30c43cd8deb40e273bdb016dd",
+      "critic_checkpoint_sha256": "d05c3eeaf164254eb9b439dfb0fffe6fb570d3c30c43cd8deb40e273bdb016dd"
+    },
+    {
+      "condition": "P1 FastSACN8",
+      "replicate": 1,
+      "seed": 1,
+      "sample_rows": 512,
+      "near_reference_successes": 395,
+      "first_gap_found": 506,
+      "first_gap_found_failures": 117,
+      "actor_run": "runs/plan2307_completion_20260723/pure_target_architecture_matrix/p1_simba_fastsacn8_lambda1_utd1_100k/seed1",
+      "critic_run": "runs/plan2307_completion_20260723/pure_target_architecture_matrix/p1_simba_fastsacn8_lambda1_utd1_100k/seed1",
+      "actor_checkpoint_sha256": "4c74a9615feb429bed7b63351a569de9e2385edc2a5e0de681ee13364c6320ce",
+      "critic_checkpoint_sha256": "4c74a9615feb429bed7b63351a569de9e2385edc2a5e0de681ee13364c6320ce"
+    },
+    {
+      "condition": "P1 FastSACN8",
+      "replicate": 2,
+      "seed": 2,
+      "sample_rows": 512,
+      "near_reference_successes": 405,
+      "first_gap_found": 496,
+      "first_gap_found_failures": 107,
+      "actor_run": "runs/plan2307_completion_20260723/pure_target_architecture_matrix/p1_simba_fastsacn8_lambda1_utd1_100k/seed2",
+      "critic_run": "runs/plan2307_completion_20260723/pure_target_architecture_matrix/p1_simba_fastsacn8_lambda1_utd1_100k/seed2",
+      "actor_checkpoint_sha256": "a0f7ae02573cea99268a19b653dc291fefc801a38465b929d2ed38e8e59ccf60",
+      "critic_checkpoint_sha256": "a0f7ae02573cea99268a19b653dc291fefc801a38465b929d2ed38e8e59ccf60"
+    },
+    {
+      "condition": "P1 FastSACN8",
+      "replicate": 3,
+      "seed": 3,
+      "sample_rows": 512,
+      "near_reference_successes": 382,
+      "first_gap_found": 499,
+      "first_gap_found_failures": 130,
+      "actor_run": "runs/plan2307_completion_20260723/pure_target_architecture_matrix/p1_simba_fastsacn8_lambda1_utd1_100k/seed3",
+      "critic_run": "runs/plan2307_completion_20260723/pure_target_architecture_matrix/p1_simba_fastsacn8_lambda1_utd1_100k/seed3",
+      "actor_checkpoint_sha256": "c6acc8ebaf299a797c62ca3dd3c86604c04e8f2998be67b0d95c44d4c5e5ea33",
+      "critic_checkpoint_sha256": "c6acc8ebaf299a797c62ca3dd3c86604c04e8f2998be67b0d95c44d4c5e5ea33"
+    },
+    {
+      "condition": "P1 FastSACN8",
+      "replicate": 4,
+      "seed": 4,
+      "sample_rows": 512,
+      "near_reference_successes": 386,
+      "first_gap_found": 496,
+      "first_gap_found_failures": 126,
+      "actor_run": "runs/plan2307_completion_20260723/pure_target_architecture_matrix/p1_simba_fastsacn8_lambda1_utd1_100k/seed4",
+      "critic_run": "runs/plan2307_completion_20260723/pure_target_architecture_matrix/p1_simba_fastsacn8_lambda1_utd1_100k/seed4",
+      "actor_checkpoint_sha256": "212f346ffee6771fe5633758988107bda9b439e7c9d67a74bc1a9e945d525982",
+      "critic_checkpoint_sha256": "212f346ffee6771fe5633758988107bda9b439e7c9d67a74bc1a9e945d525982"
+    },
+    {
+      "condition": "P2 SACn8",
+      "replicate": 0,
+      "seed": 0,
+      "sample_rows": 512,
+      "near_reference_successes": 407,
+      "first_gap_found": 505,
+      "first_gap_found_failures": 105,
+      "actor_run": "runs/plan2307_completion_20260723/pure_target_architecture_matrix/p2_simba_sacn8_lambda1_utd1_100k/seed0",
+      "critic_run": "runs/plan2307_completion_20260723/pure_target_architecture_matrix/p2_simba_sacn8_lambda1_utd1_100k/seed0",
+      "actor_checkpoint_sha256": "3d153da87d2707835efbd0032fb494b82e6fecba40883c8f8e5d14dbc522f0ec",
+      "critic_checkpoint_sha256": "3d153da87d2707835efbd0032fb494b82e6fecba40883c8f8e5d14dbc522f0ec"
+    },
+    {
+      "condition": "P2 SACn8",
+      "replicate": 1,
+      "seed": 1,
+      "sample_rows": 512,
+      "near_reference_successes": 407,
+      "first_gap_found": 503,
+      "first_gap_found_failures": 105,
+      "actor_run": "runs/plan2307_completion_20260723/pure_target_architecture_matrix/p2_simba_sacn8_lambda1_utd1_100k/seed1",
+      "critic_run": "runs/plan2307_completion_20260723/pure_target_architecture_matrix/p2_simba_sacn8_lambda1_utd1_100k/seed1",
+      "actor_checkpoint_sha256": "bb84a5fff4658c6ea31ee86285e12c4b9fccef7832703ed72de2940416434ae2",
+      "critic_checkpoint_sha256": "bb84a5fff4658c6ea31ee86285e12c4b9fccef7832703ed72de2940416434ae2"
+    },
+    {
+      "condition": "P2 SACn8",
+      "replicate": 2,
+      "seed": 2,
+      "sample_rows": 512,
+      "near_reference_successes": 396,
+      "first_gap_found": 499,
+      "first_gap_found_failures": 116,
+      "actor_run": "runs/plan2307_completion_20260723/pure_target_architecture_matrix/p2_simba_sacn8_lambda1_utd1_100k/seed2",
+      "critic_run": "runs/plan2307_completion_20260723/pure_target_architecture_matrix/p2_simba_sacn8_lambda1_utd1_100k/seed2",
+      "actor_checkpoint_sha256": "ec9e32bd3a8ce491b905cfe9e66d5816ad25cde8e63ad15a78ea40fd2838951c",
+      "critic_checkpoint_sha256": "ec9e32bd3a8ce491b905cfe9e66d5816ad25cde8e63ad15a78ea40fd2838951c"
+    },
+    {
+      "condition": "P2 SACn8",
+      "replicate": 3,
+      "seed": 3,
+      "sample_rows": 512,
+      "near_reference_successes": 410,
+      "first_gap_found": 507,
+      "first_gap_found_failures": 102,
+      "actor_run": "runs/plan2307_completion_20260723/pure_target_architecture_matrix/p2_simba_sacn8_lambda1_utd1_100k/seed3",
+      "critic_run": "runs/plan2307_completion_20260723/pure_target_architecture_matrix/p2_simba_sacn8_lambda1_utd1_100k/seed3",
+      "actor_checkpoint_sha256": "bf8e8b19d2703a880e8b7b75a7355a78cc8e40032f32dedab8d580288227cd40",
+      "critic_checkpoint_sha256": "bf8e8b19d2703a880e8b7b75a7355a78cc8e40032f32dedab8d580288227cd40"
+    },
+    {
+      "condition": "P2 SACn8",
+      "replicate": 4,
+      "seed": 4,
+      "sample_rows": 512,
+      "near_reference_successes": 387,
+      "first_gap_found": 504,
+      "first_gap_found_failures": 125,
+      "actor_run": "runs/plan2307_completion_20260723/pure_target_architecture_matrix/p2_simba_sacn8_lambda1_utd1_100k/seed4",
+      "critic_run": "runs/plan2307_completion_20260723/pure_target_architecture_matrix/p2_simba_sacn8_lambda1_utd1_100k/seed4",
+      "actor_checkpoint_sha256": "33732b502daed3a27015545f7357bd25ad85e80f4d9792284b0aabdb76b60478",
+      "critic_checkpoint_sha256": "33732b502daed3a27015545f7357bd25ad85e80f4d9792284b0aabdb76b60478"
+    }
+  ],
+  "limitations": [
+    "The reference is a diagnostic comparator and never changes the deployed policy or selects a training method.",
+    "Conditioning on the first action disagreement and final outcome does not identify the training update that created the policy.",
+    "A one-action substitution tests a local decision inside a longer closed-loop sequence and cannot replace the sequence intervention."
+  ]
+}

@@ -124,39 +124,26 @@ def episode_outcome_metrics(
     near_np = np.asarray(near_upright_fractions, dtype=np.float64)
     streak_np = np.asarray(not_near_upright_streaks, dtype=np.float64)
 
-    return_success = returns_np >= reliability.success_return_threshold
     stability_success = near_np >= reliability.success_near_upright_fraction_threshold
     streak_success = streak_np <= reliability.success_max_not_near_upright_streak
-    strict_success = return_success & stability_success & streak_success
+    task_success = stability_success & streak_success
     collapse = returns_np <= reliability.collapse_return_threshold
 
-    return_success_low, return_success_high = wilson_interval(int(np.sum(return_success)), len(return_success))
-    strict_success_low, strict_success_high = wilson_interval(int(np.sum(strict_success)), len(strict_success))
-    return_failure_rate = float(1.0 - np.mean(return_success))
-    strict_failure_rate = float(1.0 - np.mean(strict_success))
-    return_failure_high = float(1.0 - return_success_low)
-    strict_failure_high = float(1.0 - strict_success_low)
-    total = len(return_success)
+    task_success_low, task_success_high = wilson_interval(int(np.sum(task_success)), len(task_success))
+    task_failure_rate = float(1.0 - np.mean(task_success))
+    task_failure_high = float(1.0 - task_success_low)
+    total = len(task_success)
 
     return {
-        "num_successes": float(np.sum(return_success)),
-        "success_rate": float(np.mean(return_success)),
-        "failure_rate": return_failure_rate,
-        "success_rate_wilson95_low": return_success_low,
-        "success_rate_wilson95_high": return_success_high,
-        "return_success_rate": float(np.mean(return_success)),
-        "return_failure_rate": return_failure_rate,
-        "return_reliability_nines_empirical": empirical_reliability_nines(return_failure_rate, total),
-        "return_reliability_nines_wilson95_low": reliability_nines(return_failure_high),
         "stability_success_rate": float(np.mean(stability_success)),
         "streak_success_rate": float(np.mean(streak_success)),
-        "num_strict_successes": float(np.sum(strict_success)),
-        "strict_success_rate": float(np.mean(strict_success)),
-        "strict_failure_rate": strict_failure_rate,
-        "strict_success_rate_wilson95_low": strict_success_low,
-        "strict_success_rate_wilson95_high": strict_success_high,
-        "strict_reliability_nines_empirical": empirical_reliability_nines(strict_failure_rate, total),
-        "strict_reliability_nines_wilson95_low": reliability_nines(strict_failure_high),
+        "num_task_successes": float(np.sum(task_success)),
+        "task_success_rate": float(np.mean(task_success)),
+        "task_failure_rate": task_failure_rate,
+        "task_success_rate_wilson95_low": task_success_low,
+        "task_success_rate_wilson95_high": task_success_high,
+        "task_reliability_nines_empirical": empirical_reliability_nines(task_failure_rate, total),
+        "task_reliability_nines_wilson95_low": reliability_nines(task_failure_high),
         "num_collapses": float(np.sum(collapse)),
         "collapse_rate": float(np.mean(collapse)),
     }
@@ -171,11 +158,6 @@ def empirical_reliability_nines(failure_rate: float, total: int) -> float:
 def reliability_nines(failure_rate: float) -> float:
     value = float(-math.log10(max(failure_rate, 1e-12)))
     return 0.0 if abs(value) < 1e-12 else value
-
-
-def threshold_fractions(returns: Sequence[float], thresholds: Sequence[float]) -> dict[str, float]:
-    arr = np.asarray(returns, dtype=np.float64)
-    return {f"fraction_return_ge_{threshold:g}": float(np.mean(arr >= threshold)) for threshold in thresholds}
 
 
 def fixed_eval_seeds(seed_base: int, episodes: int, explicit_seeds: Sequence[int] | None = None) -> list[int]:

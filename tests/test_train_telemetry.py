@@ -65,15 +65,66 @@ def test_train_writes_complete_telemetry_and_uses_fixed_eval_seeds(tmp_path):
     assert "returns" not in evaluation_events[0]["payload"]
     assert evaluation_events[0]["payload"]["seeds"] == [123, 124]
     assert evaluation_events[0]["payload"]["eval_episodes_csv"].endswith("eval_episodes.csv")
+    diagnostic_events = [
+        event for event in events if event.get("type") == "diagnostics"
+    ]
+    assert [event["step"] for event in diagnostic_events] == [6, 12, 13]
+    assert diagnostic_events[-1]["payload"]["terminal_diagnostic"] == pytest.approx(
+        1.0
+    )
 
     with (run_dir / "metrics.csv").open("r", encoding="utf-8", newline="") as f:
         metric_rows = list(csv.DictReader(f))
-    assert any(row["split"] == "eval" and row["name"] == "strict_success_rate" for row in metric_rows)
-    assert any(row["split"] == "eval" and row["name"] == "return_reliability_nines_wilson95_low" for row in metric_rows)
+    assert any(row["split"] == "eval" and row["name"] == "task_success_rate" for row in metric_rows)
+    assert any(row["split"] == "eval" and row["name"] == "task_reliability_nines_wilson95_low" for row in metric_rows)
     update_rows = [row for row in metric_rows if row["split"] == "update"]
     update_names = {row["name"] for row in update_rows}
     assert "num_optimizer_updates" in update_names
     assert "q_loss_mean" in update_names
+    assert any(
+        row["split"] == "diagnostics"
+        and row["name"] == "terminal_diagnostic"
+        and int(row["step"]) == 13
+        for row in metric_rows
+    )
 
     with pytest.raises(FileExistsError):
         train(config, run_dir)
+
+
+def test_zero_eval_interval_disables_initial_periodic_and_terminal_rollouts(tmp_path):
+    run_dir = tmp_path / "no_online_eval"
+    config = ExperimentConfig(
+        name="no_online_eval",
+        seed=0,
+        env=EnvConfig(env_id="Pendulum-v1", max_episode_steps=2),
+        sac=SACConfig(
+            total_steps=3,
+            buffer_size=8,
+            learning_starts=2,
+            batch_size=4,
+            device="cpu",
+        ),
+        eval=EvalConfig(every_steps=0, episodes=2, deterministic=True, seed_base=123),
+        telemetry=TelemetryConfig(
+            run_root=str(tmp_path),
+            log_interval_steps=0,
+            replay_inspection_interval_steps=0,
+            diagnostics_interval_steps=0,
+            tensorboard=False,
+            write_eval_returns_csv=True,
+            save_replay=False,
+            save_model=False,
+        ),
+    )
+
+    assert train(config, run_dir) == run_dir
+
+    with (run_dir / "events.jsonl").open("r", encoding="utf-8") as stream:
+        events = [json.loads(line) for line in stream]
+    assert not [event for event in events if event.get("type") == "evaluation"]
+
+    with (run_dir / "eval_episodes.csv").open(
+        "r", encoding="utf-8", newline=""
+    ) as stream:
+        assert list(csv.DictReader(stream)) == []

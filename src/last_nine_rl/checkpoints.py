@@ -43,7 +43,28 @@ def load_agent_from_run(
     load_optimizers: bool = False,
 ) -> tuple[SACAgent, ExperimentConfig, dict[str, Any]]:
     run_path = Path(run_dir)
-    config = ExperimentConfig.from_json(run_path / "config.json")
+    return load_agent_from_config_checkpoint(
+        run_path / "config.json",
+        checkpoint_path(run_path, checkpoint),
+        device=device,
+        load_optimizers=load_optimizers,
+    )
+
+
+def load_agent_from_config_checkpoint(
+    config_path: str | Path,
+    checkpoint: str | Path,
+    device: str | None = None,
+    load_optimizers: bool = False,
+) -> tuple[SACAgent, ExperimentConfig, dict[str, Any]]:
+    """Load a checkpoint with an explicitly pinned compatible config file.
+
+    Actor-only continuation workflows intentionally keep their model in a new
+    run directory without copying the source run's ``config.json``.  Accepting
+    both paths directly avoids model or config copies while retaining the same
+    construction and checkpoint-loading semantics as ``load_agent_from_run``.
+    """
+    config = ExperimentConfig.from_json(Path(config_path))
     if device is not None:
         config.sac.device = device
     resolved_device = resolve_device(config.sac.device)
@@ -57,7 +78,7 @@ def load_agent_from_run(
         env.close()
 
     payload = agent.load_checkpoint(
-        checkpoint_path(run_path, checkpoint),
+        Path(checkpoint),
         load_optimizers=load_optimizers,
     )
     return agent, config, payload

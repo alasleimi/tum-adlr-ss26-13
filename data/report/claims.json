@@ -1,0 +1,169 @@
+{
+  "schema_version": 1,
+  "scope": "Integer claims and diagnostic semantics used by the final ShareLaTeX report. Rates are always recomputed from counts.",
+  "protocol": {
+    "seeds": 5,
+    "angles": 61,
+    "velocities": 41,
+    "cells_per_seed": 2501,
+    "trials": 12505,
+    "horizon": 200,
+    "near_reference_epsilon": 5.0
+  },
+  "methods": {
+    "mixed_selected": {
+      "label": "Selected RL + supervised pipeline",
+      "role": "headline",
+      "trials": 12505,
+      "near": 12496,
+      "task": 11737,
+      "strict": 1570,
+      "failures": 9,
+      "failure_cells": 8
+    },
+    "pure_selected_q41": {
+      "label": "Selected pure-RL pipeline",
+      "role": "headline",
+      "trials": 12505,
+      "near": 12008,
+      "task": 11614,
+      "strict": 2854,
+      "failures": 497,
+      "failure_cells": 208
+    },
+    "mixed_uniform": {
+      "label": "Uniform follow-up starts",
+      "role": "mixed ablation",
+      "trials": 12505,
+      "near": 12486,
+      "task": 11735,
+      "strict": 1459,
+      "failures": 19,
+      "failure_cells": 18
+    },
+    "mixed_actor_only": {
+      "label": "No local Q-search",
+      "role": "mixed ablation",
+      "trials": 12505,
+      "near": 12470,
+      "task": 11705,
+      "strict": 1813,
+      "failures": 35,
+      "failure_cells": 23
+    },
+    "mixed_base_q5": {
+      "label": "No learner-state labels",
+      "role": "historical mixed ablation",
+      "trials": 12505,
+      "near": 12467,
+      "task": 11730,
+      "strict": 1128,
+      "failures": 38,
+      "failure_cells": 31
+    },
+    "mixed_priority_shifted": {
+      "label": "Priority follow-up with historical tiny target shift",
+      "role": "historical mixed comparison",
+      "trials": 12505,
+      "near": 12496,
+      "task": 11737,
+      "strict": 1570,
+      "failures": 9,
+      "failure_cells": 8
+    },
+    "pure_actor": {
+      "label": "Pure-RL raw actor",
+      "role": "pure ablation",
+      "trials": 12505,
+      "near": 11238,
+      "task": 11362,
+      "strict": 2145,
+      "failures": 1267,
+      "failure_cells": 550
+    },
+    "pure_reflection": {
+      "label": "Pure-RL actor plus reflection",
+      "role": "pure ablation",
+      "trials": 12505,
+      "near": 11550,
+      "task": 11372,
+      "strict": 2521,
+      "failures": 955,
+      "failure_cells": 287
+    },
+    "mlp_sac": {
+      "label": "Standard-MLP SAC",
+      "role": "annex target-family check",
+      "trials": 12505,
+      "near": 8243,
+      "task": 9780,
+      "strict": 218,
+      "failures": 4262,
+      "failure_cells": 1227
+    },
+    "mlp_fastsacn8": {
+      "label": "Standard-MLP FastSACN8",
+      "role": "annex target-family check",
+      "trials": 12505,
+      "near": 9124,
+      "task": 10070,
+      "strict": 566,
+      "failures": 3381,
+      "failure_cells": 792
+    },
+    "mlp_sacn8": {
+      "label": "Standard-MLP SACN8",
+      "role": "annex target-family check",
+      "trials": 12505,
+      "near": 9189,
+      "task": 10054,
+      "strict": 642,
+      "failures": 3316,
+      "failure_cells": 722
+    },
+    "mlp_fastsacn8_q41": {
+      "label": "Standard-MLP FastSACN8 plus Q41",
+      "role": "annex target-family check",
+      "trials": 12505,
+      "near": 9217,
+      "task": 10649,
+      "strict": 506,
+      "failures": 3288,
+      "failure_cells": 783
+    },
+    "simba_onestep": {
+      "label": "SimbaV2 one-step",
+      "role": "scorecard baseline",
+      "trials": 12505,
+      "near": 11484,
+      "task": 11437,
+      "strict": 1066,
+      "failures": 1021,
+      "failure_cells": 402
+    },
+    "canonical_dagger": {
+      "label": "Canonical DAgger",
+      "role": "scorecard baseline",
+      "trials": 12505,
+      "near": 10571,
+      "task": 11007,
+      "strict": 799,
+      "failures": 1934,
+      "failure_cells": 633
+    }
+  },
+  "diagnostic_semantics": {
+    "c32": {
+      "source": "diagnostics/critic_direction/summary.json",
+      "conditions": [
+        "P0 one-step",
+        "P1 FastSACN8",
+        "P2 SACn8"
+      ],
+      "figure_field": "gradient_sign_agreement",
+      "prose_field": "critic_step_beneficial_rate",
+      "status": "known_semantic_mismatch",
+      "explanation": "The existing Figure 58 values describe critic/realized-gradient sign agreement, while the report prose describes a critic-directed action change improving realized return. The verifier recomputes both series and reports the distinction."
+    }
+  }
+}

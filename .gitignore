@@ -6,7 +6,24 @@ __pycache__/
 *.egg-info/
 .venv/
 venv/
-external/cleanrl/
+
+# Local experiment and rendering outputs. Curated report artifacts live under
+# artifacts/report_reproduction and are intentionally tracked.
+runs/
+outputs/
+.build/
+presentation/.render-qa/
+poster/.render-qa/
+report/source/*.aux
+report/source/*.bbl
+report/source/*.blg
+report/source/*.fdb_latexmk
+report/source/*.fls
+report/source/*.log
+report/source/*.out
+report/source/*.synctex.gz
+report/figures/repro-smoke/
+
 .env
 .env.*
 *.pem

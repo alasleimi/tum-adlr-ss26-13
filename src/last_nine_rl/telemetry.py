@@ -50,11 +50,9 @@ class TelemetryLogger:
                     "near_upright_fraction",
                     "min_step_reward",
                     "not_near_upright_streak",
-                    "success",
-                    "return_success",
                     "stability_success",
                     "streak_success",
-                    "strict_success",
+                    "task_success",
                     "collapse",
                 ],
             )
@@ -124,7 +122,6 @@ class TelemetryLogger:
         self,
         step: int,
         evaluation: dict[str, Any],
-        success_threshold: float,
         collapse_threshold: float,
     ) -> None:
         if self.eval_returns_writer is None:
@@ -136,7 +133,6 @@ class TelemetryLogger:
         min_rewards = evaluation.get("min_step_rewards", [])
         streaks = evaluation.get("not_near_upright_streaks", [])
         for idx, episode_return in enumerate(returns):
-            return_success = float(float(episode_return) >= success_threshold)
             stability_success = float(float(near[idx]) >= self.config.reliability.success_near_upright_fraction_threshold)
             streak_success = float(int(streaks[idx]) <= self.config.reliability.success_max_not_near_upright_streak)
             row = {
@@ -148,11 +144,9 @@ class TelemetryLogger:
                 "near_upright_fraction": float(near[idx]),
                 "min_step_reward": float(min_rewards[idx]),
                 "not_near_upright_streak": int(streaks[idx]),
-                "success": return_success,
-                "return_success": return_success,
                 "stability_success": stability_success,
                 "streak_success": streak_success,
-                "strict_success": float(bool(return_success and stability_success and streak_success)),
+                "task_success": float(bool(stability_success and streak_success)),
                 "collapse": float(float(episode_return) <= collapse_threshold),
             }
             self.eval_returns_writer.writerow(row)

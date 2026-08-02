@@ -1,0 +1,65 @@
+{
+  "schema_version": 1,
+  "workflow_version": "pure-rl-offgrid-ranking-v2",
+  "validation_dataset": {
+    "midpoint_theta_bins": 47,
+    "midpoint_velocity_bins": 31,
+    "continuous_points": 4096,
+    "continuous_rng_seed": 22072601,
+    "velocity_limit": 1.0
+  },
+  "fixed_state_geometry": {
+    "state_source": "frozen_validation_dataset_initial_states_before_rollout",
+    "mean_logit_abs_excess_threshold": 4.15,
+    "deterministic_tanh_saturation_threshold": 0.995,
+    "log_std_thresholds": [
+      -1.0,
+      -1.5,
+      -2.0,
+      -3.0
+    ],
+    "log_std_reporting": "effective_clamped_and_pre_floor_unclamped",
+    "critic_source": "mean_of_all_online_checkpoint_critics",
+    "critic_reflection_action": "negative_of_original_deterministic_actor_action"
+  },
+  "ranking_rule": [
+    "near_reference_eps_successes_desc",
+    "task_successes_desc",
+    "strict_beats_reference_successes_desc",
+    "bottom10_conditional_mean_return_desc",
+    "mean_return_desc",
+    "condition_asc_deterministic_tiebreak"
+  ],
+  "selection_policy_variant": "reflection_actor_global41_unanimous_m005",
+  "reported_policy_variants": [
+    "ordinary_actor",
+    "reflection_actor",
+    "reflection_actor_global41_unanimous_m005"
+  ],
+  "evaluation_reliability": {
+    "collapse_return_threshold": -1000.0,
+    "success_near_upright_fraction_threshold": 0.8,
+    "success_max_not_near_upright_streak": 50,
+    "near_upright_cos_threshold": 0.95,
+    "near_upright_abs_velocity_threshold": 1.0,
+    "dormant_relative_threshold": 0.1
+  },
+  "reference_protocol": {
+    "epsilon_return": 5.0,
+    "dp_solution": {
+      "path": "data/reference/pendulum_dp_solution.npz",
+      "size_bytes": 27079337,
+      "sha256": "3e301387f3cca22a280fb9e8d13840483cdcf2bf4492b41a3802b9c51307cd51"
+    },
+    "authority_dp_grid": {
+      "path": "data/reference/pendulum_dp_grid.csv",
+      "size_bytes": 284607,
+      "sha256": "761e727c8b2484243ed175026f8cf38c84d7238c2b1a3e7ecbd91089d656499a"
+    },
+    "authority_controller_grid": {
+      "path": "data/reference/controller_grid.csv",
+      "size_bytes": 235423,
+      "sha256": "f8166f5e2d5dfec9e31a636914015d4a07f58e08b1e8fdc5190efee1352664cf"
+    }
+  }
+}

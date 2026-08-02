@@ -1,7 +1,0 @@
-{
-  "controller_mean_return": -152.26373252174963,
-  "controller_return_success_cell_fraction": 0.6901239504198321,
-  "controller_strict_success_cell_fraction": 0.6901239504198321,
-  "controller_task_success_cell_fraction": 0.7620951619352259,
-  "num_initial_condition_cells": 2501
-}

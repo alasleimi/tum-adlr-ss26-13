@@ -1,0 +1,1844 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <title>Chasing the Nines | Three-column reliability narrative</title>
+  <style>
+    @page { size: A0 landscape; margin: 0; }
+    * { box-sizing: border-box; }
+    :root {
+      --ink: #102b36;
+      --ink2: #173f4d;
+      --muted: #526b76;
+      --paper: #f3f0e8;
+      --white: #fffdfa;
+      --tum: #3478b7;
+      --mixed: #0ea394;
+      --mixed2: #77c9be;
+      --mixed-pale: #e0f3ef;
+      --pure: #3478ef;
+      --pure-pale: #e7eeff;
+      --orange: #f0643b;
+      --orange2: #f49a74;
+      --orange-pale: #fee9df;
+      --line: #ced9dd;
+      --grey: #a7b8c0;
+    }
+    html, body {
+      margin: 0;
+      width: 1189mm;
+      height: 841mm;
+      overflow: hidden;
+      background: var(--paper);
+      color: var(--ink);
+      font-family: Arial, Helvetica, sans-serif;
+    }
+    .poster { width: 1189mm; height: 841mm; overflow: hidden; }
+
+    /* Mandatory course header, matched to the supplied template. */
+    .template-header {
+      position: relative;
+      width: 100%;
+      height: 153mm;
+      background: white;
+      border-bottom: 1.2mm solid var(--tum);
+    }
+    .team-block {
+      position: absolute;
+      left: 34mm;
+      top: 34mm;
+      width: 125mm;
+      line-height: 1.15;
+    }
+    .team { display: block; font-size: 12mm; font-weight: 700; }
+    .team-number {
+      display: block;
+      font-size: 24mm;
+      line-height: 1.3;
+      font-weight: 800;
+      color: var(--tum);
+    }
+    .course { display: block; margin-top: 3mm; font-size: 11.5mm; font-weight: 700; }
+    .title {
+      position: absolute;
+      left: 113mm;
+      top: 20mm;
+      width: 982mm;
+      height: 82mm;
+      margin: 0;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      text-align: center;
+      font-size: 29.8mm;
+      line-height: 1;
+      letter-spacing: -.5mm;
+      font-weight: 800;
+    }
+    .author-block {
+      position: absolute;
+      left: 367mm;
+      top: 107mm;
+      width: 462mm;
+      text-align: center;
+      line-height: 1.16;
+    }
+    .author { display: block; font-size: 14mm; line-height: 1.3; font-weight: 800; }
+    .affiliation { display: block; margin-top: 2mm; font-size: 11.5mm; }
+    .author-block a { color: inherit; text-decoration: none; }
+    .tum-logo {
+      position: absolute;
+      left: 1008mm;
+      top: 38mm;
+      width: 139mm;
+      height: 73mm;
+      object-fit: contain;
+    }
+
+    .body {
+      height: 688mm;
+      display: grid;
+      grid-template-rows: 91mm 548mm 49mm;
+      background: var(--paper);
+    }
+    .result-band {
+      display: grid;
+      grid-template-columns: 1fr 230mm 230mm;
+      align-items: stretch;
+      background: var(--ink);
+      color: white;
+      border-bottom: 2mm solid var(--orange);
+    }
+    .result-copy {
+      padding: 8mm 20mm;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+    }
+    .result-copy strong {
+      font-family: Georgia, "Times New Roman", serif;
+      font-size: 18.2mm;
+      line-height: 1.02;
+    }
+    .result-copy span {
+      margin-top: 3mm;
+      color: #d6e2e6;
+      font-size: 10.8mm;
+      line-height: 1.05;
+    }
+    .score {
+      margin: 7mm 0;
+      padding: 5mm 10mm;
+      border-left: 2mm solid var(--mixed);
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+    }
+    .score.pure { border-color: var(--pure); }
+    .score b {
+      color: #73ded1;
+      font-family: Georgia, "Times New Roman", serif;
+      font-size: 23mm;
+      line-height: .95;
+    }
+    .score.pure b { color: #82adff; }
+    .score span { margin-top: 2mm; font-size: 10.4mm; line-height: 1.03; }
+
+    .content {
+      padding: 8mm 20mm;
+      display: grid;
+      grid-template-columns: 273mm 322mm 1fr;
+      gap: 9mm;
+      min-height: 0;
+    }
+    .column {
+      min-width: 0;
+      min-height: 0;
+      overflow: hidden;
+      padding: 7mm 8mm;
+      border: .7mm solid var(--line);
+      background: var(--white);
+    }
+    .column.evidence { border-top: 2mm solid var(--orange); padding: 7mm 9mm; }
+    .section-line {
+      display: flex;
+      align-items: baseline;
+      gap: 4mm;
+      padding-bottom: 3mm;
+      border-bottom: .7mm solid var(--ink);
+    }
+    .section-line .num {
+      color: var(--orange);
+      font-size: 11mm;
+      line-height: 1;
+      font-weight: 900;
+    }
+    h2 {
+      margin: 0;
+      font-family: Georgia, "Times New Roman", serif;
+      font-size: 16.5mm;
+      line-height: 1;
+    }
+    h3 { margin: 0; font-size: 11.2mm; line-height: 1.04; }
+    p {
+      margin: 0;
+      color: var(--muted);
+      font-size: 9.7mm;
+      line-height: 1.08;
+    }
+    .intro { margin-top: 4mm; }
+    .task-visual {
+      width: 100%;
+      height: 116mm;
+      margin-top: 5mm;
+      display: block;
+      object-fit: cover;
+      object-position: center 48%;
+      border: .6mm solid #d9e2e5;
+    }
+    .protocol {
+      padding: 3.5mm 4mm;
+      border-left: 1.5mm solid var(--mixed);
+      background: var(--mixed-pale);
+      font-size: 10mm;
+      line-height: 1.06;
+    }
+    .definitions {
+      margin-top: 5mm;
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 3mm;
+    }
+    .definition {
+      min-height: 55mm;
+      padding: 4mm;
+      border-top: 1.4mm solid var(--mixed);
+      background: #f7faf9;
+      color: var(--muted);
+      font-size: 9.2mm;
+      line-height: 1.05;
+    }
+    .definition:nth-child(2) { border-color: var(--pure); }
+    .definition:nth-child(3) { border-color: var(--orange); }
+    .definition b {
+      display: block;
+      margin-bottom: 2mm;
+      color: var(--ink);
+      font-size: 9.8mm;
+    }
+    .subhead {
+      margin: 6mm 0 3mm;
+      padding-top: 4mm;
+      border-top: .7mm solid var(--ink);
+      font-size: 11mm;
+      font-weight: 900;
+    }
+    .scorecard { width: 100%; border-collapse: collapse; font-size: 8.9mm; }
+    .scorecard th {
+      padding: 2.5mm 2mm;
+      color: var(--muted);
+      text-align: right;
+      font-weight: 800;
+    }
+    .scorecard th:first-child, .scorecard td:first-child { text-align: left; }
+    .scorecard td {
+      padding: 3.1mm 2mm;
+      border-top: .35mm solid #dfe7e9;
+      text-align: right;
+      font-weight: 700;
+    }
+    .scorecard tr.best-mixed { background: var(--mixed-pale); }
+    .scorecard tr.best-pure { background: var(--pure-pale); }
+    .scorecard .near { color: var(--mixed); font-weight: 900; }
+    .scorecard tr.best-pure .near { color: var(--pure); }
+    .baseline-note {
+      margin-top: 3mm;
+      color: var(--muted);
+      font-size: 8.6mm;
+      line-height: 1.05;
+    }
+
+    .route {
+      margin-top: 5mm;
+      padding: 4mm;
+      border-top: 1.7mm solid var(--mixed);
+      background: var(--mixed-pale);
+    }
+    .route.pure { border-color: var(--pure); background: var(--pure-pale); }
+    .route-title {
+      color: var(--mixed);
+      font-size: 12mm;
+      font-weight: 900;
+    }
+    .route.pure .route-title { color: var(--pure); }
+    .route-flow {
+      margin-top: 3mm;
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 6mm;
+    }
+    .step {
+      position: relative;
+      min-height: 62mm;
+      padding: 4mm;
+      background: white;
+      font-size: 8.9mm;
+      line-height: 1.06;
+      color: var(--muted);
+    }
+    .step + .step::before {
+      content: "→";
+      position: absolute;
+      left: -6.5mm;
+      top: 22mm;
+      color: var(--mixed);
+      font-size: 11mm;
+      font-weight: 900;
+    }
+    .route.pure .step + .step::before { color: var(--pure); }
+    .step b {
+      display: block;
+      margin-bottom: 2mm;
+      color: var(--ink);
+      font-size: 9.6mm;
+    }
+    .route-note {
+      margin-top: 4mm;
+      padding: 3.5mm 4mm;
+      border-left: 1.4mm solid var(--orange);
+      background: var(--orange-pale);
+      color: var(--ink);
+      font-size: 9.2mm;
+      line-height: 1.06;
+    }
+    .controls {
+      margin-top: 5mm;
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 5mm;
+    }
+    .control-panel { padding: 4mm; background: #f8faf9; }
+    .control-panel h3 { margin-bottom: 4mm; color: var(--mixed); }
+    .control-panel.pure h3 { color: var(--pure); }
+    .bar-row {
+      display: grid;
+      grid-template-columns: 1fr 66mm 18mm;
+      gap: 2mm;
+      align-items: center;
+      margin: 3mm 0;
+      font-size: 8.6mm;
+      line-height: 1;
+    }
+    .bar-track { height: 7mm; background: #dce5e7; }
+    .bar { height: 100%; background: var(--mixed); }
+    .bar.pale { background: var(--mixed2); }
+    .bar.orange { background: var(--orange2); }
+    .bar.hot { background: var(--orange); }
+    .bar-value { text-align: right; font-weight: 900; font-size: 9.4mm; }
+    .path {
+      display: grid;
+      grid-template-columns: 1fr 12mm 1fr 12mm 1fr;
+      align-items: center;
+      margin-top: 8mm;
+    }
+    .path-box {
+      min-height: 46mm;
+      padding: 4mm 2mm;
+      border: .6mm solid #b8caee;
+      background: white;
+      text-align: center;
+      color: var(--muted);
+      font-size: 8.2mm;
+      line-height: 1.02;
+    }
+    .path-box b {
+      display: block;
+      margin-bottom: 2mm;
+      color: var(--pure);
+      font-size: 13mm;
+    }
+    .arrow { text-align: center; color: var(--pure); font-size: 11mm; }
+    .controls-caption {
+      margin-top: 4mm;
+      color: var(--muted);
+      font-size: 8.5mm;
+      line-height: 1.05;
+    }
+
+    .evidence .intro { font-size: 9.8mm; }
+    .figure-block { margin-top: 5mm; }
+    .figure-block + .figure-block {
+      margin-top: 5mm;
+      padding-top: 5mm;
+      border-top: 1.1mm solid var(--mixed);
+    }
+    .figure-head {
+      display: flex;
+      align-items: baseline;
+      justify-content: space-between;
+      margin-bottom: 2mm;
+    }
+    .figure-head h3 { font-size: 10.8mm; }
+    .figure-head span { color: var(--muted); font-size: 8.5mm; }
+    .failure-img {
+      width: 100%;
+      height: 154mm;
+      display: block;
+      object-fit: contain;
+      background: #fff;
+    }
+    .recovery-img {
+      width: 100%;
+      height: 113mm;
+      display: block;
+      object-fit: contain;
+      background: #f7f4ec;
+    }
+    .whitebox-img {
+      width: 100%;
+      height: 82mm;
+      display: block;
+      object-fit: contain;
+      background: var(--ink);
+    }
+    .caption {
+      margin-top: 2mm;
+      padding-left: 4mm;
+      border-left: 1.2mm solid var(--mixed);
+      color: var(--muted);
+      font-size: 8.8mm;
+      line-height: 1.05;
+    }
+    .caption b { color: var(--ink); }
+    .caption.orange { border-color: var(--orange); }
+
+    .footer {
+      padding: 8mm 20mm 6mm;
+      display: grid;
+      grid-template-columns: 1.25fr .75fr;
+      gap: 12mm;
+      border-top: .8mm solid var(--ink);
+      background: #f9f7f2;
+      color: var(--muted);
+      font-size: 8.5mm;
+      line-height: 1.06;
+    }
+    .footer b { color: var(--ink); }
+    .footer div:last-child { text-align: right; }
+
+    /* v103: one evidence chain with large plots, followed by the experimental support. */
+    .body {
+      grid-template-rows: 76mm 306mm 253mm 53mm;
+    }
+    .result-copy { padding-top: 5mm; padding-bottom: 5mm; }
+    .result-copy strong { font-size: 17mm; }
+    .result-copy span { font-size: 9.8mm; }
+    .score { margin: 5mm 0; }
+    .score b { font-size: 21mm; }
+    .score span { font-size: 9.8mm; }
+
+    .evidence-chain {
+      padding: 7mm 20mm 5mm;
+      display: grid;
+      grid-template-columns: 440mm 365mm 1fr;
+      gap: 7mm;
+      min-height: 0;
+    }
+    .story-panel {
+      min-width: 0;
+      min-height: 0;
+      overflow: hidden;
+      padding: 5mm 6mm;
+      border: .7mm solid var(--line);
+      background: var(--white);
+    }
+    .story-panel.diagnostic {
+      border-color: var(--ink);
+      background: var(--ink);
+      color: white;
+    }
+    .story-head {
+      display: flex;
+      align-items: baseline;
+      gap: 3mm;
+      padding-bottom: 2.5mm;
+      border-bottom: .7mm solid var(--ink);
+    }
+    .diagnostic .story-head { border-color: #5c7883; }
+    .story-num {
+      color: var(--orange);
+      font-size: 10.5mm;
+      line-height: 1;
+      font-weight: 900;
+    }
+    .story-head h2 {
+      font-size: 14mm;
+      line-height: 1;
+    }
+    .diagnostic .story-num, .diagnostic .story-head h2 { color: #78ded2; }
+    .story-kicker {
+      margin-top: 3mm;
+      color: var(--muted);
+      font-size: 8.7mm;
+      line-height: 1.05;
+    }
+    .diagnostic .story-kicker { color: #c8d5da; }
+    .chain-failure {
+      width: 100%;
+      height: 224mm;
+      display: block;
+      object-fit: contain;
+      background: #fff;
+    }
+    .chain-recovery {
+      width: 100%;
+      height: 220mm;
+      display: block;
+      object-fit: contain;
+      background: #f7f4ec;
+    }
+    .story-caption {
+      padding-left: 3mm;
+      border-left: 1.2mm solid var(--mixed);
+      color: var(--muted);
+      font-size: 8mm;
+      line-height: 1.04;
+    }
+    .story-caption b { color: var(--ink); }
+    .story-caption.orange { border-color: var(--orange); }
+
+    .probe {
+      margin-top: 5mm;
+      padding: 4mm;
+      background: #173f4c;
+    }
+    .probe-title {
+      color: #7de1d5;
+      font-size: 9.5mm;
+      font-weight: 900;
+    }
+    .probe-sub {
+      margin-top: 1.5mm;
+      color: #bccdd3;
+      font-size: 7.6mm;
+      line-height: 1.05;
+    }
+    .probe-bar {
+      display: grid;
+      grid-template-columns: 39mm 1fr 24mm;
+      gap: 2mm;
+      align-items: center;
+      margin: 3mm 0;
+      font-size: 7.7mm;
+    }
+    .probe-bar .track {
+      height: 7mm;
+      overflow: hidden;
+      background: #42616d;
+    }
+    .probe-bar .fill { height: 100%; background: #9fb3bc; }
+    .probe-bar .fill.fast { background: var(--pure); }
+    .probe-bar .fill.n8 { background: var(--mixed); }
+    .probe-bar b { text-align: right; font-size: 8.7mm; }
+    .clip-flow {
+      margin-top: 6mm;
+      display: grid;
+      grid-template-columns: 1fr 17mm 1fr;
+      align-items: center;
+    }
+    .clip-box {
+      min-height: 45mm;
+      padding: 4mm;
+      border: .55mm solid #54727d;
+      background: #102b36;
+      text-align: center;
+      color: #c8d5da;
+      font-size: 7.4mm;
+      line-height: 1.05;
+    }
+    .clip-box b {
+      display: block;
+      color: #7de1d5;
+      font-size: 16mm;
+      line-height: 1;
+    }
+    .clip-arrow { text-align: center; color: var(--orange); font-size: 13mm; }
+    .search-scale {
+      margin-top: 7mm;
+      padding: 4mm;
+      border-left: 1.4mm solid var(--orange);
+      background: #173f4c;
+      color: #d4e0e4;
+      font-size: 7.6mm;
+      line-height: 1.05;
+    }
+    .search-line {
+      position: relative;
+      height: 8mm;
+      margin: 3mm 1mm 2mm;
+      border-top: 1.2mm solid #82adff;
+    }
+    .search-line::before, .search-line::after {
+      position: absolute;
+      top: -4.2mm;
+      color: #c8d5da;
+      font-size: 6.8mm;
+    }
+    .search-line::before { content: "−2"; left: 0; }
+    .search-line::after { content: "+2"; right: 0; }
+    .search-dots {
+      height: 5mm;
+      margin-top: -8mm;
+      background: radial-gradient(circle, #82adff 0 1.1mm, transparent 1.3mm) 0 0/6.2mm 5mm repeat-x;
+    }
+    .probe-takeaway {
+      margin-top: 6mm;
+      color: white;
+      font-size: 8mm;
+      line-height: 1.06;
+    }
+
+    .support-row {
+      padding: 2mm 20mm 5mm;
+      display: grid;
+      grid-template-columns: 365mm 275mm 1fr;
+      gap: 7mm;
+      min-height: 0;
+    }
+    .support-panel {
+      min-width: 0;
+      min-height: 0;
+      overflow: hidden;
+      padding: 5mm 6mm;
+      border: .7mm solid var(--line);
+      background: var(--white);
+    }
+    .support-head {
+      display: flex;
+      align-items: baseline;
+      gap: 3mm;
+      padding-bottom: 2.5mm;
+      border-bottom: .7mm solid var(--ink);
+    }
+    .support-head span {
+      color: var(--orange);
+      font-size: 9.5mm;
+      font-weight: 900;
+    }
+    .support-head h2 { font-size: 11.5mm; }
+    .policy-pair {
+      margin-top: 4mm;
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 5mm;
+    }
+    .policy {
+      padding: 3.5mm;
+      border-top: 1.5mm solid var(--mixed);
+      background: var(--mixed-pale);
+    }
+    .policy.pure { border-color: var(--pure); background: var(--pure-pale); }
+    .policy h3 { color: var(--mixed); font-size: 9.5mm; }
+    .policy.pure h3 { color: var(--pure); }
+    .policy-step {
+      position: relative;
+      margin-top: 2.5mm;
+      padding: 2.5mm 2.5mm 2.5mm 10mm;
+      background: white;
+      color: var(--muted);
+      font-size: 7.2mm;
+      line-height: 1.05;
+    }
+    .policy-step i {
+      position: absolute;
+      left: 2mm;
+      top: 2.3mm;
+      width: 6mm;
+      height: 6mm;
+      border-radius: 50%;
+      background: var(--mixed);
+      color: white;
+      font-size: 5mm;
+      line-height: 6mm;
+      text-align: center;
+      font-style: normal;
+      font-weight: 900;
+    }
+    .policy.pure .policy-step i { background: var(--pure); }
+    .policy-step b { color: var(--ink); }
+    .deployment-note {
+      margin-top: 3mm;
+      color: var(--muted);
+      font-size: 7.2mm;
+      line-height: 1.05;
+    }
+    .pipeline-stack {
+      display: grid;
+      gap: 3.5mm;
+      margin-top: 4mm;
+    }
+    .pipeline {
+      display: grid;
+      grid-template-columns: 56mm 1fr;
+      gap: 3mm;
+      align-items: stretch;
+      padding: 3mm;
+      border-left: 1.8mm solid var(--mixed);
+      background: var(--mixed-pale);
+    }
+    .pipeline.pure {
+      border-color: var(--pure);
+      background: var(--pure-pale);
+    }
+    .pipeline-title {
+      align-self: center;
+      color: var(--mixed);
+      font-size: 8.8mm;
+      font-weight: 900;
+      line-height: .98;
+    }
+    .pipeline.pure .pipeline-title { color: var(--pure); }
+    .pipeline-flow {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) 8mm minmax(0, 1fr) 8mm minmax(0, 1fr);
+      align-items: stretch;
+    }
+    .pipe-node {
+      position: relative;
+      min-height: 38mm;
+      padding: 10mm 3mm 3mm;
+      border: .45mm solid #c7d9dc;
+      background: white;
+      color: var(--muted);
+      font-size: 6.7mm;
+      line-height: 1.04;
+    }
+    .pipe-node b {
+      display: block;
+      margin-bottom: 1.2mm;
+      color: var(--ink);
+      font-size: 7.5mm;
+      line-height: 1;
+    }
+    .stage-tag {
+      position: absolute;
+      top: 2.2mm;
+      left: 2.5mm;
+      padding: 1mm 2mm .8mm;
+      border-radius: 3mm;
+      background: var(--mixed);
+      color: white;
+      font-size: 4.6mm;
+      font-weight: 900;
+      letter-spacing: .08em;
+      line-height: 1;
+    }
+    .pipeline.pure .stage-tag { background: var(--pure); }
+    .stage-tag.deploy { background: var(--orange); }
+    .pipe-arrow {
+      display: grid;
+      place-items: center;
+      color: var(--mixed);
+      font-size: 9mm;
+      font-weight: 900;
+    }
+    .pipeline.pure .pipe-arrow { color: var(--pure); }
+    .pipeline-note {
+      margin-top: 3mm;
+      padding: 2.5mm 3mm;
+      border-left: 1.3mm solid var(--orange);
+      background: #fff8ee;
+      color: var(--muted);
+      font-size: 6.8mm;
+      line-height: 1.05;
+    }
+    .pipeline-note b { color: var(--ink); }
+    .support-figure {
+      width: 100%;
+      display: block;
+      object-fit: contain;
+      margin-top: 4mm;
+      background: #f7f4ec;
+    }
+    .task-strip {
+      height: 78mm;
+      object-fit: cover;
+      object-position: center 49%;
+      border: .45mm solid #d9e2e5;
+    }
+    .support-figure-title {
+      margin-top: 4mm;
+      color: var(--ink);
+      font-size: 7.8mm;
+      line-height: 1.03;
+      font-weight: 900;
+    }
+    .tolerance-figure { height: 58mm; }
+    .sequence-figure { height: 82mm; }
+    .support-figure-caption {
+      margin-top: 2mm;
+      color: var(--muted);
+      font-size: 6.9mm;
+      line-height: 1.04;
+    }
+
+    .support-score { width: 100%; border-collapse: collapse; margin-top: 4mm; font-size: 7.8mm; }
+    .support-score th {
+      padding: 2mm 1.5mm;
+      color: var(--muted);
+      text-align: right;
+      font-size: 7.2mm;
+    }
+    .support-score th:first-child, .support-score td:first-child { text-align: left; }
+    .support-score td {
+      padding: 3mm 1.5mm;
+      border-top: .35mm solid #dfe7e9;
+      text-align: right;
+      font-weight: 700;
+    }
+    .support-score tr.mixed { background: var(--mixed-pale); }
+    .support-score tr.pure { background: var(--pure-pale); }
+    .support-score td:nth-child(2) { color: var(--mixed); font-size: 8.5mm; font-weight: 900; }
+    .support-score tr.pure td:nth-child(2) { color: var(--pure); }
+    .score-note {
+      margin-top: 3mm;
+      color: var(--muted);
+      font-size: 7.1mm;
+      line-height: 1.04;
+    }
+
+    .component-grid {
+      margin-top: 4mm;
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 6mm;
+    }
+    .component-grid h3 {
+      margin-bottom: 3mm;
+      color: var(--mixed);
+      font-size: 8.7mm;
+    }
+    .component-grid .pure h3 { color: var(--pure); }
+    .small-bar {
+      display: grid;
+      grid-template-columns: 1fr 67mm 18mm;
+      gap: 2mm;
+      align-items: center;
+      margin: 2.3mm 0;
+      font-size: 7.2mm;
+      line-height: 1.02;
+    }
+    .small-bar .track { height: 6mm; background: #dce5e7; }
+    .small-bar .fill { height: 100%; background: var(--mixed); }
+    .small-bar .fill.pale { background: var(--mixed2); }
+    .small-bar .fill.orange { background: var(--orange2); }
+    .small-bar .fill.hot { background: var(--orange); }
+    .small-bar b { text-align: right; font-size: 8mm; }
+    .pure-path {
+      display: grid;
+      grid-template-columns: 1fr 9mm 1fr 9mm 1fr;
+      align-items: center;
+      margin-top: 7mm;
+    }
+    .pure-node {
+      min-height: 46mm;
+      padding: 4mm 1mm;
+      border: .5mm solid #b7c8eb;
+      text-align: center;
+      color: var(--muted);
+      font-size: 7mm;
+      line-height: 1.03;
+    }
+    .pure-node b { display: block; color: var(--pure); font-size: 12mm; }
+    .pure-arrow { text-align: center; color: var(--pure); font-size: 9mm; }
+    .component-caption {
+      margin-top: 4mm;
+      color: var(--muted);
+      font-size: 7.1mm;
+      line-height: 1.04;
+    }
+    .body > .content { display: none; }
+    /* v105: retain the v103 proportions while tightening visual and scientific language. */
+    .story-panel:nth-child(1) { border-top: 2mm solid var(--orange); }
+    .story-panel:nth-child(2) { border-top: 2mm solid var(--mixed); }
+    .support-panel:nth-child(1) { border-top: 1.5mm solid var(--mixed); }
+    .support-panel:nth-child(2) { border-top: 1.5mm solid var(--tum); }
+    .support-panel:nth-child(3) { border-top: 1.5mm solid var(--orange); }
+    .task-strip {
+      object-fit: contain;
+      object-position: center;
+    }
+    /* v107: three continuous evidence columns with one reading order. */
+    .body {
+      grid-template-columns: 310mm 540mm 1fr;
+      grid-template-rows: 76mm 297mm 262mm 53mm;
+      background: var(--paper);
+    }
+    .result-band {
+      grid-column: 1 / 4;
+      grid-row: 1;
+      grid-template-columns: 1fr 203mm 203mm 222mm;
+    }
+    .result-copy strong { font-size: 15.8mm; }
+    .result-copy span { font-size: 9.4mm; }
+    .score { padding-left: 8mm; padding-right: 8mm; }
+    .score b { font-size: 19.5mm; }
+    .score span { font-size: 8.7mm; }
+    .score.rescue { border-color: var(--orange); }
+    .score.rescue b { color: #ff9f78; font-size: 16.5mm; }
+
+    .evidence-chain, .support-row { display: contents; }
+    .story-panel, .support-panel {
+      border: 0;
+      border-radius: 0;
+      background: var(--paper);
+      padding: 8mm 10mm;
+    }
+    .story-panel:nth-child(1),
+    .support-panel:nth-child(1),
+    .support-panel:nth-child(2) {
+      border-right: .55mm solid #b9c9ce;
+    }
+    .story-panel:nth-child(1) {
+      grid-column: 2;
+      grid-row: 2;
+      border-top: 0;
+      border-bottom: .55mm solid #b9c9ce;
+    }
+    .story-panel:nth-child(2) {
+      grid-column: 2;
+      grid-row: 3;
+      border-top: 0;
+    }
+    .story-panel:nth-child(3) {
+      grid-column: 3;
+      grid-row: 2;
+      border-bottom: .55mm solid #31505c;
+    }
+    .support-panel:nth-child(1) {
+      grid-column: 1;
+      grid-row: 2;
+      border-top: 0;
+      border-bottom: .55mm solid #b9c9ce;
+    }
+    .support-panel:nth-child(2) {
+      grid-column: 1;
+      grid-row: 3;
+      border-top: 0;
+    }
+    .support-panel:nth-child(3) {
+      grid-column: 3;
+      grid-row: 3;
+      border-top: 0;
+    }
+    .story-head, .support-head {
+      padding-bottom: 3mm;
+      border-bottom: 1mm solid var(--ink);
+    }
+    .diagnostic .story-head { border-color: #6e8a94; }
+    .story-head h2, .support-head h2 { font-size: 13mm; }
+    .story-kicker { font-size: 8.4mm; }
+    .chain-failure { height: 213mm; }
+    .chain-recovery { height: 179mm; }
+    .story-caption { font-size: 7.8mm; }
+    .pipeline-stack { gap: 3mm; }
+    .pipeline {
+      grid-template-columns: 52mm 1fr;
+      padding: 2.5mm;
+    }
+    .pipeline-title { font-size: 8.2mm; }
+    .pipe-node {
+      min-height: 35mm;
+      padding-top: 9mm;
+      font-size: 6.2mm;
+    }
+    .pipe-node b { font-size: 6.8mm; }
+    .pipeline-note { font-size: 6.4mm; }
+    .task-strip { height: 52mm; margin-top: 3mm; }
+    .support-figure-caption { font-size: 6.5mm; }
+    .support-score { font-size: 7.2mm; }
+    .support-score th { font-size: 6.8mm; }
+    .support-score td { padding-top: 2.5mm; padding-bottom: 2.5mm; }
+    .score-note { font-size: 6.6mm; }
+    .tolerance-figure { height: 70mm; }
+    .component-grid { gap: 4mm; }
+    .component-grid h3 { font-size: 8.1mm; }
+    .small-bar {
+      grid-template-columns: 1fr 56mm 17mm;
+      font-size: 6.5mm;
+    }
+    .pure-node { min-height: 40mm; font-size: 6.3mm; }
+    .pure-node b { font-size: 10mm; }
+    .component-caption { font-size: 6.6mm; }
+    .sequence-figure { height: 72mm; }
+    .support-figure-title { font-size: 7.3mm; }
+    .footer {
+      grid-column: 1 / 4;
+      grid-row: 4;
+    }
+    /* v108: larger qualitative evidence and task visual. */
+    .chain-recovery { height: 199mm; }
+    .task-strip { height: 66mm; }
+    .story-panel:nth-child(2) .story-kicker { margin-top: 2mm; }
+    .story-panel:nth-child(2) .story-caption { font-size: 7.3mm; }
+    /* v114: retain v112's evidence scale, but make the three reading groups explicit. */
+    .body { display: none; }
+    .body-v110 {
+      width: 100%;
+      height: 688mm;
+      display: grid;
+      grid-template-rows: 48mm 592mm 48mm;
+      background: var(--paper);
+    }
+    .v110-hero {
+      display: grid;
+      grid-template-columns: 1fr 190mm 190mm 225mm;
+      background: var(--ink);
+      color: white;
+      border-bottom: 2mm solid var(--orange);
+    }
+    .v110-hero-copy {
+      padding: 4mm 20mm;
+      display: grid;
+      align-content: center;
+    }
+    .v110-hero-copy b {
+      font-family: Georgia, "Times New Roman", serif;
+      font-size: 12.2mm;
+      line-height: 1;
+    }
+    .v110-hero-copy span {
+      margin-top: 1mm;
+      color: #ccdade;
+      font-size: 7.2mm;
+    }
+    .v110-stat {
+      margin: 3mm 0;
+      padding: 2mm 7mm;
+      border-left: 1.7mm solid var(--mixed);
+      display: grid;
+      align-content: center;
+    }
+    .v110-stat.pure { border-color: var(--pure); }
+    .v110-stat.repair { border-color: var(--orange); }
+    .v110-stat b {
+      color: #75ded2;
+      font-family: Georgia, "Times New Roman", serif;
+      font-size: 14mm;
+      line-height: .92;
+    }
+    .v110-stat.pure b { color: #82adff; }
+    .v110-stat.repair b { color: #ff9a70; font-size: 12.4mm; }
+    .v110-stat span { margin-top: 1mm; font-size: 6.8mm; line-height: 1.01; }
+
+    .v110-content {
+      display: grid;
+      grid-template-columns: 292mm 350mm 1fr;
+      gap: 6mm;
+      padding: 6mm;
+      min-height: 0;
+      background: #edf3f5;
+    }
+    .v110-col {
+      min-width: 0;
+      min-height: 0;
+      overflow: hidden;
+      padding: 8mm 10mm 6mm;
+      border: .45mm solid #d5e0e3;
+      border-radius: 5mm;
+      background: #f8f6f0;
+      box-shadow: 0 2mm 4mm rgba(11,43,53,.10);
+    }
+    .v110-col.left, .v110-col.middle { border-right: .45mm solid #d5e0e3; }
+    .v110-col-head {
+      display: flex;
+      align-items: baseline;
+      gap: 3mm;
+      padding-bottom: 3mm;
+      border-bottom: 1mm solid var(--ink);
+    }
+    .v110-col-head i {
+      color: var(--orange);
+      font-size: 10mm;
+      font-weight: 900;
+      font-style: normal;
+    }
+    .v110-col-head h2 { font-size: 14.5mm; }
+    .v110-intro {
+      margin-top: 4mm;
+      color: var(--muted);
+      font-size: 8.3mm;
+      line-height: 1.06;
+    }
+    .v110-task {
+      width: 100%;
+      height: 98mm;
+      margin-top: 5mm;
+      display: block;
+      object-fit: contain;
+      background: #f7f4ec;
+    }
+    .v110-question {
+      margin-top: 5mm;
+      padding: 5mm;
+      border-left: 1.5mm solid var(--mixed);
+      background: var(--ink);
+      color: white;
+      font-family: Georgia, "Times New Roman", serif;
+      font-size: 9.1mm;
+      line-height: 1.05;
+    }
+    .v110-protocol {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 3mm;
+      margin-top: 5mm;
+    }
+    .v110-protocol div {
+      padding: 3mm 1mm;
+      border-top: 1.2mm solid var(--mixed);
+      background: white;
+      text-align: center;
+      color: var(--muted);
+      font-size: 6.6mm;
+      line-height: 1.02;
+    }
+    .v110-protocol b {
+      display: block;
+      color: var(--mixed);
+      font-size: 10mm;
+    }
+    .v110-subhead {
+      margin-top: 6mm;
+      color: var(--ink);
+      font-size: 9mm;
+      font-weight: 900;
+    }
+    .v110-score {
+      width: 100%;
+      margin-top: 2mm;
+      border-collapse: collapse;
+      font-size: 6.7mm;
+    }
+    .v110-score th, .v110-score td {
+      padding: 2mm 1.2mm;
+      border-top: .35mm solid #d9e2e5;
+      text-align: right;
+    }
+    .v110-score th:first-child, .v110-score td:first-child { text-align: left; }
+    .v110-score th { color: var(--muted); font-size: 6.1mm; }
+    .v110-score tr.mixed { background: var(--mixed-pale); }
+    .v110-score tr.pure { background: var(--pure-pale); }
+    .v110-score tr.mixed td:nth-child(2) { color: var(--mixed); font-weight: 900; }
+    .v110-score tr.pure td:nth-child(2) { color: var(--pure); font-weight: 900; }
+    .v111-scorechart {
+      width: 100%;
+      height: 181mm;
+      margin-top: 3mm;
+      display: block;
+      object-fit: contain;
+      background: white;
+    }
+    .v110-defs {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 3mm;
+      margin-top: 5mm;
+    }
+    .v110-defs div {
+      padding: 3mm;
+      border-top: 1mm solid var(--orange);
+      background: white;
+      color: var(--muted);
+      font-size: 6.1mm;
+      line-height: 1.04;
+    }
+    .v110-defs b { display: block; color: var(--ink); font-size: 6.7mm; }
+    .v110-tolerance {
+      width: 100%;
+      height: 111mm;
+      margin-top: 4mm;
+      display: block;
+      object-fit: contain;
+      background: white;
+    }
+
+    .v110-route {
+      margin-top: 5mm;
+      padding: 3mm;
+      border-left: 1.6mm solid var(--mixed);
+      background: var(--mixed-pale);
+    }
+    .v110-route.pure { border-color: var(--pure); background: var(--pure-pale); }
+    .v110-route h3 { color: var(--mixed); font-size: 8.5mm; }
+    .v110-route.pure h3 { color: var(--pure); }
+    .v110-route-flow {
+      display: grid;
+      grid-template-columns: 1fr 6mm 1fr 6mm 1fr;
+      align-items: stretch;
+      margin-top: 2mm;
+    }
+    .v110-route-step {
+      padding: 3mm;
+      background: white;
+      color: var(--muted);
+      font-size: 5.9mm;
+      line-height: 1.03;
+    }
+    .v110-route-step b {
+      display: block;
+      margin-bottom: 1mm;
+      color: var(--ink);
+      font-size: 6.7mm;
+    }
+    .v110-route-arrow {
+      display: grid;
+      place-items: center;
+      color: var(--mixed);
+      font-size: 7mm;
+      font-weight: 900;
+    }
+    .v110-route.pure .v110-route-arrow { color: var(--pure); }
+    .v110-diagnostic {
+      margin-top: 6mm;
+      padding: 5mm;
+      background: var(--ink);
+      color: white;
+    }
+    .v110-diagnostic h3 { color: #79ded2; font-size: 10.5mm; }
+    .v110-diagnostic p { margin-top: 2mm; color: #c6d5da; font-size: 6.8mm; }
+    .v110-bar {
+      display: grid;
+      grid-template-columns: 34mm 1fr 18mm;
+      gap: 2mm;
+      align-items: center;
+      margin: 3mm 0;
+      font-size: 6.7mm;
+    }
+    .v110-bar .track { height: 6mm; background: #42616d; }
+    .v110-bar .fill { height: 100%; background: var(--grey); }
+    .v110-bar .fill.fast { background: var(--pure); }
+    .v110-bar .fill.n8 { background: var(--mixed); }
+    .v110-clip {
+      display: grid;
+      grid-template-columns: 1fr 8mm 1fr;
+      gap: 2mm;
+      align-items: stretch;
+      margin-top: 4mm;
+    }
+    .v110-clip div:not(.arrow) {
+      padding: 3mm;
+      border: .45mm solid #5e7c87;
+      text-align: center;
+      color: #c8d5da;
+      font-size: 6.3mm;
+    }
+    .v110-clip b { display: block; color: #78ded2; font-size: 12mm; }
+    .v110-clip .arrow { display: grid; place-items: center; color: var(--orange); font-size: 8mm; }
+    .v110-search {
+      margin-top: 4mm;
+      padding: 3mm;
+      border-left: 1.2mm solid var(--orange);
+      background: #173f4d;
+      color: #d2dfe3;
+      font-size: 6.2mm;
+    }
+    .v110-search b { display: block; color: white; font-size: 7mm; }
+    .v110-search-line {
+      height: 5mm;
+      margin: 2mm 0;
+      border-top: .7mm solid #82adff;
+      background: radial-gradient(circle, #82adff 0 .8mm, transparent 1mm) 0 0/5.8mm 5mm repeat-x;
+    }
+    .v110-components {
+      margin-top: 6mm;
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 5mm;
+    }
+    .v110-components h3 { margin-bottom: 3mm; color: var(--mixed); font-size: 7.8mm; }
+    .v110-components .pure h3 { color: var(--pure); }
+    .v110-smallbar {
+      display: grid;
+      grid-template-columns: 1fr 46mm 15mm;
+      gap: 2mm;
+      align-items: center;
+      margin: 2.2mm 0;
+      color: var(--muted);
+      font-size: 5.9mm;
+    }
+    .v110-smallbar .track { height: 5mm; background: #d8e2e5; }
+    .v110-smallbar .fill { height: 100%; background: var(--mixed); }
+    .v110-smallbar .fill.warn { background: var(--orange2); }
+    .v110-smallbar .fill.hot { background: var(--orange); }
+    .v110-path {
+      display: grid;
+      grid-template-columns: 1fr 9mm 1fr 9mm 1fr;
+      align-items: center;
+      margin-top: 8mm;
+    }
+    .v110-node {
+      padding: 4mm 1mm;
+      border: .45mm solid #b6c8ef;
+      text-align: center;
+      color: var(--muted);
+      font-size: 5.8mm;
+      line-height: 1.03;
+    }
+    .v110-node b { display: block; color: var(--pure); font-size: 9mm; }
+    .v110-path .arrow {
+      display: grid;
+      place-items: center;
+      overflow: hidden;
+      text-align: center;
+      color: var(--pure);
+      font-size: 5mm;
+    }
+    .v111-sequence-title {
+      margin-top: 7mm;
+      color: var(--ink);
+      font-size: 8.2mm;
+      font-weight: 900;
+    }
+    .v111-sequence {
+      width: 100%;
+      height: 170mm;
+      margin-top: 2mm;
+      display: block;
+      object-fit: contain;
+      background: white;
+    }
+    .v111-sequence-cap {
+      padding-left: 3mm;
+      border-left: 1.1mm solid var(--orange);
+      color: var(--muted);
+      font-size: 6.2mm;
+      line-height: 1.03;
+    }
+
+    .v110-evidence-title {
+      margin-top: 4mm;
+      color: var(--ink);
+      font-size: 8.8mm;
+      font-weight: 900;
+    }
+    .v110-evidence-img {
+      width: 100%;
+      display: block;
+      object-fit: contain;
+      background: white;
+    }
+    .v110-heat { height: 268mm; }
+    .v110-recovery { height: 254mm; background: #f7f4ec; }
+    .v110-sequence { height: 68mm; }
+    .v110-cap {
+      padding-left: 3mm;
+      border-left: 1.1mm solid var(--mixed);
+      color: var(--muted);
+      font-size: 6.7mm;
+      line-height: 1.04;
+    }
+    .v110-cap.orange { border-color: var(--orange); }
+    .v110-cap b { color: var(--ink); }
+    .v110-footer {
+      padding: 7mm 20mm 5mm;
+      display: grid;
+      grid-template-columns: 1.35fr .65fr;
+      gap: 12mm;
+      border-top: .8mm solid var(--ink);
+      background: #faf8f3;
+      color: var(--muted);
+      font-size: 7.7mm;
+      line-height: 1.04;
+    }
+    .v110-footer b { color: var(--ink); }
+    .v110-footer div:last-child { text-align: right; }
+
+    /* v115: enlarge the two training routes into the central explanatory visual. */
+    .v110-content {
+      grid-template-columns: 292mm 386mm 1fr;
+    }
+    .v115-route-stack {
+      display: grid;
+      gap: 4mm;
+      margin-top: 5mm;
+    }
+    .v115-route {
+      display: grid;
+      grid-template-columns: 56mm 1fr;
+      gap: 3mm;
+      padding: 4mm;
+      border-left: 2mm solid var(--mixed);
+      border-radius: 3mm;
+      background: var(--mixed-pale);
+    }
+    .v115-route.pure {
+      border-color: var(--pure);
+      background: var(--pure-pale);
+    }
+    .v115-route-label {
+      display: grid;
+      align-content: center;
+      color: var(--mixed);
+      font-size: 9.6mm;
+      font-weight: 900;
+      line-height: .98;
+    }
+    .v115-route.pure .v115-route-label { color: var(--pure); }
+    .v115-route-flow {
+      display: grid;
+      grid-template-columns: 1fr 7mm 1fr 7mm 1fr;
+      align-items: stretch;
+    }
+    .v115-stage {
+      position: relative;
+      min-height: 57mm;
+      padding: 13mm 3.5mm 3mm;
+      border: .45mm solid #c7d9dc;
+      border-radius: 2mm;
+      background: white;
+      color: var(--muted);
+      font-size: 6.3mm;
+      line-height: 1.04;
+    }
+    .v115-stage b {
+      display: block;
+      margin-bottom: 1.4mm;
+      color: var(--ink);
+      font-size: 7.5mm;
+      line-height: 1;
+    }
+    .v115-stage-num {
+      position: absolute;
+      left: 3mm;
+      top: 3mm;
+      width: 7.2mm;
+      height: 7.2mm;
+      border-radius: 50%;
+      background: var(--mixed);
+      color: white;
+      font-size: 5mm;
+      line-height: 7.2mm;
+      text-align: center;
+      font-weight: 900;
+    }
+    .v115-route.pure .v115-stage-num { background: var(--pure); }
+    .v115-phase {
+      position: absolute;
+      right: 3mm;
+      top: 3.5mm;
+      color: var(--mixed);
+      font-size: 4.5mm;
+      line-height: 1;
+      font-weight: 900;
+      letter-spacing: .06em;
+    }
+    .v115-route.pure .v115-phase { color: var(--pure); }
+    .v115-phase.deploy { color: var(--orange); }
+    .v115-arrow {
+      display: grid;
+      place-items: center;
+      color: var(--mixed);
+      font-size: 9mm;
+      font-weight: 900;
+    }
+    .v115-route.pure .v115-arrow { color: var(--pure); }
+    .v115-route-note {
+      margin-top: 4mm;
+      padding: 3mm 4mm;
+      border-left: 1.2mm solid var(--orange);
+      background: #fff8ee;
+      color: var(--muted);
+      font-size: 6.7mm;
+      line-height: 1.05;
+    }
+    .v115-route-note b { color: var(--ink); }
+    .v110-diagnostic { margin-top: 5mm; padding: 4mm; }
+    .v110-diagnostic h3 { font-size: 9.6mm; }
+    .v110-diagnostic p { font-size: 6.3mm; }
+    .v110-bar { margin: 2.4mm 0; }
+    .v110-clip div:not(.arrow) { padding: 2.5mm; }
+    .v110-search { margin-top: 3mm; padding: 2.5mm; }
+    .v110-components { margin-top: 5mm; }
+    .v111-sequence-title { margin-top: 5mm; }
+    .v111-sequence { height: 142mm; }
+    .v110-heat { height: 258mm; }
+    .v110-recovery { height: 263mm; }
+  </style>
+</head>
+<body>
+<main class="poster">
+  <header class="template-header">
+    <div class="team-block">
+      <span class="team">Team</span>
+      <span class="team-number">13</span>
+      <span class="course">CIT433027</span>
+    </div>
+    <h1 class="title">Chasing the Nines<br>Reliable RL Across States and Seeds</h1>
+    <div class="author-block">
+      <span class="author">Ala Sleimi · Mykhailo Shtandenko</span>
+      <span class="affiliation">Supervisor: Lennart Röstel · Technical University of Munich</span>
+    </div>
+    <img class="tum-logo" src="tum_logo_template.png" alt="Technical University of Munich">
+  </header>
+
+  <section class="body">
+    <div class="result-band">
+      <div class="result-copy">
+        <strong>Across five retraining seeds: 497 pure-RL failures, nine with supervision.</strong>
+        <span>Each frozen actor is tested from the same 2,501 initial states for 200 deterministic steps.</span>
+      </div>
+      <div class="score">
+        <b>99.928%</b>
+        <span>RL + supervised<br>9 failures / 12,505 trials</span>
+      </div>
+      <div class="score pure">
+        <b>96.026%</b>
+        <span>Pure RL<br>497 failures / 12,505 trials</span>
+      </div>
+      <div class="score rescue">
+        <b>770 / 1,267</b>
+        <span>raw pure-RL failures repaired<br>by reflection plus Q-search</span>
+      </div>
+    </div>
+
+    <div class="evidence-chain">
+      <section class="story-panel">
+        <div class="story-head"><span class="story-num">03</span><h2>Failures cluster by start state</h2></div>
+        <p class="story-kicker">Five independently trained actors are evaluated on the same angle and angular-velocity grid.</p>
+        <img class="chain-failure" src="assets/118_failure_footprints_clean.png" alt="Normal five-seed failure-count heatmaps">
+        <div class="story-caption"><b>White means all five actors succeed near the reference.</b> Color counts failures at each start. Pure RL has 497 failures across 208 starts; RL + supervision has nine failures across eight starts.</div>
+      </section>
+
+      <section class="story-panel">
+        <div class="story-head"><span class="story-num">04</span><h2>The recovery gap repeats</h2></div>
+        <p class="story-kicker">Three difficult starts are shown at steps 24 and 64; five translucent rods are five retraining seeds.</p>
+        <img class="chain-recovery" src="assets/116_recovery_atlas_3starts.png" alt="Recovery comparison at three difficult starts">
+        <div class="story-caption orange"><b>Across all three starts:</b> the mixed actors are upright by step 64. The pure-RL actors are still recovering at step 24 and reach upright later, after losing too much return.</div>
+      </section>
+
+      <section class="story-panel diagnostic">
+        <div class="story-head"><span class="story-num">05</span><h2>Saturated actors clip critic corrections</h2></div>
+        <p class="story-kicker">White-box probes use 5,553 random states and 512 sampled failure states per seed.</p>
+
+        <div class="probe">
+          <div class="probe-title">Actor output at the torque bound</div>
+          <div class="probe-bar"><span>SAC</span><div class="track"><div class="fill" style="width:59.1%"></div></div><b>59%</b></div>
+          <div class="probe-bar"><span>FastSACN8</span><div class="track"><div class="fill fast" style="width:86.9%"></div></div><b>87%</b></div>
+          <div class="probe-bar"><span>SACN8</span><div class="track"><div class="fill n8" style="width:86.7%"></div></div><b>87%</b></div>
+        </div>
+
+        <div class="clip-flow">
+          <div class="clip-box"><b>87%</b>FastSACN8 actions already at |a| ≥ 1.99</div>
+          <div class="clip-arrow">→</div>
+          <div class="clip-box"><b>7%</b>of a local critic step survives clipping</div>
+        </div>
+
+        <div class="search-scale">
+          <b>41-action Q-search ranks the full feasible interval</b>
+          <div class="search-line"></div><div class="search-dots"></div>
+          Both critics score every candidate and must agree before the actor action is replaced.
+        </div>
+        <p class="probe-takeaway">This bypass raises pure-RL near-reference success from 92.363% to <b>96.026%</b>.</p>
+      </section>
+    </div>
+
+    <div class="support-row">
+      <section class="support-panel">
+        <div class="support-head"><span>01</span><h2>Two routes to one deployed policy</h2></div>
+        <div class="pipeline-stack">
+          <div class="pipeline">
+            <div class="pipeline-title">RL +<br>supervised</div>
+            <div class="pipeline-flow">
+              <div class="pipe-node"><span class="stage-tag">TRAIN</span><b>Supervised network</b>Fit stored actions. Its width and depth match the SimbaV2 actor.</div>
+              <div class="pipe-arrow">→</div>
+              <div class="pipe-node"><span class="stage-tag">TRAIN</span><b>DAgger + priority refit</b>Label states the actor reaches; revisit starts with the largest return deficit.</div>
+              <div class="pipe-arrow">→</div>
+              <div class="pipe-node"><span class="stage-tag deploy">DEPLOY</span><b>Local Q-search</b>Score the actor torque and four nearby feasible torques.</div>
+            </div>
+          </div>
+          <div class="pipeline pure">
+            <div class="pipeline-title">Pure RL</div>
+            <div class="pipeline-flow">
+              <div class="pipe-node"><span class="stage-tag">TRAIN</span><b>FastSACN8</b>Train a SimbaV2 actor and twin critics with one-step and eight-step targets.</div>
+              <div class="pipe-arrow">→</div>
+              <div class="pipe-node"><span class="stage-tag deploy">DEPLOY</span><b>Reflection</b>Average actions from the state and its sign-reflected counterpart.</div>
+              <div class="pipe-arrow">→</div>
+              <div class="pipe-node"><span class="stage-tag deploy">DEPLOY</span><b>41-action Q-search</b>Both critics rank torques over [−2, 2] and must agree.</div>
+            </div>
+          </div>
+        </div>
+        <div class="pipeline-note"><b>At deployment:</b> one actor proposes a torque. Critic search may replace it with the highest-scoring feasible candidate when both critics agree.</div>
+        <img class="support-figure task-strip" src="assets/78_pendulum_reliability_editorial.png" alt="Pendulum swing-up task and representative trajectories">
+        <p class="support-figure-caption"><b>Task:</b> swing the pendulum upright over 200 deterministic steps with torque constrained to [−2, 2].</p>
+      </section>
+
+      <section class="support-panel">
+        <div class="support-head"><span>02</span><h2>Five-seed scorecard</h2></div>
+        <table class="support-score" aria-label="Five-seed scorecard">
+          <thead><tr><th>Method</th><th>Near ref.</th><th>Task</th><th>Strict</th></tr></thead>
+          <tbody>
+            <tr class="mixed"><td>RL + supervised</td><td>99.928</td><td>93.858</td><td>12.555</td></tr>
+            <tr><td>Supervised actor</td><td>99.720</td><td>93.603</td><td>14.498</td></tr>
+            <tr class="pure"><td>Pure RL</td><td>96.026</td><td>92.875</td><td>22.823</td></tr>
+            <tr><td>Plain SimbaV2</td><td>91.835</td><td>91.459</td><td>8.525</td></tr>
+            <tr><td>Clean DAgger</td><td>84.534</td><td>88.021</td><td>6.389</td></tr>
+          </tbody>
+        </table>
+        <p class="score-note">Percent of 12,505 actor-state trials. Near-reference success is the primary reliability measure. Task success and strict wins show the return trade-off.</p>
+        <div class="support-figure-title">The ordering persists as the return tolerance changes</div>
+        <img class="support-figure tolerance-figure" src="assets/111_tolerance_curve_wide.png" alt="Near-reference success over return tolerances">
+        <p class="support-figure-caption">Thin blue curves are individual pure-RL seeds. The dashed line marks the reported five-point tolerance.</p>
+      </section>
+
+      <section class="support-panel">
+        <div class="support-head"><span>06</span><h2>Which additions reduce failures?</h2></div>
+        <div class="component-grid">
+          <div>
+            <h3>Mixed: separate five-seed controls</h3>
+            <div class="small-bar"><span>Full recipe</span><div class="track"><div class="fill" style="width:24%"></div></div><b>9</b></div>
+            <div class="small-bar"><span>Uniform priority starts</span><div class="track"><div class="fill pale" style="width:50%"></div></div><b>19</b></div>
+            <div class="small-bar"><span>No local Q-search</span><div class="track"><div class="fill orange" style="width:92%"></div></div><b>35</b></div>
+            <div class="small-bar"><span>No labels at actor-visited states</span><div class="track"><div class="fill hot" style="width:100%"></div></div><b>38</b></div>
+          </div>
+          <div class="pure">
+            <h3>Pure RL: one sequential deployment path</h3>
+            <div class="pure-path">
+              <div class="pure-node"><b>1,267</b>FastSACN8 actor</div>
+              <div class="pure-arrow">→</div>
+              <div class="pure-node"><b>955</b>+ reflection</div>
+              <div class="pure-arrow">→</div>
+              <div class="pure-node"><b>497</b>+ Q-search</div>
+            </div>
+          </div>
+        </div>
+        <p class="component-caption">Each value is a near-reference failure count out of 12,505 trials. Mixed rows change one component from the selected recipe; pure-RL additions are cumulative.</p>
+        <div class="support-figure-title">A state-matched sequence, rather than one action, repairs the raw pure-RL tail</div>
+        <img class="support-figure sequence-figure" src="assets/101_sequence_repair_wide.png" alt="Failure repair after replacing one, eight, sixteen, or thirty-two initial actions">
+        <p class="support-figure-caption">For the 1,267 raw-actor failures, replace the first k actions with stored actions selected at the current state, then resume the same frozen actor. Shuffling those actions destroys the effect.</p>
+      </section>
+    </div>
+
+    <div class="content">
+      <section class="column">
+        <div class="section-line"><span class="num">01</span><h2>Test reliability</h2></div>
+        <p class="intro">A single average can hide repeatable failures. Reliability must hold for the full state grid and for every independently trained actor.</p>
+        <img class="task-visual" src="assets/78_pendulum_reliability_editorial.png" alt="Pendulum swing-up trajectories">
+        <div class="protocol"><b>61 angles × 41 angular velocities × 5 actor seeds</b> = 12,505 deterministic rollouts.</div>
+        <div class="definitions">
+          <div class="definition"><b>Near reference</b>Return within five points of the better stored controller.</div>
+          <div class="definition"><b>Task success</b>Upright and slow for at least 80% of the episode.</div>
+          <div class="definition"><b>Strict win</b>Return above both stored controllers.</div>
+        </div>
+
+        <div class="subhead">Complete recipes and baselines</div>
+        <table class="scorecard" aria-label="Five-seed scorecard">
+          <thead><tr><th>Method</th><th>Near ref.</th><th>Task</th><th>Strict</th></tr></thead>
+          <tbody>
+            <tr class="best-mixed"><td>RL + supervised</td><td class="near">99.928</td><td>93.858</td><td>12.555</td></tr>
+            <tr><td>Supervised actor</td><td class="near">99.720</td><td>93.603</td><td>14.498</td></tr>
+            <tr class="best-pure"><td>Pure RL</td><td class="near">96.026</td><td>92.875</td><td>22.823</td></tr>
+            <tr><td>Plain SimbaV2</td><td class="near">91.835</td><td>91.459</td><td>8.525</td></tr>
+            <tr><td>Clean DAgger</td><td class="near">84.534</td><td>88.021</td><td>6.389</td></tr>
+          </tbody>
+        </table>
+        <p class="baseline-note">Percent of 12,505 actor-state trials. Near-reference success is the main reliability measure; task and strict-win rates show the quality trade-off.</p>
+      </section>
+
+      <section class="column">
+        <div class="section-line"><span class="num">02</span><h2>Build one policy</h2></div>
+        <p class="intro">The two routes add different information during training, but each deploys one frozen actor and learned critics.</p>
+
+        <div class="route">
+          <div class="route-title">RL + supervised</div>
+          <div class="route-flow">
+            <div class="step"><b>Supervised network</b>Fit stored controller actions. Width and depth match the SimbaV2 actor.</div>
+            <div class="step"><b>DAgger + priority refit</b>Label states reached by the actor, then revisit starts with the largest measured deficit.</div>
+            <div class="step"><b>Local Q-search</b>A reward critic scores the actor torque and four nearby feasible torques.</div>
+          </div>
+        </div>
+
+        <div class="route pure">
+          <div class="route-title">Pure RL</div>
+          <div class="route-flow">
+            <div class="step"><b>FastSACN8</b>A SimbaV2 actor and twin critics train for 100k transitions with one-step and eight-step targets.</div>
+            <div class="step"><b>Reflection</b>Average the action with the action predicted from the sign-reflected pendulum state.</div>
+            <div class="step"><b>41-action Q-search</b>Both critics rank torques over the full feasible interval and must agree.</div>
+          </div>
+        </div>
+        <div class="route-note"><b>During deployment:</b> no controller action, state-angle rule, checkpoint mixture, or ensemble is used.</div>
+
+        <div class="subhead">Which additions reduce failures?</div>
+        <div class="controls">
+          <div class="control-panel">
+            <h3>Mixed: separate five-seed controls</h3>
+            <div class="bar-row"><span>Full recipe</span><div class="bar-track"><div class="bar" style="width:24%"></div></div><span class="bar-value">9</span></div>
+            <div class="bar-row"><span>Uniform priority starts</span><div class="bar-track"><div class="bar pale" style="width:50%"></div></div><span class="bar-value">19</span></div>
+            <div class="bar-row"><span>No local Q-search</span><div class="bar-track"><div class="bar orange" style="width:92%"></div></div><span class="bar-value">35</span></div>
+            <div class="bar-row"><span>No labels at actor-visited states</span><div class="bar-track"><div class="bar hot" style="width:100%"></div></div><span class="bar-value">38</span></div>
+          </div>
+          <div class="control-panel pure">
+            <h3>Pure RL: one sequential deployment path</h3>
+            <div class="path">
+              <div class="path-box"><b>1,267</b>FastSACN8 actor</div>
+              <div class="arrow">→</div>
+              <div class="path-box"><b>955</b>+ reflection</div>
+              <div class="arrow">→</div>
+              <div class="path-box"><b>497</b>+ Q-search</div>
+            </div>
+          </div>
+        </div>
+        <p class="controls-caption">Each number is a near-reference failure count out of 12,505 trials. Mixed rows change one component from the selected recipe; pure-RL additions are cumulative.</p>
+      </section>
+
+      <section class="column evidence">
+        <div class="section-line"><span class="num">03</span><h2>Failures localize and compound</h2></div>
+        <p class="intro">The full-grid maps locate the remaining tail. A rollout comparison then shows how an initially small recovery delay accumulates over time.</p>
+
+        <div class="figure-block">
+          <div class="figure-head"><h3>Where do the five trained actors fail?</h3><span>white: all five succeed · color: number that fail</span></div>
+          <img class="failure-img" src="assets/118_failure_footprints_clean.png" alt="Five-seed failure heatmaps">
+          <div class="caption"><b>Pure RL:</b> 497 failures across 208 initial states. <b>RL + supervised:</b> nine failures across eight initial states. The same difficult regions recur across retraining seeds.</div>
+        </div>
+
+        <div class="figure-block">
+          <div class="figure-head"><h3>One difficult start, four time points</h3><span>five translucent rods show five independently trained actors</span></div>
+          <img class="recovery-img" src="assets/119_four_time_rollout_clean.png" alt="Recovery trajectories from one difficult start">
+          <div class="caption orange"><b>By step 64:</b> all five mixed actors are near the stored-reference return; none of the five pure-RL actors are. Pure RL eventually reaches upright, but the delayed swing-up loses too much return.</div>
+        </div>
+
+        <div class="figure-block">
+          <img class="whitebox-img" src="assets/104_whitebox_wide_clean.png" alt="Actor saturation and clipped critic-step diagnostic">
+          <div class="caption"><b>Inside the trained networks:</b> FastSACN8 and SACN8 actors output the torque bound on 87% of tested states. At sampled failure states, clipping preserves only 7% of a local critic-gradient step. Full-range Q-search ranks feasible torques directly, avoiding this projection bottleneck.</div>
+        </div>
+      </section>
+    </div>
+
+    <footer class="footer">
+      <div><b>Interpretation:</b> reward training learns useful critic rankings, and reflection plus Q-search recover 770 of 1,267 pure-RL failures. Supervised actions at actor-visited states make the multi-step recovery path more repeatable across retraining seeds.</div>
+      <div><b>References:</b> SAC, Haarnoja et al. 2018 · DAgger, Ross et al. 2011 · SimbaV2, Lee et al. 2025 · SACn, Łyskawa et al. 2025.</div>
+    </footer>
+  </section>
+
+  <section class="body-v110">
+    <div class="v110-hero">
+      <div class="v110-hero-copy">
+        <b>Can one policy succeed from every start after every retraining?</b>
+        <span>Five independently trained actors are evaluated on the same 2,501-state grid.</span>
+      </div>
+      <div class="v110-stat">
+        <b>99.928%</b>
+        <span>RL + supervised<br>9 failures / 12,505 trials</span>
+      </div>
+      <div class="v110-stat pure">
+        <b>96.026%</b>
+        <span>Pure RL<br>497 failures / 12,505 trials</span>
+      </div>
+      <div class="v110-stat repair">
+        <b>770 / 1,267</b>
+        <span>raw pure-RL failures repaired by reflection plus Q-search</span>
+      </div>
+    </div>
+
+    <div class="v110-content">
+      <section class="v110-col left">
+        <div class="v110-col-head"><i>01</i><h2>What reliability means</h2></div>
+        <p class="v110-intro">Average return can hide repeatable failures. Reliability must hold across the state space and across independently retrained actors.</p>
+        <img class="v110-task" src="assets/78_pendulum_reliability_editorial.png" alt="Pendulum swing-up task">
+        <div class="v110-question">Swing the pendulum upright over 200 deterministic steps while torque is constrained to [−2, 2].</div>
+        <div class="v110-protocol">
+          <div><b>2,501</b>initial states</div>
+          <div><b>5</b>retraining seeds</div>
+          <div><b>12,505</b>total trials</div>
+        </div>
+
+        <div class="v110-subhead">Complete recipes and baselines</div>
+        <img class="v111-scorechart" src="assets/102_baseline_scorecard_panel.png" alt="Near-reference, task-success, and strict-win rates for both selected recipes and three baselines">
+        <div class="v110-cap"><b>Three complementary criteria.</b> Near reference means return within five points of the better stored controller; task success means upright and slow for at least 80% of the episode; strict win means return above both stored controllers.</div>
+        <div class="v110-subhead">The ordering persists across return tolerances</div>
+        <img class="v110-tolerance" src="assets/111_tolerance_curve_wide.png" alt="Near-reference success over return tolerances">
+      </section>
+
+      <section class="v110-col middle">
+        <div class="v110-col-head"><i>02</i><h2>Build and probe the policies</h2></div>
+        <div class="v115-route-stack">
+          <div class="v115-route">
+            <div class="v115-route-label">RL +<br>supervised</div>
+            <div class="v115-route-flow">
+              <div class="v115-stage"><span class="v115-stage-num">1</span><span class="v115-phase">TRAIN</span><b>Supervised network</b>Fit stored controller actions. The network has the same width and depth as the SimbaV2 actor.</div>
+              <div class="v115-arrow">→</div>
+              <div class="v115-stage"><span class="v115-stage-num">2</span><span class="v115-phase">TRAIN</span><b>DAgger + priority refit</b>Roll out the actor, label states it actually visits, then revisit starts with the largest return deficit.</div>
+              <div class="v115-arrow">→</div>
+              <div class="v115-stage"><span class="v115-stage-num">3</span><span class="v115-phase deploy">ACTION</span><b>Five-candidate Q-search</b>Score the actor torque and four nearby feasible torques with the learned critic.</div>
+            </div>
+          </div>
+
+          <div class="v115-route pure">
+            <div class="v115-route-label">Pure RL</div>
+            <div class="v115-route-flow">
+              <div class="v115-stage"><span class="v115-stage-num">1</span><span class="v115-phase">TRAIN</span><b>FastSACN8</b>Train a SimbaV2 actor and twin critics from reward using one-step and eight-step targets.</div>
+              <div class="v115-arrow">→</div>
+              <div class="v115-stage"><span class="v115-stage-num">2</span><span class="v115-phase deploy">ACTION</span><b>Physical reflection</b>Average the action predicted from the state with the reflected action predicted from its sign-flipped counterpart.</div>
+              <div class="v115-arrow">→</div>
+              <div class="v115-stage"><span class="v115-stage-num">3</span><span class="v115-phase deploy">ACTION</span><b>41-action Q-search</b>Both critics rank torques across the full feasible interval [−2, 2] and must agree.</div>
+            </div>
+          </div>
+        </div>
+        <div class="v115-route-note"><b>One frozen actor is evaluated in each route.</b> Supervised controller actions are used only to train the mixed actor; critic search uses learned reward models when an action is selected.</div>
+
+        <div class="v110-diagnostic">
+          <h3>Multi-step actors saturate at the torque bound</h3>
+          <p>White-box probes use 5,553 random states and 512 sampled failure states per seed.</p>
+          <div class="v110-bar"><span>SAC</span><div class="track"><div class="fill" style="width:59.1%"></div></div><b>59%</b></div>
+          <div class="v110-bar"><span>FastSACN8</span><div class="track"><div class="fill fast" style="width:86.9%"></div></div><b>87%</b></div>
+          <div class="v110-bar"><span>SACN8</span><div class="track"><div class="fill n8" style="width:86.7%"></div></div><b>87%</b></div>
+          <div class="v110-clip">
+            <div><b>87%</b>FastSACN8 actions already satisfy |a| ≥ 1.99</div>
+            <div class="arrow">→</div>
+            <div><b>7%</b>of a local critic step survives clipping</div>
+          </div>
+          <div class="v110-search"><b>41-action Q-search bypasses the bound</b><div class="v110-search-line"></div>Both critics score the full feasible interval and must agree before replacement.</div>
+        </div>
+
+        <div class="v110-components">
+          <div>
+            <h3>Mixed controls: failures</h3>
+            <div class="v110-smallbar"><span>Full recipe</span><div class="track"><div class="fill" style="width:24%"></div></div><b>9</b></div>
+            <div class="v110-smallbar"><span>Uniform starts</span><div class="track"><div class="fill" style="width:50%"></div></div><b>19</b></div>
+            <div class="v110-smallbar"><span>No local Q-search</span><div class="track"><div class="fill warn" style="width:92%"></div></div><b>35</b></div>
+            <div class="v110-smallbar"><span>No actor-state labels</span><div class="track"><div class="fill hot" style="width:100%"></div></div><b>38</b></div>
+          </div>
+          <div class="pure">
+            <h3>Pure RL: cumulative path</h3>
+            <div class="v110-path">
+              <div class="v110-node"><b>1,267</b>raw actor</div>
+              <div class="arrow">→</div>
+              <div class="v110-node"><b>955</b>+ reflection</div>
+              <div class="arrow">→</div>
+              <div class="v110-node"><b>497</b>+ Q-search</div>
+            </div>
+          </div>
+        </div>
+        <div class="v111-sequence-title">How many corrected actions does a failed rollout need?</div>
+        <img class="v111-sequence" src="assets/101_sequence_repair_wide.png" alt="Failure repair after replacing one, eight, sixteen, or thirty-two initial actions">
+        <div class="v111-sequence-cap"><b>State matching is essential:</b> 32 actions selected at the current state repair 99.0% of 1,267 raw-actor failures; shuffling the same actions repairs 0.6%.</div>
+      </section>
+
+      <section class="v110-col right">
+        <div class="v110-col-head"><i>03</i><h2>Where the gap appears</h2></div>
+        <img class="v110-evidence-img v110-heat" src="assets/118_failure_footprints_clean.png" alt="Five-seed failure-count heatmaps">
+        <div class="v110-cap"><b>Failure locations on the full 2,501-state grid.</b> White means all five actors succeed near the reference; color counts failures at each start. Pure RL has 497 failures across 208 starts; RL + supervision has nine failures across eight starts.</div>
+
+        <img class="v110-evidence-img v110-recovery" src="assets/116_recovery_atlas_3starts.png" alt="Recovery comparison at three difficult starts">
+        <div class="v110-cap orange"><b>Recovery at three difficult starts.</b> Mixed actors are upright by step 64. Pure-RL actors are still recovering at step 24 and arrive later, after losing too much return.</div>
+      </section>
+    </div>
+
+    <footer class="v110-footer">
+      <div><b>Interpretation:</b> reward training learns useful critic rankings, but actor saturation clips local critic corrections. Full-range Q-search bypasses that bound.</div>
+      <div><b>References:</b> SAC, Haarnoja et al. 2018 · DAgger, Ross et al. 2011 · SimbaV2, Lee et al. 2025 · SACn, Łyskawa et al. 2025.</div>
+    </footer>
+  </section>
+</main>
+</body>
+</html>

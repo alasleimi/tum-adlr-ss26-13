@@ -1,0 +1,38 @@
+{
+  "schema_version": 1,
+  "conditions": [
+    {
+      "name": "P0 one-step",
+      "actor_runs": [
+        "artifacts/report_reproduction/models/pure_onestep/seed0",
+        "artifacts/report_reproduction/models/pure_onestep/seed1",
+        "artifacts/report_reproduction/models/pure_onestep/seed2",
+        "artifacts/report_reproduction/models/pure_onestep/seed3",
+        "artifacts/report_reproduction/models/pure_onestep/seed4"
+      ],
+      "critic_runs": "same"
+    },
+    {
+      "name": "P1 FastSACN8",
+      "actor_runs": [
+        "artifacts/report_reproduction/models/pure_fastsacn8/seed0",
+        "artifacts/report_reproduction/models/pure_fastsacn8/seed1",
+        "artifacts/report_reproduction/models/pure_fastsacn8/seed2",
+        "artifacts/report_reproduction/models/pure_fastsacn8/seed3",
+        "artifacts/report_reproduction/models/pure_fastsacn8/seed4"
+      ],
+      "critic_runs": "same"
+    },
+    {
+      "name": "P2 SACn8",
+      "actor_runs": [
+        "artifacts/report_reproduction/models/pure_sacn8/seed0",
+        "artifacts/report_reproduction/models/pure_sacn8/seed1",
+        "artifacts/report_reproduction/models/pure_sacn8/seed2",
+        "artifacts/report_reproduction/models/pure_sacn8/seed3",
+        "artifacts/report_reproduction/models/pure_sacn8/seed4"
+      ],
+      "critic_runs": "same"
+    }
+  ]
+}

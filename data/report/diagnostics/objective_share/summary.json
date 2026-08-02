@@ -1,0 +1,104 @@
+{
+  "schema_version": 1,
+  "status": "complete",
+  "selection_use": false,
+  "diagnostic_only": true,
+  "actor_seeds": {
+    "no_importance": [
+      0
+    ],
+    "density": [
+      0,
+      1,
+      2,
+      3,
+      4
+    ]
+  },
+  "replay_sequences_per_seed": 4096,
+  "density_replay_sequences_total": 20480,
+  "target_mode": "fast_last",
+  "horizon_lambda": 0.5,
+  "eight_step_objective_share_percent": {
+    "nominal": 0.7751937955617905,
+    "no_importance_empirical": 0.7751937955617905,
+    "density_empirical_seed_values": [
+      0.1258511678315699,
+      0.11177273700013757,
+      0.1404572161845863,
+      0.14845386613160372,
+      0.1105619827285409
+    ],
+    "density_empirical_mean": 0.12741939397528768
+  },
+  "density_eight_step_diagnostics_percent": {
+    "mean_importance_weight_seed_values": [
+      16.129291269145913,
+      14.322951750983965,
+      18.003840132812066,
+      19.03035117696573,
+      14.167617950449362
+    ],
+    "mean_importance_weight_mean": 16.330810456071408,
+    "effective_weight_ess_fraction_seed_values": [
+      20.205419551003555,
+      17.208134486611772,
+      22.320244592313216,
+      22.71119746119763,
+      16.890111683863182
+    ],
+    "effective_weight_ess_fraction_mean": 19.86702155499787,
+    "effective_weight_at_most_1e-3_seed_values": [
+      76.708984375,
+      80.517578125,
+      74.3896484375,
+      73.779296875,
+      80.76171875
+    ],
+    "effective_weight_at_most_1e-3_mean": 77.2314453125
+  },
+  "interpretation": "Lambda-0.5 FastSACN8 is dominated by its one-step endpoint. Density weighting reduces the already small eight-step objective share further across five independently trained replay buffers.",
+  "limitations": [
+    "The no-importance replay diagnostic uses one actor seed; the density diagnostic uses five independently trained actors.",
+    "Objective share does not determine reliability by itself.",
+    "The result does not identify which training update caused a policy failure."
+  ],
+  "sources": {
+    "no_importance_seed0": {
+      "path": "reports/systematic_joint_followup_20260722/sacn_horizon_corrected_none_lambda05_4096/sacn_horizon_summary.json",
+      "sha256": "59653977a3e3b16760d720794ca72eeed93935b0f36a748a70e7c27ebd2a3abd"
+    },
+    "density": [
+      {
+        "actor_seed": 0,
+        "diagnostic_sample_seed": 0,
+        "path": "reports/systematic_joint_followup_20260722/sacn_horizon_corrected_density_lambda05_4096/sacn_horizon_summary.json",
+        "sha256": "4ae17499a5611e70a70eaecacfc34b2a0857da7af627f0d2f89f93c4c842db95"
+      },
+      {
+        "actor_seed": 1,
+        "diagnostic_sample_seed": 1,
+        "path": "reports/plan2307_mechanistic_20260723/fastsacn_objective_share/p6_seed1/sacn_horizon_summary.json",
+        "sha256": "4a2fec09dea8ed0199531c1b16e5a6c1f6547228c037e77774feadd53bc8d3b3"
+      },
+      {
+        "actor_seed": 2,
+        "diagnostic_sample_seed": 2,
+        "path": "reports/plan2307_mechanistic_20260723/fastsacn_objective_share/p6_seed2/sacn_horizon_summary.json",
+        "sha256": "61ab8e5e04e1f0aa2c9aa8b8e0ede8de530a724b855b730466d41abe3d376c15"
+      },
+      {
+        "actor_seed": 3,
+        "diagnostic_sample_seed": 3,
+        "path": "reports/plan2307_mechanistic_20260723/fastsacn_objective_share/p6_seed3/sacn_horizon_summary.json",
+        "sha256": "bed2d6d93786220b3c7e19f46cd127f23fad62b3308c2af4fe865c29234c1685"
+      },
+      {
+        "actor_seed": 4,
+        "diagnostic_sample_seed": 4,
+        "path": "reports/plan2307_mechanistic_20260723/fastsacn_objective_share/p6_seed4/sacn_horizon_summary.json",
+        "sha256": "66d5b1eaa2e32c516bfc488bd4aeec5f6ae87b6e671f23a3a3c79126f7813b9c"
+      }
+    ]
+  }
+}

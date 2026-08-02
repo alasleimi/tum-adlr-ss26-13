@@ -1,0 +1,18 @@
+{
+  "schema_version": 1,
+  "horizons": [0, 1, 2, 4, 8, 16, 32, 64, 200],
+  "dp_solution": "data/reference/pendulum_dp_solution.npz",
+  "conditions": [
+    {
+      "name": "pure RL actor",
+      "relative_rollouts": "data/report/rollouts/pure_actor.csv",
+      "actor_runs": [
+        "artifacts/report_reproduction/models/pure_selected/seed0",
+        "artifacts/report_reproduction/models/pure_selected/seed1",
+        "artifacts/report_reproduction/models/pure_selected/seed2",
+        "artifacts/report_reproduction/models/pure_selected/seed3",
+        "artifacts/report_reproduction/models/pure_selected/seed4"
+      ]
+    }
+  ]
+}

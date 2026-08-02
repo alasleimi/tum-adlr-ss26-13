@@ -1,5 +1,4 @@
 from last_nine_rl.pendulum_relative import enrich_rollouts, mean_t_interval, wilson_interval
-from last_nine_rl.config import ReliabilityConfig
 
 
 def test_relative_success_uses_higher_return_as_better():
@@ -12,7 +11,6 @@ def test_relative_success_uses_higher_return_as_better():
             "return": "-100.0",
             "stability_success": "1.0",
             "streak_success": "1.0",
-            "strict_success": "1.0",
         }
     ]
     dp_rows = [
@@ -20,8 +18,6 @@ def test_relative_success_uses_higher_return_as_better():
             "theta": "0.0",
             "theta_dot": "0.0",
             "dp_policy_return": "-90.0",
-            "dp_policy_return_success": "1.0",
-            "dp_policy_strict_success": "1.0",
         }
     ]
     controller_rows = [
@@ -29,13 +25,11 @@ def test_relative_success_uses_higher_return_as_better():
             "theta": "0.0",
             "theta_dot": "0.0",
             "controller_return": "-120.0",
-            "controller_return_success": "1.0",
             "controller_task_success": "1.0",
-            "controller_strict_success": "1.0",
         }
     ]
 
-    rows = enrich_rollouts(sac_rows, dp_rows, controller_rows, epsilon_return=5.0, reliability=ReliabilityConfig())
+    rows = enrich_rollouts(sac_rows, dp_rows, controller_rows, epsilon_return=5.0)
 
     assert rows[0]["beats_dp_return"] == 0.0
     assert rows[0]["near_dp_return_eps"] == 0.0
@@ -58,7 +52,6 @@ def test_relative_success_epsilon_margin():
             "return": "-94.0",
             "stability_success": "1.0",
             "streak_success": "1.0",
-            "strict_success": "1.0",
         }
     ]
     dp_rows = [
@@ -66,8 +59,6 @@ def test_relative_success_epsilon_margin():
             "theta": "0.0",
             "theta_dot": "0.0",
             "dp_policy_return": "-90.0",
-            "dp_policy_return_success": "1.0",
-            "dp_policy_strict_success": "1.0",
         }
     ]
     controller_rows = [
@@ -75,13 +66,11 @@ def test_relative_success_epsilon_margin():
             "theta": "0.0",
             "theta_dot": "0.0",
             "controller_return": "-100.0",
-            "controller_return_success": "1.0",
             "controller_task_success": "1.0",
-            "controller_strict_success": "1.0",
         }
     ]
 
-    rows = enrich_rollouts(sac_rows, dp_rows, controller_rows, epsilon_return=5.0, reliability=ReliabilityConfig())
+    rows = enrich_rollouts(sac_rows, dp_rows, controller_rows, epsilon_return=5.0)
 
     assert rows[0]["beats_dp_return"] == 0.0
     assert rows[0]["near_dp_return_eps"] == 1.0

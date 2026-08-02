@@ -22,15 +22,13 @@ from last_nine_rl.reference import PendulumEnergySwingupController
 
 
 CRITERIA: tuple[tuple[str, str], ...] = (
-    ("fixed_return_success", "Diagnostic: return >= threshold"),
     ("task_success", "Task-only stability"),
-    ("strict_success", "Diagnostic: threshold + task"),
-    ("beats_dp_return", "SAC >= DP"),
-    ("near_dp_return_eps", "SAC >= DP - eps"),
-    ("beats_controller_return", "SAC >= controller"),
-    ("near_controller_return_eps", "SAC >= controller - eps"),
-    ("beats_best_known_return", "SAC > max(DP, controller)"),
-    ("near_best_known_return_eps", "SAC >= max(DP, controller) - eps"),
+    ("beats_dp_return", "Policy >= DP"),
+    ("near_dp_return_eps", "Policy >= DP - eps"),
+    ("beats_controller_return", "Policy >= controller"),
+    ("near_controller_return_eps", "Policy >= controller - eps"),
+    ("beats_best_known_return", "Policy > max(DP, controller)"),
+    ("near_best_known_return_eps", "Policy >= max(DP, controller) - eps"),
 )
 
 
@@ -44,7 +42,6 @@ REGIONS: tuple[tuple[str, str], ...] = (
 
 def main() -> None:
     args = parse_args()
-    reliability = ReliabilityConfig(success_return_threshold=args.success_return_threshold)
     result = run_relative_report(
         sac_rollouts_path=Path(args.sac_rollouts),
         dp_grid_path=Path(args.dp_grid),
@@ -52,7 +49,7 @@ def main() -> None:
         output_dir=Path(args.out),
         condition_label=args.condition_label,
         epsilon_return=args.epsilon_return,
-        reliability=reliability,
+        reliability=ReliabilityConfig(),
     )
     print(json.dumps(result["summary"], allow_nan=False, indent=2, sort_keys=True))
 
@@ -65,7 +62,6 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--out", required=True)
     parser.add_argument("--condition-label", required=True)
     parser.add_argument("--epsilon-return", type=float, default=5.0)
-    parser.add_argument("--success-return-threshold", type=float, default=-200.0)
     return parser.parse_args()
 
 
@@ -95,7 +91,6 @@ def run_relative_report(
         dp_rows=dp_rows,
         controller_rows=controller_rows,
         epsilon_return=epsilon_return,
-        reliability=reliability,
     )
     cell_rows = summarize_cells(enriched_rows, theta_values, velocity_values)
     summary = summarize_condition(
@@ -196,16 +191,13 @@ def rollout_controller_from_state(
         done = bool(terminated or truncated)
 
     near_fraction = near_count / max(length, 1)
-    return_success = episode_return >= reliability.success_return_threshold
     stability_success = near_fraction >= reliability.success_near_upright_fraction_threshold
     streak_success = longest_not_near_streak <= reliability.success_max_not_near_upright_streak
     return {
         "controller_return": float(episode_return),
         "controller_near_upright_fraction": float(near_fraction),
         "controller_not_near_upright_streak": float(longest_not_near_streak),
-        "controller_return_success": float(return_success),
         "controller_task_success": float(stability_success and streak_success),
-        "controller_strict_success": float(return_success and stability_success and streak_success),
     }
 
 
@@ -214,7 +206,6 @@ def enrich_rollouts(
     dp_rows: list[dict[str, Any]],
     controller_rows: list[dict[str, Any]],
     epsilon_return: float,
-    reliability: ReliabilityConfig,
 ) -> list[dict[str, Any]]:
     dp_by_state = rows_by_state(dp_rows)
     controller_by_state = rows_by_state(controller_rows)
@@ -231,21 +222,15 @@ def enrich_rollouts(
         gap_to_dp = dp_return - sac_return
         gap_to_controller = controller_return - sac_return
         gap_to_best_known = best_known_return - sac_return
-        task_success = float(float(row["stability_success"]) > 0.5 and float(row["streak_success"]) > 0.5)
+        task_success = rollout_task_success(row)
         enriched.append(
             {
                 **row,
                 "return": sac_return,
                 "task_success": task_success,
-                "fixed_return_success": float(sac_return >= reliability.success_return_threshold),
-                "strict_success": float(row["strict_success"]),
                 "dp_policy_return": dp_return,
-                "dp_policy_return_success": float(dp["dp_policy_return_success"]),
-                "dp_policy_strict_success": float(dp["dp_policy_strict_success"]),
                 "controller_return": controller_return,
-                "controller_return_success": float(controller["controller_return_success"]),
-                "controller_task_success": float(controller["controller_task_success"]),
-                "controller_strict_success": float(controller["controller_strict_success"]),
+                "controller_task_success": float(controller.get("controller_task_success", 0.0)),
                 "best_known_return": best_known_return,
                 "beats_dp_return": float(sac_return >= dp_return),
                 "near_dp_return_eps": float(sac_return >= dp_return - epsilon_return),
@@ -330,7 +315,6 @@ def summarize_condition(
     summary: dict[str, Any] = {
         "condition_label": condition_label,
         "epsilon_return": epsilon_return,
-        "success_return_threshold": reliability.success_return_threshold,
         "num_training_seeds": len(actual_seeds),
         "actual_seeds": actual_seeds,
         "num_initial_condition_cells": len(cell_rows),
@@ -387,14 +371,8 @@ def summarize_condition(
 
 def summarize_baselines(controller_rows: list[dict[str, Any]]) -> dict[str, Any]:
     return {
-        "controller_return_success_cell_fraction": float(
-            np.mean([float(row["controller_return_success"]) for row in controller_rows])
-        ),
         "controller_task_success_cell_fraction": float(
             np.mean([float(row["controller_task_success"]) for row in controller_rows])
-        ),
-        "controller_strict_success_cell_fraction": float(
-            np.mean([float(row["controller_strict_success"]) for row in controller_rows])
         ),
         "controller_mean_return": float(np.mean([float(row["controller_return"]) for row in controller_rows])),
     }
@@ -469,7 +447,7 @@ def write_criterion_bar_plot(output_dir: Path, condition_label: str, summary: di
     ax.errorbar(x, means, yerr=np.vstack([low, high]), fmt="none", color="black", capsize=4, linewidth=1.2)
     ax.set_ylim(0.0, 1.05)
     ax.set_ylabel("Rate, seed mean with 95% t interval")
-    ax.set_title(f"{condition_label}: task/reference rates and diagnostics")
+    ax.set_title(f"{condition_label}: task and reference-return rates")
     ax.set_xticks(x)
     ax.set_xticklabels(labels, rotation=35, ha="right")
     ax.grid(axis="y", alpha=0.25)
@@ -572,6 +550,12 @@ def rows_by_state(rows: list[dict[str, Any]]) -> dict[tuple[float, float], dict[
 
 def state_key(row: dict[str, Any]) -> tuple[float, float]:
     return round(float(row["theta"]), 12), round(float(row["theta_dot"]), 12)
+
+
+def rollout_task_success(row: dict[str, Any]) -> float:
+    if "task_success" in row:
+        return float(row["task_success"])
+    return float(float(row["stability_success"]) > 0.5 and float(row["streak_success"]) > 0.5)
 
 
 def in_region(row: dict[str, Any], region_key: str) -> bool:

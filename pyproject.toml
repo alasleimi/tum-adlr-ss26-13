@@ -4,15 +4,18 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "last-nine-rl"
-version = "0.1.0"
-description = "Week 1 SAC reliability instrumentation for ADLR Project 15."
+version = "1.0.0"
+description = "Report-scoped code and evidence for Chasing the Nines."
+readme = "README.md"
 requires-python = ">=3.11"
 dependencies = [
     "gymnasium>=1.2",
     "imageio>=2.34",
     "matplotlib>=3.8",
     "numpy>=2.0",
+    "pandas>=2.2",
     "pillow>=10.0",
+    "scipy>=1.12",
     "tensorboard>=2.11",
     "torch>=2.1",
     "tyro>=0.5",
@@ -20,7 +23,12 @@ dependencies = [
 
 [project.optional-dependencies]
 dm-control = ["shimmy[dm-control]>=2.0.1"]
-test = ["pytest>=8"]
+presentation = ["playwright>=1.48", "pypdf>=5"]
+test = ["pytest>=8", "pypdf>=5"]
+
+[project.scripts]
+last-nine-train = "last_nine_rl.train:main"
+last-nine = "last_nine_repro.cli:main"
 
 [tool.setuptools.packages.find]
 where = ["src"]
@@ -28,3 +36,4 @@ where = ["src"]
 [tool.pytest.ini_options]
 testpaths = ["tests"]
 pythonpath = ["src"]
+addopts = "-ra"
