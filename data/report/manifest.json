@@ -2,7 +2,7 @@
   "schema": "last-nine-artifact-manifest/v1",
   "hash": "sha256",
   "file_count": 250,
-  "total_bytes": 286127373,
+  "total_bytes": 286127346,
   "artifacts": [
     {
       "id": "artifacts/report_reproduction/PROVENANCE.tsv",
@@ -1099,8 +1099,8 @@
     {
       "id": "data/report/diagnostics/recovery_atlas/provenance.json",
       "path": "data/report/diagnostics/recovery_atlas/provenance.json",
-      "bytes": 2360,
-      "sha256": "5947538cdb0b9a32e546ecffe77db5f06afc0e6cd4107e9594311c6f36ebee68"
+      "bytes": 2333,
+      "sha256": "bea2ce5f6bb7ff40ebd415a07486bae1af51f8f2a939156f56a260aa76672203"
     },
     {
       "id": "data/report/diagnostics/recovery_atlas/trajectories.npz",

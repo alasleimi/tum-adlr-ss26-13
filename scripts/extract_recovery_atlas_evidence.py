@@ -243,15 +243,15 @@ def extract(root: Path, output: Path) -> tuple[Path, Path]:
             "torch": torch.__version__,
             "device": "cpu",
         },
+        "serialization": "UTF-8 JSON with LF line endings",
         "qualification": (
             "This is derived display evidence, not an original training artifact. "
             "The manifest protects the checked-in archive byte-for-byte."
         ),
     }
     provenance_path = output / "provenance.json"
-    provenance_path.write_text(
-        json.dumps(provenance, indent=2) + "\n", encoding="utf-8"
-    )
+    with provenance_path.open("w", encoding="utf-8", newline="\n") as handle:
+        handle.write(json.dumps(provenance, indent=2) + "\n")
     return archive_path, provenance_path
 
 

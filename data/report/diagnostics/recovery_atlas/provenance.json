@@ -77,5 +77,6 @@
     "torch": "2.13.0+cpu",
     "device": "cpu"
   },
+  "serialization": "UTF-8 JSON with LF line endings",
   "qualification": "This is derived display evidence, not an original training artifact. The manifest protects the checked-in archive byte-for-byte."
 }
