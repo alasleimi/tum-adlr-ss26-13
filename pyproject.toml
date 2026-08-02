@@ -28,6 +28,7 @@ test = ["pytest>=8", "pypdf>=5"]
 
 [project.scripts]
 last-nine-train = "last_nine_rl.train:main"
+last-nine-eval = "last_nine_rl.eval_cli:main"
 last-nine = "last_nine_repro.cli:main"
 
 [tool.setuptools.packages.find]
@@ -36,4 +37,5 @@ where = ["src"]
 [tool.pytest.ini_options]
 testpaths = ["tests"]
 pythonpath = ["src"]
+python_files = ["test_*.py", "repro_test_*.py"]
 addopts = "-ra"

@@ -1,5 +1,8 @@
 """Render the HTML workshop deck to a timing-stable 16:9 PDF.
 
+The default PDF is written below ``.build`` so a routine render cannot replace
+the checked-in presentation.
+
 Run from any directory with::
 
     python scripts/render_presentation_pdf.py
@@ -23,6 +26,12 @@ from playwright.sync_api import Page, sync_playwright
 PROJECT_ROOT = Path(__file__).resolve().parents[1]
 DEFAULT_HTML = PROJECT_ROOT / "presentation" / "index.html"
 DEFAULT_PDF = (
+    PROJECT_ROOT
+    / ".build"
+    / "presentation"
+    / "week3_workshop_presentation_20260527.pdf"
+)
+CANONICAL_PDF = (
     PROJECT_ROOT
     / "presentation"
     / "week3_workshop_presentation_20260527.pdf"
@@ -276,10 +285,20 @@ def main() -> None:
         action="store_true",
         help="Capture GIFs at their current frame instead of freezing frame one.",
     )
+    parser.add_argument(
+        "--allow-canonical-overwrite",
+        action="store_true",
+        help="Explicitly allow replacing the checked-in presentation PDF.",
+    )
     args = parser.parse_args()
 
     html = args.html.expanduser().resolve()
     pdf = args.pdf.expanduser().resolve()
+    if pdf == CANONICAL_PDF.resolve() and not args.allow_canonical_overwrite:
+        raise ValueError(
+            "Refusing to replace the checked-in presentation PDF; choose a .build "
+            "path or pass --allow-canonical-overwrite explicitly"
+        )
     edge = resolve_edge(args.edge)
     if not html.is_file():
         raise FileNotFoundError(f"Presentation HTML not found: {html}")

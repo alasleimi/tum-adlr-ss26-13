@@ -2,12 +2,14 @@ from __future__ import annotations
 
 import argparse
 import json
+import shutil
 import sys
 from pathlib import Path
 from typing import Sequence
 
 import pandas as pd
 
+from .comparison import compare_images, write_comparison
 from .figures import render_all
 from .manifest import Finding, verify_manifest
 from .metrics import (
@@ -16,6 +18,7 @@ from .metrics import (
     load_claims,
     verify_claims,
 )
+from .poster_figures import render_all_poster
 from .provenance import audit_mixed_provenance
 from .validation import (
     EvidenceValidationError,
@@ -26,6 +29,60 @@ from .validation import (
 
 def default_root() -> Path:
     return Path(__file__).resolve().parents[2]
+
+
+def default_output(root: Path) -> Path:
+    return root / ".build" / "reproduction"
+
+
+def safe_output_path(root: Path, requested: Path | None) -> Path:
+    """Resolve output and reject any in-repository canonical destination."""
+
+    root = root.resolve()
+    output = (requested or default_output(root)).expanduser().resolve()
+    if output == root:
+        raise ValueError("The project root cannot be used as reproduction output")
+    if output.is_relative_to(root):
+        relative = output.relative_to(root)
+        if not relative.parts or relative.parts[0] != ".build":
+            raise ValueError(
+                "In-repository reproduction output must be below ROOT/.build; "
+                f"refusing canonical or tracked path: {output}"
+            )
+    return output
+
+
+def submission_evidence_paths(
+    root: Path,
+    requested_data_dir: Path | None,
+    requested_manifest: Path | None,
+) -> tuple[Path, Path | None]:
+    """Bind grading redraws to the manifest-protected submission evidence."""
+
+    root = root.resolve()
+    expected_data_dir = (root / "data" / "report").resolve()
+    data_dir = (
+        requested_data_dir.expanduser().resolve()
+        if requested_data_dir is not None
+        else expected_data_dir
+    )
+    expected_manifest = (expected_data_dir / "manifest.json").resolve()
+    manifest = (
+        requested_manifest.expanduser().resolve()
+        if requested_manifest is not None
+        else None
+    )
+    if data_dir != expected_data_dir:
+        raise ValueError(
+            "evaluate/reproduce require the manifest-protected ROOT/data/report "
+            "tree; use --root to evaluate another checkout"
+        )
+    if manifest is not None and manifest != expected_manifest:
+        raise ValueError(
+            "evaluate/reproduce require ROOT/data/report/manifest.json; use --root "
+            "to evaluate another checkout"
+        )
+    return data_dir, manifest
 
 
 def load_frames(data_dir: Path) -> tuple[dict[str, pd.DataFrame], list[Finding]]:
@@ -72,26 +129,30 @@ def run_verification(
     return findings, frames
 
 
-def _print_findings(findings: Sequence[Finding], *, as_json: bool) -> None:
-    errors = sum(item.severity == "error" for item in findings)
-    warnings = sum(item.severity == "warning" for item in findings)
-    if as_json:
-        print(
-            json.dumps(
-                {
-                    "ok": errors == 0,
-                    "errors": errors,
-                    "warnings": warnings,
-                    "findings": [item.to_dict() for item in findings],
-                },
-                indent=2,
-            )
-        )
-        return
+def _finding_counts(findings: Sequence[Finding]) -> tuple[int, int]:
+    return (
+        sum(item.severity == "error" for item in findings),
+        sum(item.severity == "warning" for item in findings),
+    )
+
+
+def _verification_payload(findings: Sequence[Finding]) -> dict[str, object]:
+    errors, warnings = _finding_counts(findings)
+    return {
+        "ok": errors == 0,
+        "errors": errors,
+        "warnings": warnings,
+        "findings": [item.to_dict() for item in findings],
+    }
+
+
+def _print_findings(findings: Sequence[Finding]) -> None:
+    errors, warnings = _finding_counts(findings)
     for item in findings:
         suffix = f" [{item.artifact}]" if item.artifact else ""
         print(f"{item.severity.upper():7s} {item.code}: {item.message}{suffix}")
-    print(f"Verification summary: {errors} error(s), {warnings} warning(s)")
+    state = "PASS" if errors == 0 else "FAIL"
+    print(f"VERIFY {state} ({errors} errors, {warnings} documented warnings)")
 
 
 def _exit_code(findings: Sequence[Finding], strict_provenance: bool) -> int:
@@ -108,9 +169,20 @@ def _add_common_arguments(parser: argparse.ArgumentParser) -> None:
         "--data-dir",
         type=Path,
         default=None,
-        help="Curated report data (default: ROOT/data/report)",
+        help=(
+            "Curated report data (default: ROOT/data/report; evaluate/reproduce "
+            "are bound to that manifest-protected path)"
+        ),
     )
-    parser.add_argument("--manifest", type=Path, default=None, help="Optional hash manifest")
+    parser.add_argument(
+        "--manifest",
+        type=Path,
+        default=None,
+        help=(
+            "Optional hash manifest (evaluate/reproduce are bound to "
+            "ROOT/data/report/manifest.json)"
+        ),
+    )
     parser.add_argument(
         "--require-manifest",
         action="store_true",
@@ -121,62 +193,210 @@ def _add_common_arguments(parser: argparse.ArgumentParser) -> None:
         action="store_true",
         help="Return nonzero for documented provenance/semantic warnings",
     )
-    parser.add_argument("--json", action="store_true", help="Emit verification JSON")
+    parser.add_argument("--json", action="store_true", help="Emit exactly one JSON result")
+
+
+def _add_reproduction_arguments(parser: argparse.ArgumentParser) -> None:
+    _add_common_arguments(parser)
+    parser.add_argument(
+        "--target",
+        choices=("report", "poster", "all"),
+        default="all",
+        help="Deliverable figures to rebuild (default: all)",
+    )
+    parser.add_argument(
+        "--output",
+        type=Path,
+        default=None,
+        help="Disposable output root (default: ROOT/.build/reproduction)",
+    )
 
 
 def build_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(
         prog="last-nine",
-        description="Verify and reproduce only the evidence used by the final report.",
+        description="Verify and reproduce only the evidence used by the final deliverables.",
     )
     subparsers = parser.add_subparsers(dest="command", required=True)
-    verify = subparsers.add_parser("verify", help="Verify hashes, schema, counts, and provenance")
+    verify = subparsers.add_parser(
+        "verify", help="Verify hashes, schemas, counts, claims, and provenance"
+    )
     _add_common_arguments(verify)
-    for name, help_text in (
-        ("figures", "Regenerate the nine final report figures"),
-        ("reproduce", "Verify evidence, regenerate figures, and write derived metrics"),
-    ):
-        command = subparsers.add_parser(name, help=help_text)
-        _add_common_arguments(command)
-        command.add_argument(
-            "--output",
-            type=Path,
-            default=None,
-            help="Figure output directory (default: ROOT/report/figures/generated)",
-        )
+    reproduce = subparsers.add_parser(
+        "reproduce", help="Verify evidence and independently redraw report/poster figures"
+    )
+    _add_reproduction_arguments(reproduce)
+    evaluate = subparsers.add_parser(
+        "evaluate", help="Evaluator shortcut for `reproduce --target all`"
+    )
+    _add_reproduction_arguments(evaluate)
+    figures = subparsers.add_parser(
+        "figures", help="Backward-compatible report-figure redraw command"
+    )
+    _add_common_arguments(figures)
+    figures.add_argument(
+        "--output",
+        type=Path,
+        default=None,
+        help="Report figure directory (default: ROOT/.build/reproduction/report/figures)",
+    )
     return parser
 
 
+def _stage_poster(root: Path, poster_output: Path) -> Path:
+    """Create a disposable poster tree before replacing its derived assets."""
+
+    source = root / "poster"
+    assets = poster_output / "assets"
+    assets.mkdir(parents=True, exist_ok=True)
+    for item in (source / "assets").iterdir():
+        if item.is_file():
+            shutil.copy2(item, assets / item.name)
+    for name in ("poster_visual_v115.html", "tum_logo_template.png"):
+        shutil.copy2(source / name, poster_output / name)
+    return assets
+
+
+def _render_report(
+    root: Path,
+    data_dir: Path,
+    frames: dict[str, pd.DataFrame],
+    output: Path,
+) -> tuple[list[Path], Path, Path]:
+    figures = render_all(data_dir, frames, output / "figures")
+    metrics_path = output / "derived_metrics.json"
+    metrics_path.write_text(
+        json.dumps(derived_report_payload(frames), indent=2) + "\n",
+        encoding="utf-8",
+    )
+    comparison = compare_images(figures, root / "report" / "source" / "figures")
+    comparison_path = write_comparison(comparison, output / "comparison.json")
+    return figures, metrics_path, comparison_path
+
+
+def _render_poster(
+    root: Path,
+    data_dir: Path,
+    frames: dict[str, pd.DataFrame],
+    output: Path,
+) -> tuple[list[Path], Path, Path]:
+    assets = _stage_poster(root, output)
+    figures = render_all_poster(data_dir, frames, assets)
+    comparison = compare_images(figures, root / "poster" / "assets")
+    comparison_path = write_comparison(comparison, output / "comparison.json")
+    return figures, output / "poster_visual_v115.html", comparison_path
+
+
+def _plain_success(result: dict[str, object]) -> None:
+    generated = result.get("generated", {})
+    if isinstance(generated, dict) and "report" in generated:
+        print(f"REPORT PASS ({len(generated['report'])}/9 independent redraws)")
+    if isinstance(generated, dict) and "poster" in generated:
+        print(f"POSTER PASS ({len(generated['poster'])}/5 evidence-derived panels)")
+    print(f"OUTPUT {result['output']}")
+
+
 def main(argv: Sequence[str] | None = None) -> int:
-    args = build_parser().parse_args(argv)
-    root = args.root.resolve()
-    data_dir = (args.data_dir or root / "data" / "report").resolve()
-    manifest = args.manifest.resolve() if args.manifest else None
+    parser = build_parser()
+    args = parser.parse_args(argv)
+    root = args.root.expanduser().resolve()
+    reproduction_command = args.command in {"reproduce", "evaluate"}
+    if reproduction_command:
+        try:
+            data_dir, manifest = submission_evidence_paths(
+                root, args.data_dir, args.manifest
+            )
+        except ValueError as exc:
+            parser.error(str(exc))
+    else:
+        data_dir = (args.data_dir or root / "data" / "report").expanduser().resolve()
+        manifest = args.manifest.expanduser().resolve() if args.manifest else None
+    require_manifest = bool(args.require_manifest or reproduction_command)
     findings, frames = run_verification(
         root,
         data_dir,
         manifest=manifest,
-        require_manifest=args.require_manifest,
+        require_manifest=require_manifest,
     )
-    _print_findings(findings, as_json=args.json)
     status = _exit_code(findings, args.strict_provenance)
+    result: dict[str, object] = {
+        "ok": status == 0,
+        "command": args.command,
+        "verification": _verification_payload(findings),
+    }
     if args.command == "verify" or status != 0:
+        if args.json:
+            print(json.dumps(result, indent=2))
+        else:
+            _print_findings(findings)
         return status
 
-    output = (args.output or root / "report" / "figures" / "generated").resolve()
     try:
-        paths = render_all(data_dir, frames, output)
+        if args.command == "figures":
+            requested = args.output
+            if requested is None:
+                requested = default_output(root) / "report" / "figures"
+            output = safe_output_path(root, requested)
+            paths = render_all(data_dir, frames, output)
+            result.update(
+                {
+                    "output": str(output),
+                    "target": "report",
+                    "generated": {"report": [str(path) for path in paths]},
+                }
+            )
+        else:
+            output = safe_output_path(root, args.output)
+            target = args.target
+            generated: dict[str, list[str]] = {}
+            supporting: dict[str, str] = {}
+            comparisons: dict[str, str] = {}
+            if target in {"report", "all"}:
+                figures, metrics, comparison = _render_report(
+                    root, data_dir, frames, output / "report"
+                )
+                generated["report"] = [str(path) for path in figures]
+                supporting["derived_metrics"] = str(metrics)
+                comparisons["report"] = str(comparison)
+            if target in {"poster", "all"}:
+                figures, html, comparison = _render_poster(
+                    root, data_dir, frames, output / "poster"
+                )
+                generated["poster"] = [str(path) for path in figures]
+                supporting["poster_html"] = str(html)
+                comparisons["poster"] = str(comparison)
+            result.update(
+                {
+                    "output": str(output),
+                    "target": target,
+                    "generated": generated,
+                    "supporting": supporting,
+                    "comparisons": comparisons,
+                }
+            )
+            summary_path = output / "summary.json"
+            summary_path.parent.mkdir(parents=True, exist_ok=True)
+            result["summary"] = str(summary_path)
+            summary_path.write_text(
+                json.dumps(result, indent=2) + "\n", encoding="utf-8"
+            )
     except Exception as exc:
-        print(f"Figure generation failed: {exc}", file=sys.stderr)
+        result["ok"] = False
+        result["error"] = str(exc)
+        if args.json:
+            print(json.dumps(result, indent=2))
+        else:
+            _print_findings(findings)
+            print(f"REPRODUCE FAIL: {exc}", file=sys.stderr)
         return 1
-    if not args.json:
-        print(f"Generated {len(paths)} figures in {output}")
-    if args.command == "reproduce":
-        metrics_path = output / "derived_metrics.json"
-        metrics_path.write_text(
-            json.dumps(derived_report_payload(frames), indent=2),
-            encoding="utf-8",
-        )
-        if not args.json:
-            print(f"Wrote {metrics_path}")
+
+    if args.json:
+        print(json.dumps(result, indent=2))
+    else:
+        _print_findings(findings)
+        _plain_success(result)
     return 0
+
+
+if __name__ == "__main__":
+    raise SystemExit(main())

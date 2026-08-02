@@ -1,8 +1,8 @@
 {
   "schema": "last-nine-artifact-manifest/v1",
   "hash": "sha256",
-  "file_count": 248,
-  "total_bytes": 286041085,
+  "file_count": 250,
+  "total_bytes": 286127373,
   "artifacts": [
     {
       "id": "artifacts/report_reproduction/PROVENANCE.tsv",
@@ -973,8 +973,8 @@
     {
       "id": "data/report/README.md",
       "path": "data/report/README.md",
-      "bytes": 733,
-      "sha256": "15aaf42ee4220438ca4338dbb4cb9c3c1ac79f6e43822be2d790f720b1938986"
+      "bytes": 906,
+      "sha256": "ec0bd8f2537d77668a4abb14a0937845009d4c748d5d4aae1658500f977466a8"
     },
     {
       "id": "data/report/claims.json",
@@ -1095,6 +1095,18 @@
       "path": "data/report/diagnostics/prefix_intervention/summary.json",
       "bytes": 11921,
       "sha256": "312f4a817b864db0acb8a5d1d7d70959137ff71aacff69f4ef6874e964585ca0"
+    },
+    {
+      "id": "data/report/diagnostics/recovery_atlas/provenance.json",
+      "path": "data/report/diagnostics/recovery_atlas/provenance.json",
+      "bytes": 2360,
+      "sha256": "5947538cdb0b9a32e546ecffe77db5f06afc0e6cd4107e9594311c6f36ebee68"
+    },
+    {
+      "id": "data/report/diagnostics/recovery_atlas/trajectories.npz",
+      "path": "data/report/diagnostics/recovery_atlas/trajectories.npz",
+      "bytes": 82564,
+      "sha256": "bd8607b5de1dd2c3465ca2fdc8ede96ed65ec40207ea375a92cdf0b9a6ebb8e2"
     },
     {
       "id": "data/report/diagnostics/reference_recognition/gap0p5_summary.json",
@@ -1249,8 +1261,8 @@
     {
       "id": "poster/README.md",
       "path": "poster/README.md",
-      "bytes": 476,
-      "sha256": "f464f246bc543c954da420ac82c0f23de63a4aa350145ba5ebca835345d75ae8"
+      "bytes": 1522,
+      "sha256": "11383ea6df9ec3418ff2b4ea14f5c9fbd4583e89d68d69c9f6e0b29a63b347f1"
     },
     {
       "id": "poster/assets/101_sequence_repair_wide.png",
@@ -1327,8 +1339,8 @@
     {
       "id": "presentation/README.md",
       "path": "presentation/README.md",
-      "bytes": 533,
-      "sha256": "919b712328bd3e277873d65ffb17fada7d54436da77182972f0b70724ef5e4ae"
+      "bytes": 678,
+      "sha256": "905ae5e481b0c15f111db3b91f5dd4f8f90c3481f3b3c6999d4668bafdd87232"
     },
     {
       "id": "presentation/figures/compute_negative_result.png",

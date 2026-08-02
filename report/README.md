@@ -10,14 +10,15 @@
 Build with pdfLaTeX through latexmk:
 
 ```bash
-latexmk -pdf -cd report/source/main.tex
+latexmk -cd '-outdir=../../.build/report' -pdf \
+  -interaction=nonstopmode -halt-on-error report/source/main.tex
 ```
 
 The report text and committed figures are preserved unchanged. Recomputed
 figures should be written elsewhere, for example:
 
 ```bash
-uv run last-nine reproduce --output .build/report-figures
+uv run --frozen last-nine reproduce --target report
 ```
 
 See `../KNOWN_LIMITATIONS.md` for provenance qualifications found during the

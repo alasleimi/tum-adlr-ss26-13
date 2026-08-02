@@ -90,10 +90,11 @@ def initializer_command(args: argparse.Namespace, output: Path) -> list[str]:
 def followup_command(args: argparse.Namespace, output: Path) -> list[str]:
     initializer = args.initializer_run or MODELS / "mixed_base" / f"seed{args.seed}"
     critic = MODELS / "mixed_shared_critic" / "seed1"
-    if not (initializer / "checkpoints" / "final.pt").is_file():
-        raise FileNotFoundError(f"missing initializer checkpoint: {initializer}")
-    if not (critic / "checkpoints" / "final.pt").is_file():
-        raise FileNotFoundError(f"missing shared critic checkpoint: {critic}")
+    if not args.dry_run:
+        if not (initializer / "checkpoints" / "final.pt").is_file():
+            raise FileNotFoundError(f"missing initializer checkpoint: {initializer}")
+        if not (critic / "checkpoints" / "final.pt").is_file():
+            raise FileNotFoundError(f"missing shared critic checkpoint: {critic}")
     priority = args.stage == "selected"
     return [
         sys.executable,

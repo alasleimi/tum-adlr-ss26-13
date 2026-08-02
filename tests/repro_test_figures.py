@@ -2,6 +2,8 @@ from __future__ import annotations
 
 from pathlib import Path
 
+from PIL import Image
+
 from last_nine_repro.figures import FIGURE_NAMES, render_all
 from last_nine_repro.validation import read_and_validate_rollout
 
@@ -25,4 +27,14 @@ def test_all_nine_report_figures_render_from_curated_evidence(tmp_path: Path) ->
     }
     paths = render_all(DATA, frames, tmp_path)
     assert {path.name for path in paths} == set(FIGURE_NAMES)
-    assert all(path.stat().st_size > 10_000 for path in paths)
+    for path in paths:
+        assert path.stat().st_size > 10_000
+        with Image.open(path) as image:
+            generated_size = image.size
+            image.verify()
+        with Image.open(ROOT / "report" / "source" / "figures" / path.name) as image:
+            canonical_size = image.size
+        assert all(
+            abs(generated - canonical) <= 10
+            for generated, canonical in zip(generated_size, canonical_size, strict=True)
+        )

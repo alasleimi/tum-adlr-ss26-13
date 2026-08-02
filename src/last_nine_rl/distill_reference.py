@@ -4,6 +4,7 @@ import argparse
 import csv
 import json
 import math
+import random
 from pathlib import Path
 from typing import Any
 
@@ -76,7 +77,18 @@ def parse_args() -> argparse.Namespace:
     return parser.parse_args()
 
 
+def seed_training_rngs(seed: int) -> None:
+    """Seed every RNG used to initialize and optimize the distilled actor."""
+
+    random.seed(seed)
+    np.random.seed(seed)
+    torch.manual_seed(seed)
+    if torch.cuda.is_available():
+        torch.cuda.manual_seed_all(seed)
+
+
 def distill_reference(args: argparse.Namespace) -> dict[str, Any]:
+    seed_training_rngs(int(args.seed))
     run_dir = Path(args.run_dir)
     if run_dir.exists() and any(run_dir.iterdir()) and not args.overwrite:
         raise FileExistsError(f"Run directory already exists: {run_dir}")

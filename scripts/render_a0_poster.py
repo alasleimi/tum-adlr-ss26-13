@@ -1,7 +1,7 @@
-"""Render the canonical v115 HTML poster to an A0-landscape PDF.
+"""Render a v115 HTML poster to an A0-landscape PDF.
 
-The checked-in PNG is intentionally left untouched unless ``--png`` is passed.
-Run from any directory with::
+Outputs default to ``.build`` so the checked-in deliverables are never replaced
+by an ordinary render. Run from any directory with::
 
     python scripts/render_a0_poster.py
 """
@@ -18,7 +18,9 @@ from playwright.sync_api import Page, sync_playwright
 
 PROJECT_ROOT = Path(__file__).resolve().parents[1]
 DEFAULT_HTML = PROJECT_ROOT / "poster" / "poster_visual_v115.html"
-DEFAULT_PDF = PROJECT_ROOT / "poster" / "poster_visual_v115.pdf"
+DEFAULT_PDF = PROJECT_ROOT / ".build" / "poster" / "poster_visual_v115.pdf"
+CANONICAL_PDF = PROJECT_ROOT / "poster" / "poster_visual_v115.pdf"
+CANONICAL_PNG = PROJECT_ROOT / "poster" / "poster_visual_v115.png"
 EDGE_CANDIDATES = (
     Path(r"C:\Program Files (x86)\Microsoft\Edge\Application\msedge.exe"),
     Path(r"C:\Program Files\Microsoft\Edge\Application\msedge.exe"),
@@ -133,11 +135,23 @@ def main() -> None:
     )
     parser.add_argument("--edge", type=Path)
     parser.add_argument("--timeout-ms", type=int, default=60_000)
+    parser.add_argument(
+        "--allow-canonical-overwrite",
+        action="store_true",
+        help="Explicitly allow replacing the checked-in poster PDF or PNG.",
+    )
     args = parser.parse_args()
 
     html = args.html.expanduser().resolve()
     pdf = args.pdf.expanduser().resolve()
     png = args.png.expanduser().resolve() if args.png else None
+    protected = {CANONICAL_PDF.resolve(), CANONICAL_PNG.resolve()}
+    requested_outputs = {pdf} | ({png} if png is not None else set())
+    if requested_outputs & protected and not args.allow_canonical_overwrite:
+        raise ValueError(
+            "Refusing to replace a checked-in poster deliverable; choose a .build "
+            "path or pass --allow-canonical-overwrite explicitly"
+        )
     edge = resolve_edge(args.edge)
     if not html.is_file():
         raise FileNotFoundError(f"Poster HTML not found: {html}")

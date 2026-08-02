@@ -1,0 +1,81 @@
+{
+  "schema_version": 1,
+  "role": "derived_poster_trajectory_evidence",
+  "description": "Deterministic 200-step trajectories used by poster v115's recovery atlas. Extracted from retained checkpoints so routine figure builds do not repeatedly execute neural-network policies.",
+  "sources": {
+    "start_selection": [
+      "data/report/rollouts/mixed_selected.csv",
+      "data/report/rollouts/pure_selected_q41.csv"
+    ],
+    "mixed_actors": "artifacts/report_reproduction/models/mixed_selected/seed0..seed4",
+    "mixed_critic": "artifacts/report_reproduction/models/mixed_shared_critic/seed1",
+    "pure_actor_critics": "artifacts/report_reproduction/models/pure_selected/seed0..seed4"
+  },
+  "policies": {
+    "mixed": {
+      "type": "FixedLocalCriticQSearchPolicy",
+      "num_actions": 5,
+      "margin": 0.0,
+      "search_radius": 0.1
+    },
+    "pure": {
+      "type": "FixedGlobalCriticQSearchPolicy",
+      "num_actions": 41,
+      "margin": 0.005,
+      "max_action_delta": 4.0,
+      "symmetric_actor_fallback": true
+    }
+  },
+  "dynamics": {
+    "steps": 200,
+    "dt": 0.05,
+    "torque_bounds": [
+      -2.0,
+      2.0
+    ],
+    "velocity_bounds": [
+      -8.0,
+      8.0
+    ]
+  },
+  "starts": [
+    {
+      "theta": -3.038589615767177,
+      "theta_degrees": -174.0983606557377,
+      "theta_dot": -0.35,
+      "mixed_success": 5,
+      "pure_success": 0
+    },
+    {
+      "theta": -0.7725227836696216,
+      "theta_degrees": -44.26229508196723,
+      "theta_dot": 1.0,
+      "mixed_success": 5,
+      "pure_success": 0
+    },
+    {
+      "theta": 0.7725227836696211,
+      "theta_degrees": 44.2622950819672,
+      "theta_dot": -1.0,
+      "mixed_success": 5,
+      "pure_success": 0
+    }
+  ],
+  "validation_against_retained_rollouts": {
+    "mixed": {
+      "maximum_absolute_return_delta": 9.659948858598e-07,
+      "required_tolerance": 0.001
+    },
+    "pure": {
+      "maximum_absolute_return_delta": 1.75523453549431e-05,
+      "required_tolerance": 0.001
+    }
+  },
+  "extraction_environment": {
+    "python": "3.11.9",
+    "numpy": "2.4.6",
+    "torch": "2.13.0+cpu",
+    "device": "cpu"
+  },
+  "qualification": "This is derived display evidence, not an original training artifact. The manifest protects the checked-in archive byte-for-byte."
+}
