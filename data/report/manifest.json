@@ -1,8 +1,8 @@
 {
   "schema": "last-nine-artifact-manifest/v1",
   "hash": "sha256",
-  "file_count": 250,
-  "total_bytes": 286127346,
+  "file_count": 251,
+  "total_bytes": 286148092,
   "artifacts": [
     {
       "id": "artifacts/report_reproduction/PROVENANCE.tsv",
@@ -1429,8 +1429,8 @@
     {
       "id": "report/source/README.txt",
       "path": "report/source/README.txt",
-      "bytes": 225,
-      "sha256": "c9f0261f028d4599d9aacf0db2d099e2ccf03f6ca0038f56d50496f1dc3b9f62"
+      "bytes": 323,
+      "sha256": "706b2011465efcecbbde859fe30d80dd7fabcd22b7e0689e3507209893694007"
     },
     {
       "id": "report/source/figures/111_tolerance_curve_wide.png",
@@ -1489,8 +1489,8 @@
     {
       "id": "report/source/main.tex",
       "path": "report/source/main.tex",
-      "bytes": 3219,
-      "sha256": "dde588330cae2bda0a82c4cfe4566856e96d0e86fa61809da0b1ddb690a0f1b8"
+      "bytes": 3221,
+      "sha256": "da1ed999ebbeb91ba144dc821ea4b30074150d9c94ce1261c18a9025486efb71"
     },
     {
       "id": "report/source/report_annex.tex",
@@ -1503,6 +1503,12 @@
       "path": "report/source/report_body.tex",
       "bytes": 20180,
       "sha256": "373fdcb176cefacaf99542bfff06209b05f658141ed5882085bb029f27eae8b0"
+    },
+    {
+      "id": "report/source/report_body_2.tex",
+      "path": "report/source/report_body_2.tex",
+      "bytes": 20646,
+      "sha256": "d6152af8e8876b503f56f84d5178b6c7f9829f33bbcb5cf52f639ae09137162b"
     }
   ]
 }
