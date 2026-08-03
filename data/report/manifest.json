@@ -2,7 +2,7 @@
   "schema": "last-nine-artifact-manifest/v1",
   "hash": "sha256",
   "file_count": 251,
-  "total_bytes": 286148092,
+  "total_bytes": 286149155,
   "artifacts": [
     {
       "id": "artifacts/report_reproduction/PROVENANCE.tsv",
@@ -1507,8 +1507,8 @@
     {
       "id": "report/source/report_body_2.tex",
       "path": "report/source/report_body_2.tex",
-      "bytes": 20646,
-      "sha256": "d6152af8e8876b503f56f84d5178b6c7f9829f33bbcb5cf52f639ae09137162b"
+      "bytes": 21709,
+      "sha256": "c41fd480bc81de783da3fb600fe789351f551e3a767e59091d820f40dca9c9bf"
     }
   ]
 }
