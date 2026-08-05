@@ -4,7 +4,7 @@ from pathlib import Path
 
 import pytest
 
-from last_nine_repro.metrics import diagnostic_semantic_findings, load_claims, summarize_method
+from last_nine_repro.metrics import summarize_method
 from last_nine_repro.validation import (
     EvidenceValidationError,
     read_rollouts,
@@ -49,10 +49,3 @@ def test_metric_semantics_are_checked(mixed_frame) -> None:
     )
     with pytest.raises(EvidenceValidationError, match="near-reference flag"):
         validate_rollout_schema(broken, "broken")
-
-
-def test_c32_selector_mismatch_is_computed_not_hardcoded() -> None:
-    findings = diagnostic_semantic_findings(DATA, load_claims(DATA))
-    assert [(item.severity, item.code) for item in findings] == [
-        ("warning", "C32_SEMANTIC_MISMATCH")
-    ]

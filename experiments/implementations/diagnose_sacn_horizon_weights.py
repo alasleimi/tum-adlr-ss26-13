@@ -36,8 +36,9 @@ def main() -> None:
     agent, config, payload = load_agent_from_run(run_dir, device=args.device)
     update_step = resolve_update_step(payload, args.update_step)
     require_action_log_probs = config.sac.sacn_importance_mode == "density"
+    replay_path = Path(args.replay) if args.replay else run_dir / "replay_final.npz"
     replay = load_replay(
-        run_dir / "replay_final.npz",
+        replay_path,
         require_action_log_probs=require_action_log_probs,
     )
     horizons = [int(value) for value in args.horizons]
@@ -166,7 +167,11 @@ def main() -> None:
 
 def parse_args() -> argparse.Namespace:
     parser = argparse.ArgumentParser(description="Diagnose SACn target and importance-weight behavior by horizon.")
-    parser.add_argument("--run", required=True, help="Run directory with config.json, final checkpoint, and replay_final.npz.")
+    parser.add_argument("--run", required=True, help="Run directory with config.json and final checkpoint.")
+    parser.add_argument(
+        "--replay",
+        help="Replay archive (default: RUN/replay_final.npz).",
+    )
     parser.add_argument("--out", required=True)
     parser.add_argument("--horizons", nargs="+", type=int, default=[4, 8, 16, 32, 64])
     parser.add_argument("--samples", type=int, default=4096)

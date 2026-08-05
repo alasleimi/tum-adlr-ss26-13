@@ -1,94 +1,84 @@
-# Chasing the Nines
+# Reproduce the report figures using our existing data
 
-This is the submission-focused branch of ADLR Project 15. It retains the final
-report, poster v115, HTML presentation and PDF, plus only the code and immutable
-evidence needed for experiments discussed in the report.
-
-The versioned exploratory history is preserved on
-`research/exploratory-archive-20260802`. That branch contains intermediate
-reports, broad sweeps, temporary diagnostics, and abandoned trials.
-
-
-
-## Repository map
-
-| Path | Purpose |
-| --- | --- |
-| `src/last_nine_rl/` | Training, checkpoint, evaluation, DAgger, SACn, and Q-search code |
-| `src/last_nine_repro/` | Evidence verification and report/poster figure reproduction |
-| `experiments/` | Report-scoped recipes, implementations, and frozen protocols |
-| `artifacts/report_reproduction/` | Retained checkpoints, configs, summaries, and selected replay archives |
-| `data/reference/` | Frozen DP and hand-controller reference data |
-| `data/report/` | Common-grid rollouts, diagnostics, claims, and provenance |
-| `report/` | Final ShareLaTeX bundle, self-contained source, and PDF |
-| `poster/` | Poster v115 source, assets, PNG, and PDF; no older versions |
-| `presentation/` | HTML presentation, local media, notes, and print-ready PDF |
-
-## Fresh-clone evaluator
-
-Git LFS is required because checkpoints, arrays, images, PDFs, and large CSVs
-are LFS objects. From a fresh clone:
+From the repository root, download the Git LFS data, create the Python
+environment, and redraw the nine figures used by the report:
 
 ```bash
 git lfs install
 git lfs pull
 uv python install 3.11
+uv sync --frozen
+uv run --frozen last-nine reproduce --target report
+```
+
+This command checks that the downloaded data is complete, then uses it to
+recreate the nine report figures under `.build/reproduction/report/figures/`.
+It also saves the calculated numbers and a comparison with the report figures.
+
+## Reproduce the data needed for the figures from existing checkpoints
+
+Run one command:
+
+```bash
+uv run --frozen python experiments/reproduce_report_data.py --device auto
+```
+
+It rebuilds the rollout tables and diagnostics from the retained checkpoints
+and replay archives, then redraws all nine figures. The data is written to
+`.build/report-data/` and the figures to `.build/report-data/figures/`.
+
+## Reproduce the checkpoints from the seeds
+
+Rebuild all report checkpoint families with:
+
+```bash
+uv run --frozen python experiments/reproduce_report_checkpoints.py --device auto
+```
+
+The rebuilt model tree is `runs/report_reproduction/models/`. To rebuild the
+figure data and figures from those new checkpoints, run:
+
+```bash
+uv run --frozen python experiments/reproduce_report_data.py \
+  --models-root runs/report_reproduction/models --device auto
+```
+
+## Exploratory history
+
+The versioned exploratory history is preserved on
+`research/exploratory-archive-20260802`. That branch contains intermediate
+reports, broad sweeps, temporary diagnostics, abandoned trials, and essentially
+all the work completed during the semester. The `main` branch provides a
+focused, easy way to reproduce what was included in the report.
+
+## Detailed fresh-clone setup
+
+Install Git, Git LFS, and [uv](https://docs.astral.sh/uv/), then run:
+
+```bash
+git lfs install
+git clone https://github.com/alasleimi/tum-adlr-ss26-13.git
+cd tum-adlr-ss26-13
+git lfs pull
+uv python install 3.11
 uv sync --frozen --extra test
-uv run --frozen last-nine evaluate
+uv run --frozen last-nine verify --require-manifest
 uv run --frozen pytest
 ```
 
+### Repository map
 
-
-`last-nine evaluate`
-
-1. verifies manifest SHA-256 hashes and byte sizes;
-2. validates rollout schemas, the shared 61 x 41 x 5 grid, claims, metric
-   semantics, and provenance qualifications;
-3. rebuilds all nine report figures and five numerical poster panels from
-   preserved evidence; and
-4. writes metrics and informational image comparisons under
-   `.build/reproduction/`.
-
-
-
-
-## Same-seed experiment replication
-
-The report's actor rows aggregate exactly five actor seeds: `0 1 2 3 4`.
-The pure actors are independently trained; the mixed actors share the retained
-critic documented in the report. Run the selected reward-only family with the
-report-scoped wrapper:
-
-```bash
-uv run --frozen python experiments/run_pure_report_matrix.py \
-  --family pure_selected --seeds 0 1 2 3 4 --device auto
-```
-
-Use `--dry-run` first to inspect every resolved command. The mixed route is
-staged; for example, seed 0 can be rebuilt and followed by its selected refit:
-
-```bash
-uv run --frozen python experiments/run_mixed_report_pipeline.py \
-  initializer --seed 0 --device auto
-uv run --frozen python experiments/run_mixed_report_pipeline.py \
-  selected --seed 0 --device auto \
-  --initializer-run runs/report_reproduction/mixed_initializer/seed0
-```
-
-Repeat the mixed commands for seeds 1 through 4 to rebuild the selected mixed
-actor family conditional on that retained shared critic. Outputs go under
-ignored `runs/` paths and existing completed runs are never overwritten unless
-`--overwrite` is explicit.
-
-
-For a quick deterministic Gym-reset smoke evaluation of any checkpoint:
-
-```bash
-uv run --frozen last-nine-eval \
-  artifacts/report_reproduction/models/pure_selected/seed0 \
-  --deployment pure-qsearch --episodes 2 --device auto
-```
-
-Use `--deployment mixed-qsearch` for a selected mixed actor (the retained shared
-critic is the default) or `actor` for its raw deterministic actor.
+| Path | Purpose |
+| --- | --- |
+| `src/last_nine_rl/` | Training, checkpoint, evaluation, DAgger, SACn, and Q-search code |
+| `src/last_nine_repro/` | Evidence verification and report/poster figure reproduction |
+| `experiments/` | Report-scoped runners, implementations, and frozen protocols |
+| `artifacts/report_reproduction/` | Retained checkpoints, configs, summaries, and selected replay archives |
+| `data/reference/` | Frozen DP and hand-controller reference data |
+| `data/report/` | Manifest-protected rollouts, diagnostics, claims, and provenance |
+| `report/` | Final ShareLaTeX bundle, self-contained source, and PDF |
+| `poster/` | Poster v115 source, assets, PNG, and PDF |
+| `presentation/` | HTML presentation, local media, notes, and print-ready PDF |
+| `submit/` | Submission-ready report and presentation PDFs |
+| `scripts/` | Manifest, evidence-extraction, and rendering utilities |
+| `tests/` | Unit, smoke, and reproduction tests |

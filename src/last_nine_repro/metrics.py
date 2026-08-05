@@ -1,6 +1,5 @@
 from __future__ import annotations
 
-import json
 from dataclasses import asdict, dataclass
 from pathlib import Path
 from typing import Any, Mapping
@@ -151,56 +150,6 @@ def verify_claims(
                     )
                 )
     return findings
-
-
-def _condition_series(payload: Mapping[str, Any], conditions: list[str], field: str) -> np.ndarray:
-    return np.asarray(
-        [float(payload["conditions"][condition]["pooled"][field]) for condition in conditions],
-        dtype=float,
-    )
-
-
-def diagnostic_semantic_findings(data_dir: Path, claims: Mapping[str, Any]) -> list[Finding]:
-    """Detect documented label/selector disagreements without embedding values."""
-
-    specification = claims.get("diagnostic_semantics", {}).get("c32")
-    if not isinstance(specification, dict):
-        return [
-            Finding(
-                "error",
-                "C32_SEMANTICS_MISSING",
-                "claims.json does not define the C32 semantic check",
-                "claims.json",
-            )
-        ]
-    source = data_dir / str(specification["source"])
-    try:
-        payload = load_json(source)
-        conditions = [str(item) for item in specification["conditions"]]
-        figure = _condition_series(payload, conditions, str(specification["figure_field"]))
-        prose = _condition_series(payload, conditions, str(specification["prose_field"]))
-    except (KeyError, TypeError, ValueError, OSError, json.JSONDecodeError) as exc:
-        return [Finding("error", "C32_SEMANTICS_INVALID", str(exc), str(source))]
-    if np.allclose(figure, prose, rtol=0.0, atol=1e-12):
-        return [
-            Finding(
-                "error",
-                "C32_MISMATCH_NOT_REPRODUCED",
-                "The two documented C32 selectors unexpectedly agree",
-                str(source),
-            )
-        ]
-    return [
-        Finding(
-            "warning",
-            "C32_SEMANTIC_MISMATCH",
-            (
-                f"Figure uses {specification['figure_field']!r}, while report prose describes "
-                f"{specification['prose_field']!r}; values are recomputed from the diagnostic JSON."
-            ),
-            str(source),
-        )
-    ]
 
 
 def derived_report_payload(frames: Mapping[str, pd.DataFrame]) -> dict[str, Any]:

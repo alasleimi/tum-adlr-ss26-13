@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import argparse
 import csv
 import json
 from pathlib import Path
@@ -59,8 +60,21 @@ METRICS = (
 )
 
 
-def run_paths() -> dict[str, list[Path]]:
-    models = ROOT / "artifacts" / "report_reproduction" / "models"
+def parse_args() -> argparse.Namespace:
+    parser = argparse.ArgumentParser(
+        description="Rebuild the report's completed-target actor-geometry evidence."
+    )
+    parser.add_argument(
+        "--models-root",
+        type=Path,
+        default=ROOT / "artifacts" / "report_reproduction" / "models",
+    )
+    parser.add_argument("--output-dir", type=Path, default=OUT)
+    parser.add_argument("--device", default="cpu")
+    return parser.parse_args()
+
+
+def run_paths(models: Path) -> dict[str, list[Path]]:
     p0 = [models / "pure_onestep" / f"seed{seed}" for seed in range(5)]
     p1 = [models / "pure_fastsacn8" / f"seed{seed}" for seed in range(5)]
     p2 = [models / "pure_sacn8" / f"seed{seed}" for seed in range(5)]
@@ -74,17 +88,20 @@ def run_paths() -> dict[str, list[Path]]:
 
 
 def main() -> None:
-    OUT.mkdir(parents=True, exist_ok=True)
+    args = parse_args()
+    output = args.output_dir.resolve()
+    models = args.models_root.resolve()
+    output.mkdir(parents=True, exist_ok=True)
     protocol = evaluation_protocol(critic_search_batch_size=512)
     theta, velocity = frozen_validation_states(protocol=protocol)
     rows: list[dict[str, object]] = []
-    paths = run_paths()
+    paths = run_paths(models)
     for arm, runs in paths.items():
         for seed, run in enumerate(runs):
             checkpoint = run / "checkpoints" / "final.pt"
             if not checkpoint.is_file():
                 raise FileNotFoundError(checkpoint)
-            agent, _config, _payload = load_agent_from_run(run, device="cpu")
+            agent, _config, _payload = load_agent_from_run(run, device=args.device)
             actor, _critic = fixed_state_policy_geometry(
                 agent,
                 theta,
@@ -96,7 +113,7 @@ def main() -> None:
                 "arm": arm,
                 "label": ARM_LABELS[arm],
                 "seed": seed,
-                "run_dir": str(run.relative_to(ROOT)).replace("\\", "/"),
+                "run_dir": str(run),
                 "points": int(actor["points"]),
                 "state_sha256": actor["state_sha256"],
             }
@@ -108,7 +125,7 @@ def main() -> None:
             )
             rows.append(row)
 
-    with (OUT / "seed_actor_geometry.csv").open(
+    with (output / "seed_actor_geometry.csv").open(
         "w", newline="", encoding="utf-8"
     ) as handle:
         writer = csv.DictWriter(handle, fieldnames=list(rows[0]))
@@ -207,7 +224,7 @@ def main() -> None:
         fontsize=10.5,
         color="#475569",
     )
-    fig.savefig(OUT / "completed_target_actor_geometry.png", dpi=260)
+    fig.savefig(output / "completed_target_actor_geometry.png", dpi=260)
     plt.close(fig)
 
     summary = {
@@ -251,7 +268,7 @@ def main() -> None:
             "saturation or reflection error causes a reliability failure."
         ),
     }
-    (OUT / "summary.json").write_text(
+    (output / "summary.json").write_text(
         json.dumps(summary, indent=2) + "\n", encoding="utf-8"
     )
 

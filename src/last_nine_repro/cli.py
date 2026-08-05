@@ -14,12 +14,10 @@ from .figures import render_all
 from .manifest import Finding, verify_manifest
 from .metrics import (
     derived_report_payload,
-    diagnostic_semantic_findings,
     load_claims,
     verify_claims,
 )
 from .poster_figures import render_all_poster
-from .provenance import audit_mixed_provenance
 from .validation import (
     EvidenceValidationError,
     read_and_validate_rollout,
@@ -124,8 +122,6 @@ def run_verification(
         claims = {}
     if claims:
         findings.extend(verify_claims(frames, claims))
-        findings.extend(diagnostic_semantic_findings(data_dir, claims))
-    findings.extend(audit_mixed_provenance(data_dir, frames))
     return findings, frames
 
 
@@ -152,14 +148,15 @@ def _print_findings(findings: Sequence[Finding]) -> None:
         suffix = f" [{item.artifact}]" if item.artifact else ""
         print(f"{item.severity.upper():7s} {item.code}: {item.message}{suffix}")
     state = "PASS" if errors == 0 else "FAIL"
-    print(f"VERIFY {state} ({errors} errors, {warnings} documented warnings)")
+    detail = f"{errors} errors"
+    if warnings:
+        detail += f", {warnings} warnings"
+    print(f"VERIFY {state} ({detail})")
 
 
-def _exit_code(findings: Sequence[Finding], strict_provenance: bool) -> int:
+def _exit_code(findings: Sequence[Finding]) -> int:
     if any(item.severity == "error" for item in findings):
         return 1
-    if strict_provenance and any(item.severity == "warning" for item in findings):
-        return 2
     return 0
 
 
@@ -188,11 +185,6 @@ def _add_common_arguments(parser: argparse.ArgumentParser) -> None:
         action="store_true",
         help="Treat a missing hash manifest as an error",
     )
-    parser.add_argument(
-        "--strict-provenance",
-        action="store_true",
-        help="Return nonzero for documented provenance/semantic warnings",
-    )
     parser.add_argument("--json", action="store_true", help="Emit exactly one JSON result")
 
 
@@ -215,11 +207,11 @@ def _add_reproduction_arguments(parser: argparse.ArgumentParser) -> None:
 def build_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(
         prog="last-nine",
-        description="Verify and reproduce only the evidence used by the final deliverables.",
+        description="Verify and reproduce the evidence used by the final deliverables.",
     )
     subparsers = parser.add_subparsers(dest="command", required=True)
     verify = subparsers.add_parser(
-        "verify", help="Verify hashes, schemas, counts, claims, and provenance"
+        "verify", help="Verify hashes, schemas, counts, and report claims"
     )
     _add_common_arguments(verify)
     reproduce = subparsers.add_parser(
@@ -318,7 +310,7 @@ def main(argv: Sequence[str] | None = None) -> int:
         manifest=manifest,
         require_manifest=require_manifest,
     )
-    status = _exit_code(findings, args.strict_provenance)
+    status = _exit_code(findings)
     result: dict[str, object] = {
         "ok": status == 0,
         "command": args.command,

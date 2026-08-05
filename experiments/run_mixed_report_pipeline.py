@@ -17,7 +17,10 @@ DP_SOLUTION = ROOT / "data" / "reference" / "pendulum_dp_solution.npz"
 
 def parse_args() -> argparse.Namespace:
     parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument("stage", choices=("initializer", "selected", "uniform"))
+    parser.add_argument(
+        "stage",
+        choices=("initializer", "selected", "uniform", "priority_shifted"),
+    )
     parser.add_argument("--seed", type=int, choices=range(5), required=True)
     parser.add_argument("--device", choices=("auto", "cpu", "cuda"), default="auto")
     parser.add_argument("--run-dir", type=Path)
@@ -26,12 +29,20 @@ def parse_args() -> argparse.Namespace:
         type=Path,
         help="defaults to the retained mixed_base checkpoint for the same seed",
     )
+    parser.add_argument(
+        "--critic-run",
+        type=Path,
+        help="defaults to the retained shared FastSACN8 critic",
+    )
     parser.add_argument("--overwrite", action="store_true")
     parser.add_argument("--dry-run", action="store_true")
     return parser.parse_args()
 
 
 def initializer_command(args: argparse.Namespace, output: Path) -> list[str]:
+    # The accepted seed-0 initializer predates the frozen seed-1--4 family.
+    # Only seed 0 used the additional near-upright sampling component.
+    near_upright_fraction = "0.2" if int(args.seed) == 0 else "0"
     return [
         sys.executable,
         "-m",
@@ -69,7 +80,7 @@ def initializer_command(args: argparse.Namespace, output: Path) -> list[str]:
         "--near-down-fraction",
         "0",
         "--near-upright-fraction",
-        "0.2",
+        near_upright_fraction,
         "--near-upright-abs-theta-high-deg",
         "35",
         "--selection-metric",
@@ -89,13 +100,17 @@ def initializer_command(args: argparse.Namespace, output: Path) -> list[str]:
 
 def followup_command(args: argparse.Namespace, output: Path) -> list[str]:
     initializer = args.initializer_run or MODELS / "mixed_base" / f"seed{args.seed}"
-    critic = MODELS / "mixed_shared_critic" / "seed1"
+    critic = (
+        getattr(args, "critic_run", None)
+        or MODELS / "mixed_shared_critic" / "seed1"
+    )
     if not args.dry_run:
         if not (initializer / "checkpoints" / "final.pt").is_file():
             raise FileNotFoundError(f"missing initializer checkpoint: {initializer}")
         if not (critic / "checkpoints" / "final.pt").is_file():
             raise FileNotFoundError(f"missing shared critic checkpoint: {critic}")
-    priority = args.stage == "selected"
+    priority = args.stage in {"selected", "priority_shifted"}
+    target_blend = "0" if args.stage == "selected" else "0.005"
     return [
         sys.executable,
         str(IMPLEMENTATION),
@@ -140,7 +155,7 @@ def followup_command(args: argparse.Namespace, output: Path) -> list[str]:
         "--rl-margin",
         "0.01",
         "--rl-blend",
-        "0" if priority else "0.005",
+        target_blend,
         "--max-target-shift",
         "0.02",
         "--selected-weight",
@@ -170,7 +185,11 @@ def main() -> int:
     args = parse_args()
     default = ROOT / "runs" / "report_reproduction" / f"mixed_{args.stage}" / f"seed{args.seed}"
     output = (args.run_dir or default).resolve()
-    cmd = initializer_command(args, output) if args.stage == "initializer" else followup_command(args, output)
+    cmd = (
+        initializer_command(args, output)
+        if args.stage == "initializer"
+        else followup_command(args, output)
+    )
     if args.overwrite:
         cmd.append("--overwrite")
     record = {"stage": args.stage, "seed": args.seed, "output": str(output), "command": cmd}

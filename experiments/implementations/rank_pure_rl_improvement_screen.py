@@ -310,7 +310,7 @@ def main(argv: list[str] | None = None) -> None:
     if int(args.critic_search_batch_size) <= 0:
         raise SystemExit("--critic-search-batch-size must be positive")
 
-    project_root = Path(__file__).resolve().parents[1]
+    project_root = Path(__file__).resolve().parents[2]
     screen_root = resolve_from(project_root, Path(args.screen_root))
     evaluation_root = resolve_from(project_root, Path(args.evaluation_root))
     output_dir = resolve_from(project_root, Path(args.out))
@@ -1211,7 +1211,7 @@ def evaluation_protocol(
     points: int | None = None,
     rng_seed: int | None = None,
 ) -> dict[str, Any]:
-    project_root = Path(__file__).resolve().parents[1]
+    project_root = Path(__file__).resolve().parents[2]
     config_path = (
         protocol_config.resolve()
         if protocol_config is not None

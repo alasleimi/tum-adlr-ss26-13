@@ -1,8 +1,8 @@
 {
   "schema": "last-nine-artifact-manifest/v1",
   "hash": "sha256",
-  "file_count": 251,
-  "total_bytes": 286149155,
+  "file_count": 250,
+  "total_bytes": 286133166,
   "artifacts": [
     {
       "id": "artifacts/report_reproduction/PROVENANCE.tsv",
@@ -1405,8 +1405,8 @@
     {
       "id": "presentation/index.html",
       "path": "presentation/index.html",
-      "bytes": 35214,
-      "sha256": "bad728d9571354bcbe7c57413182fb68180ca3e91872f32abf2c79fca82c93d0"
+      "bytes": 35366,
+      "sha256": "f4bb566fd37d9bf04e9c45ed386ccbcd20dba431cecf794f2ffe51815d3d98a6"
     },
     {
       "id": "presentation/script.md",
@@ -1423,14 +1423,14 @@
     {
       "id": "presentation/week3_workshop_presentation_20260527.pdf",
       "path": "presentation/week3_workshop_presentation_20260527.pdf",
-      "bytes": 1493331,
-      "sha256": "000deeaf9b87e15a634d4fa436e237fb3e5edbcc349c0229a17c8ed8a66a89fa"
+      "bytes": 1493334,
+      "sha256": "7d1becade1e1d70466be41892076480ee0fab399997ee64e25c5a6356dda63f4"
     },
     {
       "id": "report/source/README.txt",
       "path": "report/source/README.txt",
-      "bytes": 323,
-      "sha256": "706b2011465efcecbbde859fe30d80dd7fabcd22b7e0689e3507209893694007"
+      "bytes": 305,
+      "sha256": "fc669371dc334e8e7dcfc0e79f53ebc3473439c23077479f9ffd8f3ddaf95078"
     },
     {
       "id": "report/source/figures/111_tolerance_curve_wide.png",
@@ -1489,8 +1489,8 @@
     {
       "id": "report/source/main.tex",
       "path": "report/source/main.tex",
-      "bytes": 3221,
-      "sha256": "da1ed999ebbeb91ba144dc821ea4b30074150d9c94ce1261c18a9025486efb71"
+      "bytes": 3219,
+      "sha256": "dde588330cae2bda0a82c4cfe4566856e96d0e86fa61809da0b1ddb690a0f1b8"
     },
     {
       "id": "report/source/report_annex.tex",
@@ -1501,14 +1501,8 @@
     {
       "id": "report/source/report_body.tex",
       "path": "report/source/report_body.tex",
-      "bytes": 20180,
-      "sha256": "373fdcb176cefacaf99542bfff06209b05f658141ed5882085bb029f27eae8b0"
-    },
-    {
-      "id": "report/source/report_body_2.tex",
-      "path": "report/source/report_body_2.tex",
-      "bytes": 21709,
-      "sha256": "c41fd480bc81de783da3fb600fe789351f551e3a767e59091d820f40dca9c9bf"
+      "bytes": 25765,
+      "sha256": "ab86064f597ebe9ebb89566f782cc68bb7e78d5d2ae3ffc9f510c758afd8ece0"
     }
   ]
 }

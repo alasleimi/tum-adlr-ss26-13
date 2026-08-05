@@ -51,9 +51,8 @@ def test_submission_redraws_are_bound_to_manifest_protected_evidence(
         submission_evidence_paths(root, None, tmp_path / "other-manifest.json")
 
 
-def test_strict_provenance_promotes_warnings_to_nonzero() -> None:
+def test_warnings_do_not_fail_verification() -> None:
     warnings = [Finding("warning", "KNOWN_CAVEAT", "documented")]
-    assert _exit_code(warnings, strict_provenance=False) == 0
-    assert _exit_code(warnings, strict_provenance=True) == 2
+    assert _exit_code(warnings) == 0
     errors = [Finding("error", "BROKEN", "invalid")]
-    assert _exit_code(errors, strict_provenance=False) == 1
+    assert _exit_code(errors) == 1

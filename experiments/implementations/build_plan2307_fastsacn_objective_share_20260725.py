@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import argparse
 import hashlib
 import json
 from pathlib import Path
@@ -59,9 +60,34 @@ def horizon_eight(path: Path) -> tuple[dict[str, Any], dict[str, Any]]:
     return data, dict(row["all"])
 
 
+def parse_args() -> argparse.Namespace:
+    parser = argparse.ArgumentParser(
+        description="Combine regenerated FastSACN horizon diagnostics for the report."
+    )
+    parser.add_argument(
+        "--no-importance-source", type=Path, default=NO_IMPORTANCE_SOURCE
+    )
+    parser.add_argument(
+        "--density-sources", type=Path, nargs="+", default=DENSITY_SOURCES
+    )
+    parser.add_argument("--output-dir", type=Path, default=OUT)
+    return parser.parse_args()
+
+
+def display_path(path: Path) -> str:
+    try:
+        return str(path.resolve().relative_to(ROOT.resolve())).replace("\\", "/")
+    except ValueError:
+        return str(path.resolve())
+
+
 def main() -> None:
-    none_protocol, none = horizon_eight(NO_IMPORTANCE_SOURCE)
-    density_loaded = [horizon_eight(path) for path in DENSITY_SOURCES]
+    args = parse_args()
+    no_importance_source = args.no_importance_source.resolve()
+    density_sources = [path.resolve() for path in args.density_sources]
+    output = args.output_dir.resolve()
+    none_protocol, none = horizon_eight(no_importance_source)
+    density_loaded = [horizon_eight(path) for path in density_sources]
     density_rows = [row for _protocol, row in density_loaded]
 
     nominal = 100.0 * float(none["nominal_last_horizon_objective_share_mean"])
@@ -100,7 +126,7 @@ def main() -> None:
     if empirical_density >= empirical_none:
         raise ValueError("density weighting no longer reduces the long endpoint")
 
-    OUT.mkdir(parents=True, exist_ok=True)
+    output.mkdir(parents=True, exist_ok=True)
     summary = {
         "schema_version": 1,
         "status": "complete",
@@ -145,10 +171,8 @@ def main() -> None:
         ],
         "sources": {
             "no_importance_seed0": {
-                "path": str(NO_IMPORTANCE_SOURCE.relative_to(ROOT)).replace(
-                    "\\", "/"
-                ),
-                "sha256": sha256(NO_IMPORTANCE_SOURCE),
+                "path": display_path(no_importance_source),
+                "sha256": sha256(no_importance_source),
             },
             "density": [
                 {
@@ -158,12 +182,12 @@ def main() -> None:
                     "sha256": sha256(path),
                 }
                 for actor_seed, (path, (protocol, _row)) in enumerate(
-                    zip(DENSITY_SOURCES, density_loaded, strict=True)
+                    zip(density_sources, density_loaded, strict=True)
                 )
             ],
         },
     }
-    (OUT / "summary.json").write_text(
+    (output / "summary.json").write_text(
         json.dumps(summary, indent=2) + "\n", encoding="utf-8"
     )
 
@@ -273,7 +297,7 @@ def main() -> None:
         color="#475569",
     )
     fig.tight_layout(rect=(0.02, 0.055, 0.98, 0.93), w_pad=4.0)
-    fig.savefig(OUT / "fastsacn_objective_share.png", dpi=220)
+    fig.savefig(output / "fastsacn_objective_share.png", dpi=220)
     plt.close(fig)
 
 
