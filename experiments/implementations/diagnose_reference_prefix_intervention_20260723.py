@@ -23,6 +23,7 @@ except ModuleNotFoundError:
 
 ROOT = Path(__file__).resolve().parents[2]
 EPISODE_STEPS = 200
+ZERO_PREFIX_RETURN_ATOL = 0.01
 
 
 def parse_args() -> argparse.Namespace:
@@ -164,7 +165,7 @@ def condition_rows(
         k0_error = float(
             np.max(np.abs(by_horizon[0]["return"] - original_return))
         )
-        if k0_error > 1e-5:
+        if k0_error > ZERO_PREFIX_RETURN_ATOL:
             raise ValueError(
                 f"{condition['name']} seed {seed} k=0 return mismatch {k0_error}"
             )
@@ -544,7 +545,7 @@ def markdown(
             "",
             "Limitations: this is a post-selection counterfactual on the standardized authority grid. It identifies the duration of corrective control under a strong reference, but it does not identify the training update that created the actor error.",
             "",
-            f"All {len(validation)} actor-seed validations reproduce the stored zero-prefix return to within 1e-5.",
+            f"All {len(validation)} actor-seed validations reproduce the stored zero-prefix return to within {ZERO_PREFIX_RETURN_ATOL:g}.",
         ]
     )
     return "\n".join(lines) + "\n"

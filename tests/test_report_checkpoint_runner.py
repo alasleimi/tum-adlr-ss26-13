@@ -1,8 +1,11 @@
 from __future__ import annotations
 
 import importlib.util
+import json
 from pathlib import Path
 import sys
+
+import pytest
 
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -116,3 +119,50 @@ def test_dry_run_prints_plan_without_creating_output(
     assert '"task": "mixed_selected/seed4"' in output
     assert '"task": "mixed_priority_shifted/seed4"' in output
     assert not models_root.exists()
+
+
+def test_smoke_plan_executes_every_unique_training_path_with_tiny_budgets(
+    tmp_path: Path,
+) -> None:
+    plan = MODULE.build_plan(
+        models_root=tmp_path / "models",
+        device="cpu",
+        overwrite=True,
+        seeds=[0],
+        smoke=True,
+    )
+    config = next(task for task in plan if task.key == "pure_sacn8/seed0")
+    assert config.command[config.command.index("--total-steps") + 1] == "10"
+    assert config.command[config.command.index("--learning-starts") + 1] == "8"
+
+    dagger = next(task for task in plan if task.key == "canonical_dagger/seed0")
+    dataset_option = max(
+        index for index, value in enumerate(dagger.command) if value == "--dataset-size"
+    )
+    assert dagger.command[dataset_option + 1] == "8"
+    assert dagger.command[dagger.command.index("--dagger-max-episode-steps") + 1] == "4"
+
+    mixed = [task for task in plan if task.family.startswith("mixed_")]
+    assert all("--smoke" in task.command for task in mixed if task.family != "mixed_shared_critic")
+
+
+def test_smoke_defaults_to_ignored_build_tree(capsys) -> None:
+    assert MODULE.main(["--smoke", "--seeds", "0", "--dry-run"]) == 0
+    records = [json.loads(line) for line in capsys.readouterr().out.splitlines()]
+    assert all(
+        Path(record["output"]).is_relative_to(MODULE.SMOKE_MODELS_ROOT)
+        for record in records
+    )
+    assert any("--total-steps" in record["command"] for record in records)
+
+
+def test_smoke_refuses_output_outside_build_tree(tmp_path: Path) -> None:
+    with pytest.raises(SystemExit, match="must be inside .build"):
+        MODULE.main(
+            [
+                "--smoke",
+                "--models-root",
+                str(tmp_path / "models"),
+                "--dry-run",
+            ]
+        )

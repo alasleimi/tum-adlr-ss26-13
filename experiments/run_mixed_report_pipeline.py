@@ -36,6 +36,11 @@ def parse_args() -> argparse.Namespace:
     )
     parser.add_argument("--overwrite", action="store_true")
     parser.add_argument("--dry-run", action="store_true")
+    parser.add_argument(
+        "--smoke",
+        action="store_true",
+        help="run the same training path with tiny budgets under .build/",
+    )
     return parser.parse_args()
 
 
@@ -43,7 +48,7 @@ def initializer_command(args: argparse.Namespace, output: Path) -> list[str]:
     # The accepted seed-0 initializer predates the frozen seed-1--4 family.
     # Only seed 0 used the additional near-upright sampling component.
     near_upright_fraction = "0.2" if int(args.seed) == 0 else "0"
-    return [
+    command = [
         sys.executable,
         "-m",
         "last_nine_rl.distill_reference",
@@ -96,6 +101,34 @@ def initializer_command(args: argparse.Namespace, output: Path) -> list[str]:
         "--rollout-backend",
         "vectorized_pendulum",
     ]
+    if getattr(args, "smoke", False):
+        command.extend(
+            [
+                "--dataset-size",
+                "8",
+                "--eval-dataset-size",
+                "8",
+                "--batch-size",
+                "4",
+                "--epochs",
+                "1",
+                "--selection-metric",
+                "last",
+                "--dagger-iterations",
+                "1",
+                "--dagger-episodes-per-iteration",
+                "1",
+                "--dagger-train-epochs-per-iteration",
+                "1",
+                "--dagger-max-dataset-size",
+                "16",
+                "--dagger-max-episode-steps",
+                "4",
+                "--eval-episodes",
+                "1",
+            ]
+        )
+    return command
 
 
 def followup_command(args: argparse.Namespace, output: Path) -> list[str]:
@@ -111,7 +144,7 @@ def followup_command(args: argparse.Namespace, output: Path) -> list[str]:
             raise FileNotFoundError(f"missing shared critic checkpoint: {critic}")
     priority = args.stage in {"selected", "priority_shifted"}
     target_blend = "0" if args.stage == "selected" else "0.005"
-    return [
+    command = [
         sys.executable,
         str(IMPLEMENTATION),
         "--dagger-run",
@@ -179,11 +212,42 @@ def followup_command(args: argparse.Namespace, output: Path) -> list[str]:
         "--validation-qsearch-margin",
         "0",
     ]
+    if getattr(args, "smoke", False):
+        command.extend(
+            [
+                "--static-size",
+                "8",
+                "--dagger-rounds",
+                "1",
+                "--dagger-episodes",
+                "1",
+                "--priority-candidate-multiplier",
+                "1",
+                "--epochs-per-round",
+                "1",
+                "--batch-size",
+                "256",
+                "--targeted-validation-size",
+                "1",
+                "--validation-every-epochs",
+                "1",
+                "--validation-theta-bins",
+                "1",
+                "--validation-velocity-bins",
+                "1",
+            ]
+        )
+    return command
 
 
 def main() -> int:
     args = parse_args()
-    default = ROOT / "runs" / "report_reproduction" / f"mixed_{args.stage}" / f"seed{args.seed}"
+    default_root = (
+        ROOT / ".build" / "reproduction" / "checkpoint-smoke"
+        if args.smoke
+        else ROOT / "runs" / "report_reproduction"
+    )
+    default = default_root / f"mixed_{args.stage}" / f"seed{args.seed}"
     output = (args.run_dir or default).resolve()
     cmd = (
         initializer_command(args, output)

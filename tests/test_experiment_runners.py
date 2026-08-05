@@ -92,3 +92,26 @@ def test_priority_shifted_keeps_priority_starts_and_tiny_target_blend(
     )
     assert command[command.index("--dagger-initial-mode") + 1] == "priority_uniform"
     assert command[command.index("--rl-blend") + 1] == "0.005"
+
+
+def test_mixed_smoke_commands_keep_recipe_but_shrink_runtime(tmp_path: Path) -> None:
+    initializer_args = argparse.Namespace(seed=0, device="cpu", smoke=True)
+    initializer = initializer_command(initializer_args, tmp_path / "initializer")
+    dataset_option = max(
+        index for index, value in enumerate(initializer) if value == "--dataset-size"
+    )
+    assert initializer[dataset_option + 1] == "8"
+    assert initializer[initializer.index("--near-upright-fraction") + 1] == "0.2"
+
+    followup_args = _args(
+        tmp_path / "initializer",
+        critic=tmp_path / "critic",
+        dry_run=True,
+    )
+    followup_args.smoke = True
+    followup = followup_command(followup_args, tmp_path / "selected")
+    static_option = max(
+        index for index, value in enumerate(followup) if value == "--static-size"
+    )
+    assert followup[static_option + 1] == "8"
+    assert followup[followup.index("--validation-qsearch-num-actions") + 1] == "5"

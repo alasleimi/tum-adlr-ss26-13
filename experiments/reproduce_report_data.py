@@ -11,12 +11,14 @@ from pathlib import Path
 import shutil
 import subprocess
 import sys
-from typing import Any
+from typing import Any, Sequence
 
 import numpy as np
+import pandas as pd
 
+from last_nine_repro.comparison import compare_images, write_comparison
 from last_nine_repro.figures import render_all
-from last_nine_repro.metrics import summarize_method
+from last_nine_repro.metrics import derived_report_payload
 from last_nine_repro.validation import (
     read_and_validate_rollout,
     validate_cross_method_grid,
@@ -35,11 +37,21 @@ ROOT = Path(__file__).resolve().parents[1]
 DEFAULT_MODELS = ROOT / "artifacts" / "report_reproduction" / "models"
 DEFAULT_REPLAY = ROOT / "artifacts" / "report_reproduction" / "replay"
 DEFAULT_OUTPUT = ROOT / ".build" / "report-data"
+RETAINED_DATA = ROOT / "data" / "report"
 IMPLEMENTATIONS = ROOT / "experiments" / "implementations"
 PROTOCOLS = ROOT / "experiments" / "protocols"
 DP_GRID = ROOT / "data" / "reference" / "pendulum_dp_grid.csv"
 CONTROLLER_GRID = ROOT / "data" / "reference" / "controller_grid.csv"
 DP_SOLUTION = ROOT / "data" / "reference" / "pendulum_dp_solution.npz"
+
+# A 200-step rollout can amplify device-level rounding, particularly when a
+# Q-search action lies close to an acceptance boundary. These limits are still
+# much smaller than the report's return tolerance of 5.0, while avoiding brittle
+# bit-for-bit comparisons across CPU/GPU and library versions.
+ROLLOUT_RETURN_MAX_ABS_ERROR = 0.25
+ROLLOUT_RETURN_MEAN_ABS_ERROR = 0.001
+ROLLOUT_CLASSIFICATION_BOUNDARY = 0.25
+DIAGNOSTIC_RATE_ABS_ERROR = 0.005
 
 
 @dataclass(frozen=True)
@@ -69,7 +81,7 @@ FIGURE_METHODS = (
 )
 
 
-def parse_args() -> argparse.Namespace:
+def parse_args(argv: Sequence[str] | None = None) -> argparse.Namespace:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--models-root", type=Path, default=DEFAULT_MODELS)
     parser.add_argument("--replay-root", type=Path, default=DEFAULT_REPLAY)
@@ -90,7 +102,7 @@ def parse_args() -> argparse.Namespace:
         action="store_true",
         help="Run every deployment policy for two steps on four states, then stop.",
     )
-    return parser.parse_args()
+    return parser.parse_args(argv)
 
 
 def family_runs(models_root: Path, family: str, seeds: range = range(5)) -> list[Path]:
@@ -329,7 +341,7 @@ def rebuild_objective_share(
                 "--batch-size",
                 "256",
                 "--seed",
-                "0",
+                str(seed),
                 "--device",
                 device,
             ]
@@ -457,17 +469,307 @@ def validate_generated_rollouts(output: Path) -> dict[str, Any]:
     return frames
 
 
-def check_retained_claims(frames: dict[str, Any]) -> None:
-    claims = json.loads((ROOT / "data" / "report" / "claims.json").read_text(encoding="utf-8"))
-    for name in FIGURE_METHODS:
-        expected = claims["methods"][name]
-        actual = summarize_method(frames[name]).to_dict()
-        for field in ("trials", "near", "task", "strict", "failures", "failure_cells"):
-            if int(actual[field]) != int(expected[field]):
+def compare_rollout_frame(
+    name: str,
+    generated: pd.DataFrame,
+    retained: pd.DataFrame,
+) -> dict[str, float | int]:
+    """Compare behavior while allowing small accumulated floating-point drift."""
+
+    keys = ("actual_seed", "theta", "theta_dot")
+    required = {
+        *keys,
+        "return",
+        "task_success",
+        "near_best_known_return_eps",
+        "beats_best_known_return",
+        "signed_gap_to_best_known",
+    }
+    for label, frame in (("generated", generated), ("retained", retained)):
+        missing = required - set(frame.columns)
+        if missing:
+            raise ValueError(f"{name} {label} rollout is missing columns: {sorted(missing)}")
+    if len(generated) != len(retained):
+        raise ValueError(
+            f"{name} rollout row count differs: {len(generated)} != {len(retained)}"
+        )
+
+    actual = generated.sort_values(list(keys)).reset_index(drop=True)
+    expected = retained.sort_values(list(keys)).reset_index(drop=True)
+    for key in keys:
+        if not np.array_equal(actual[key].to_numpy(), expected[key].to_numpy()):
+            raise ValueError(f"{name} rollout grid differs in {key}")
+
+    return_error = np.abs(
+        actual["return"].to_numpy(dtype=float)
+        - expected["return"].to_numpy(dtype=float)
+    )
+    if not np.isfinite(return_error).all():
+        raise ValueError(f"{name} rollout contains non-finite return differences")
+    max_error = float(return_error.max(initial=0.0))
+    mean_error = float(return_error.mean()) if len(return_error) else 0.0
+    if max_error > ROLLOUT_RETURN_MAX_ABS_ERROR:
+        raise ValueError(
+            f"{name} maximum return drift {max_error:.6g} exceeds "
+            f"{ROLLOUT_RETURN_MAX_ABS_ERROR}"
+        )
+    if mean_error > ROLLOUT_RETURN_MEAN_ABS_ERROR:
+        raise ValueError(
+            f"{name} mean absolute return drift {mean_error:.6g} exceeds "
+            f"{ROLLOUT_RETURN_MEAN_ABS_ERROR}"
+        )
+
+    task_mismatch = (
+        actual["task_success"].to_numpy(dtype=int)
+        != expected["task_success"].to_numpy(dtype=int)
+    )
+    if task_mismatch.any():
+        raise ValueError(f"{name} changes {int(task_mismatch.sum())} task outcomes")
+
+    gap_actual = actual["signed_gap_to_best_known"].to_numpy(dtype=float)
+    gap_expected = expected["signed_gap_to_best_known"].to_numpy(dtype=float)
+    boundary_flips: dict[str, int] = {}
+    for field, threshold in (
+        ("near_best_known_return_eps", 5.0),
+        ("beats_best_known_return", 0.0),
+    ):
+        mismatch = (
+            actual[field].to_numpy(dtype=int)
+            != expected[field].to_numpy(dtype=int)
+        )
+        count = int(mismatch.sum())
+        if count:
+            close_to_boundary = (
+                np.abs(gap_actual[mismatch] - threshold)
+                <= ROLLOUT_CLASSIFICATION_BOUNDARY
+            ) & (
+                np.abs(gap_expected[mismatch] - threshold)
+                <= ROLLOUT_CLASSIFICATION_BOUNDARY
+            )
+            if not close_to_boundary.all():
                 raise ValueError(
-                    f"{name} {field} differs from retained evidence: "
-                    f"{actual[field]} != {expected[field]}"
+                    f"{name} changes {field} away from its numeric boundary"
                 )
+        boundary_flips[field] = count
+
+    return {
+        "rows": int(len(actual)),
+        "return_max_abs_error": max_error,
+        "return_mean_abs_error": mean_error,
+        "near_boundary_flips": boundary_flips["near_best_known_return_eps"],
+        "strict_boundary_flips": boundary_flips["beats_best_known_return"],
+        "task_flips": 0,
+    }
+
+
+def check_retained_rollout_fidelity(
+    frames: dict[str, pd.DataFrame],
+) -> dict[str, dict[str, float | int]]:
+    results: dict[str, dict[str, float | int]] = {}
+    for name in ROLLOUT_RECIPES:
+        retained = read_and_validate_rollout(
+            RETAINED_DATA / "rollouts" / f"{name}.csv",
+            name,
+        )
+        results[name] = compare_rollout_frame(name, frames[name], retained)
+    return results
+
+
+def _require_close(
+    label: str,
+    generated: Any,
+    retained: Any,
+    *,
+    atol: float,
+) -> float:
+    actual = np.asarray(generated, dtype=float)
+    expected = np.asarray(retained, dtype=float)
+    if actual.shape != expected.shape:
+        raise ValueError(f"{label} shape differs: {actual.shape} != {expected.shape}")
+    if not np.isfinite(actual).all() or not np.isfinite(expected).all():
+        raise ValueError(f"{label} contains non-finite values")
+    difference = np.abs(actual - expected)
+    maximum = float(difference.max(initial=0.0))
+    if maximum > atol:
+        raise ValueError(f"{label} maximum drift {maximum:.6g} exceeds {atol}")
+    return maximum
+
+
+def _load_json(path: Path) -> dict[str, Any]:
+    return json.loads(path.read_text(encoding="utf-8"))
+
+
+def _compare_prefix_table(
+    generated_path: Path,
+    retained_path: Path,
+    *,
+    keys: tuple[str, ...],
+    fields: tuple[str, ...],
+) -> float:
+    generated = pd.read_csv(generated_path).sort_values(list(keys)).reset_index(drop=True)
+    retained = pd.read_csv(retained_path).sort_values(list(keys)).reset_index(drop=True)
+    if len(generated) != len(retained):
+        raise ValueError(
+            f"{generated_path.name} row count differs: {len(generated)} != {len(retained)}"
+        )
+    for key in keys:
+        if generated[key].astype(str).tolist() != retained[key].astype(str).tolist():
+            raise ValueError(f"{generated_path.name} keys differ in {key}")
+    return _require_close(
+        generated_path.name,
+        generated[list(fields)].to_numpy(dtype=float),
+        retained[list(fields)].to_numpy(dtype=float),
+        atol=DIAGNOSTIC_RATE_ABS_ERROR,
+    )
+
+
+def check_retained_diagnostic_fidelity(output: Path) -> dict[str, float]:
+    generated_root = output / "diagnostics"
+    retained_root = RETAINED_DATA / "diagnostics"
+    results: dict[str, float] = {}
+
+    generated = _load_json(generated_root / "actor_geometry" / "summary.json")
+    retained = _load_json(retained_root / "actor_geometry" / "summary.json")
+    geometry_values: list[float] = []
+    geometry_expected: list[float] = []
+    for arm in (
+        "p0_simba_onestep_utd1_100k",
+        "p1_simba_fastsacn8_lambda1_utd1_100k",
+        "p2_simba_sacn8_lambda1_utd1_100k",
+        "p7_simba_fastsacn8_lambda0p5_utd2_actorutd1_100k",
+    ):
+        for metric in (
+            "deterministic_action_saturation_fraction_abs_ge_0p995",
+            "mean_tanh_derivative",
+            "reflection_action_abs_error_mean",
+        ):
+            geometry_values.extend(generated["arms"][arm]["metrics"][metric]["seed_values"])
+            geometry_expected.extend(retained["arms"][arm]["metrics"][metric]["seed_values"])
+    results["actor_geometry_max_abs_error"] = _require_close(
+        "actor geometry", geometry_values, geometry_expected, atol=1e-5
+    )
+
+    claims = _load_json(RETAINED_DATA / "claims.json")
+    semantic = claims["diagnostic_semantics"]["c32"]
+    conditions = [str(value) for value in semantic["conditions"]]
+    generated = _load_json(generated_root / "critic_direction" / "summary.json")
+    retained = _load_json(retained_root / "critic_direction" / "summary.json")
+    critic_fields = (str(semantic["figure_field"]), "critic_step_harmful_rate")
+    critic_values = [
+        generated["conditions"][condition]["pooled"][field]
+        for condition in conditions
+        for field in critic_fields
+    ]
+    critic_expected = [
+        retained["conditions"][condition]["pooled"][field]
+        for condition in conditions
+        for field in critic_fields
+    ]
+    results["critic_direction_max_abs_error"] = _require_close(
+        "critic direction", critic_values, critic_expected, atol=DIAGNOSTIC_RATE_ABS_ERROR
+    )
+
+    generated = _load_json(generated_root / "reference_recognition" / "summary.json")
+    retained = _load_json(retained_root / "reference_recognition" / "summary.json")
+    recognition_values = [
+        generated["conditions"][condition]["pooled"]["failure"][
+            "critic_prefers_helpful_reference_rate"
+        ]
+        for condition in conditions
+    ]
+    recognition_expected = [
+        retained["conditions"][condition]["pooled"]["failure"][
+            "critic_prefers_helpful_reference_rate"
+        ]
+        for condition in conditions
+    ]
+    results["reference_recognition_max_abs_error"] = _require_close(
+        "reference recognition",
+        recognition_values,
+        recognition_expected,
+        atol=DIAGNOSTIC_RATE_ABS_ERROR,
+    )
+
+    generated = _load_json(generated_root / "action_projection" / "summary.json")
+    retained = _load_json(retained_root / "action_projection" / "summary.json")
+    generated_rows = {
+        (row["condition"], row["outcome"]): row for row in generated["pooled"]
+    }
+    retained_rows = {
+        (row["condition"], row["outcome"]): row for row in retained["pooled"]
+    }
+    projection_fields = (
+        "boundary_rate",
+        "outward_among_boundary_rate",
+        "mean_effective_step_fraction",
+    )
+    projection_values = [
+        generated_rows[(condition, "failure")][field]
+        for condition in conditions
+        for field in projection_fields
+    ]
+    projection_expected = [
+        retained_rows[(condition, "failure")][field]
+        for condition in conditions
+        for field in projection_fields
+    ]
+    results["action_projection_max_abs_error"] = _require_close(
+        "action projection",
+        projection_values,
+        projection_expected,
+        atol=DIAGNOSTIC_RATE_ABS_ERROR,
+    )
+
+    generated = _load_json(generated_root / "objective_share" / "summary.json")
+    retained = _load_json(retained_root / "objective_share" / "summary.json")
+    for field in ("actor_seeds", "replay_sequences_per_seed", "density_replay_sequences_total"):
+        if generated[field] != retained[field]:
+            raise ValueError(f"objective share differs in {field}")
+    share_fields = generated["eight_step_objective_share_percent"]
+    share_expected = retained["eight_step_objective_share_percent"]
+    share_values = [
+        value
+        for field in share_fields.values()
+        for value in (field if isinstance(field, list) else [field])
+    ]
+    share_retained = [
+        value
+        for field in share_expected.values()
+        for value in (field if isinstance(field, list) else [field])
+    ]
+    results["objective_share_max_abs_error_percent"] = _require_close(
+        "objective share", share_values, share_retained, atol=0.05
+    )
+    diagnostic_values = generated["density_eight_step_diagnostics_percent"]
+    diagnostic_expected = retained["density_eight_step_diagnostics_percent"]
+    seed_fields = [field for field in diagnostic_values if field.endswith("_seed_values")]
+    results["objective_seed_diagnostic_max_abs_error_percent"] = _require_close(
+        "objective-share seed diagnostics",
+        [value for field in seed_fields for value in diagnostic_values[field]],
+        [value for field in seed_fields for value in diagnostic_expected[field]],
+        atol=2.0,
+    )
+    mean_fields = [field for field in diagnostic_values if field.endswith("_mean")]
+    results["objective_mean_diagnostic_max_abs_error_percent"] = _require_close(
+        "objective-share mean diagnostics",
+        [diagnostic_values[field] for field in mean_fields],
+        [diagnostic_expected[field] for field in mean_fields],
+        atol=0.5,
+    )
+
+    results["prefix_aggregate_max_abs_error"] = _compare_prefix_table(
+        generated_root / "prefix_intervention" / "aggregate.csv",
+        retained_root / "prefix_intervention" / "aggregate.csv",
+        keys=("condition", "prefix_steps"),
+        fields=("near_rate", "repair_rate", "task_rate"),
+    )
+    results["prefix_specificity_max_abs_error"] = _compare_prefix_table(
+        generated_root / "prefix_intervention" / "specificity_control.csv",
+        retained_root / "prefix_intervention" / "specificity_control.csv",
+        keys=("prefix_mode", "prefix_steps"),
+        fields=("repair_rate",),
+    )
+    return results
 
 
 def plan_payload(models_root: Path, replay_root: Path, output: Path) -> dict[str, Any]:
@@ -491,19 +793,19 @@ def plan_payload(models_root: Path, replay_root: Path, output: Path) -> dict[str
     }
 
 
-def main() -> int:
-    args = parse_args()
+def main(argv: Sequence[str] | None = None) -> int:
+    args = parse_args(argv)
     models_root = args.models_root.expanduser().resolve()
     replay_root = args.replay_root.expanduser().resolve()
     output = args.output.expanduser().resolve()
+    if args.smoke and output == DEFAULT_OUTPUT.resolve():
+        output = ROOT / ".build" / "report-data-smoke"
     validate_inputs(models_root, replay_root)
     plan = plan_payload(models_root, replay_root, output)
     if args.dry_run:
         print(json.dumps(plan, indent=2))
         return 0
 
-    if args.smoke and args.output == DEFAULT_OUTPUT:
-        output = ROOT / ".build" / "report-data-smoke"
     output.mkdir(parents=True, exist_ok=True)
     for name, recipe in ROLLOUT_RECIPES.items():
         rebuild_rollout(
@@ -518,29 +820,56 @@ def main() -> int:
         print(f"SMOKE PASS ({len(ROLLOUT_RECIPES)} deployment recipes): {output}")
         return 0
 
+    frames = validate_generated_rollouts(output)
+    retained_models = models_root == DEFAULT_MODELS.resolve()
+    fidelity: dict[str, Any] = {"checked_against_retained_evidence": retained_models}
+    if retained_models:
+        fidelity["rollouts"] = check_retained_rollout_fidelity(frames)
+        print("ROLLOUT FIDELITY PASS", flush=True)
+
     rebuild_diagnostics(
         models_root=models_root,
         replay_root=replay_root,
         output=output,
         device=args.device,
     )
-    frames = validate_generated_rollouts(output)
-    if models_root == DEFAULT_MODELS.resolve():
-        check_retained_claims(frames)
-    shutil.copy2(ROOT / "data" / "report" / "claims.json", output / "claims.json")
+    if retained_models:
+        fidelity["diagnostics"] = check_retained_diagnostic_fidelity(output)
+        print("DIAGNOSTIC FIDELITY PASS", flush=True)
+    (output / "fidelity.json").write_text(
+        json.dumps(fidelity, indent=2) + "\n",
+        encoding="utf-8",
+    )
+    shutil.copy2(RETAINED_DATA / "claims.json", output / "claims.json")
+    (output / "derived_metrics.json").write_text(
+        json.dumps(
+            derived_report_payload({name: frames[name] for name in FIGURE_METHODS}),
+            indent=2,
+        )
+        + "\n",
+        encoding="utf-8",
+    )
 
     figures: list[Path] = []
+    comparison_path: Path | None = None
     if not args.no_figures:
         figures = render_all(
             output,
             {name: frames[name] for name in FIGURE_METHODS},
             output / "figures",
         )
+        comparison_path = write_comparison(
+            compare_images(figures, ROOT / "report" / "source" / "figures"),
+            output / "comparison.json",
+        )
     result = {
         **plan,
         "status": "complete",
         "rollout_rows": {name: int(len(frame)) for name, frame in frames.items()},
+        "fidelity": str(output / "fidelity.json"),
+        "derived_metrics": str(output / "derived_metrics.json"),
         "generated_figures": [str(path) for path in figures],
+        "comparison": str(comparison_path) if comparison_path else None,
     }
     (output / "summary.json").write_text(
         json.dumps(result, indent=2) + "\n", encoding="utf-8"

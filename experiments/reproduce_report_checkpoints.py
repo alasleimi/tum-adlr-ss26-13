@@ -15,8 +15,32 @@ from typing import Sequence
 ROOT = Path(__file__).resolve().parents[1]
 RETAINED_MODELS = ROOT / "artifacts" / "report_reproduction" / "models"
 DEFAULT_MODELS_ROOT = ROOT / "runs" / "report_reproduction" / "models"
+SMOKE_MODELS_ROOT = ROOT / ".build" / "reproduction" / "checkpoint-smoke" / "models"
 MIXED_RUNNER = ROOT / "experiments" / "run_mixed_report_pipeline.py"
 DP_SOLUTION = ROOT / "data" / "reference" / "pendulum_dp_solution.npz"
+
+SAC_SMOKE_ARGUMENTS = (
+    "--total-steps",
+    "10",
+    "--learning-starts",
+    "8",
+    "--random-action-steps",
+    "8",
+    "--batch-size",
+    "8",
+    "--buffer-size",
+    "32",
+    "--eval-every-steps",
+    "0",
+    "--log-interval",
+    "0",
+    "--replay-inspection-interval",
+    "0",
+    "--diagnostics-interval",
+    "0",
+    "--checkpoint-interval-steps",
+    "0",
+)
 
 CONFIG_FIVE_SEED_FAMILIES = (
     "pure_selected",
@@ -81,6 +105,11 @@ def parse_args(argv: Sequence[str] | None = None) -> argparse.Namespace:
         action="store_true",
         help="print every resolved command in dependency order without running it",
     )
+    parser.add_argument(
+        "--smoke",
+        action="store_true",
+        help="execute every training path with tiny budgets under .build/",
+    )
     return parser.parse_args(argv)
 
 
@@ -101,6 +130,7 @@ def config_task(
     models_root: Path,
     device: str,
     overwrite: bool,
+    smoke: bool = False,
 ) -> Task:
     config = RETAINED_MODELS / family / f"seed{seed}" / "config.json"
     if not config.is_file():
@@ -119,6 +149,8 @@ def config_task(
         "--device",
         device,
     ]
+    if smoke:
+        command.extend(SAC_SMOKE_ARGUMENTS)
     return Task(
         key=_task_key(family, seed),
         phase=0,
@@ -135,6 +167,7 @@ def canonical_dagger_task(
     models_root: Path,
     device: str,
     overwrite: bool,
+    smoke: bool = False,
 ) -> Task:
     output = models_root / "canonical_dagger" / f"seed{seed}"
     command = [
@@ -190,6 +223,33 @@ def canonical_dagger_task(
         "--rollout-backend",
         "vectorized_pendulum",
     ]
+    if smoke:
+        command.extend(
+            [
+                "--dataset-size",
+                "8",
+                "--eval-dataset-size",
+                "8",
+                "--batch-size",
+                "4",
+                "--epochs",
+                "1",
+                "--initial-expert-episodes",
+                "1",
+                "--eval-episodes",
+                "1",
+                "--dagger-iterations",
+                "1",
+                "--dagger-episodes-per-iteration",
+                "1",
+                "--dagger-train-epochs-per-iteration",
+                "1",
+                "--dagger-max-dataset-size",
+                "16",
+                "--dagger-max-episode-steps",
+                "4",
+            ]
+        )
     return Task(
         key=_task_key("canonical_dagger", seed),
         phase=0,
@@ -206,6 +266,7 @@ def mixed_initializer_task(
     models_root: Path,
     device: str,
     overwrite: bool,
+    smoke: bool = False,
 ) -> Task:
     output = models_root / "mixed_base" / f"seed{seed}"
     command = [
@@ -219,6 +280,8 @@ def mixed_initializer_task(
         "--run-dir",
         str(output),
     ]
+    if smoke:
+        command.append("--smoke")
     return Task(
         key=_task_key("mixed_base", seed),
         phase=0,
@@ -237,6 +300,7 @@ def mixed_followup_task(
     models_root: Path,
     device: str,
     overwrite: bool,
+    smoke: bool = False,
 ) -> Task:
     initializer = models_root / "mixed_base" / f"seed{seed}"
     critic = models_root / "mixed_shared_critic" / "seed1"
@@ -260,6 +324,8 @@ def mixed_followup_task(
         "--critic-run",
         str(critic),
     ]
+    if smoke:
+        command.append("--smoke")
     return Task(
         key=_task_key(family, seed),
         phase=1,
@@ -277,6 +343,7 @@ def build_plan(
     device: str,
     overwrite: bool,
     seeds: Sequence[int],
+    smoke: bool = False,
 ) -> list[Task]:
     requested_seeds = sorted(set(int(seed) for seed in seeds))
     if not requested_seeds or any(seed not in range(5) for seed in requested_seeds):
@@ -289,6 +356,7 @@ def build_plan(
             models_root=models_root,
             device=device,
             overwrite=overwrite,
+            smoke=smoke,
         )
     ]
     for family in CONFIG_FIVE_SEED_FAMILIES:
@@ -300,6 +368,7 @@ def build_plan(
                     models_root=models_root,
                     device=device,
                     overwrite=overwrite,
+                    smoke=smoke,
                 )
             )
     if 0 in requested_seeds:
@@ -310,6 +379,7 @@ def build_plan(
                 models_root=models_root,
                 device=device,
                 overwrite=overwrite,
+                smoke=smoke,
             )
         )
     for seed in requested_seeds:
@@ -319,6 +389,7 @@ def build_plan(
                 models_root=models_root,
                 device=device,
                 overwrite=overwrite,
+                smoke=smoke,
             )
         )
         tasks.append(
@@ -327,6 +398,7 @@ def build_plan(
                 models_root=models_root,
                 device=device,
                 overwrite=overwrite,
+                smoke=smoke,
             )
         )
     for stage, family in MIXED_FOLLOWUPS:
@@ -339,6 +411,7 @@ def build_plan(
                     models_root=models_root,
                     device=device,
                     overwrite=overwrite,
+                    smoke=smoke,
                 )
             )
     return tasks
@@ -390,12 +463,23 @@ def _resolve_models_root(value: Path) -> Path:
 def main(argv: Sequence[str] | None = None) -> int:
     args = parse_args(argv)
     try:
-        models_root = _resolve_models_root(args.models_root)
+        requested_root = (
+            SMOKE_MODELS_ROOT
+            if args.smoke and args.models_root == DEFAULT_MODELS_ROOT
+            else args.models_root
+        )
+        models_root = _resolve_models_root(requested_root)
+        build_root = (ROOT / ".build").resolve()
+        if args.smoke and not (
+            models_root == build_root or models_root.is_relative_to(build_root)
+        ):
+            raise ValueError("--smoke checkpoint output must be inside .build/")
         tasks = build_plan(
             models_root=models_root,
             device=args.device,
             overwrite=bool(args.overwrite),
             seeds=args.seeds,
+            smoke=bool(args.smoke),
         )
     except (FileNotFoundError, ValueError) as exc:
         raise SystemExit(str(exc)) from exc
@@ -419,6 +503,7 @@ def main(argv: Sequence[str] | None = None) -> int:
                 "tasks": len(records),
                 "complete": complete,
                 "already_complete": existing,
+                "smoke": bool(args.smoke),
             },
             sort_keys=True,
         )
