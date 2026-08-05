@@ -1,9 +1,8 @@
-ShareLaTeX / Overleaf setup
+ShareLaTeX / Overleaf upload
 
 Main document: main.tex
 Compiler: pdfLaTeX
 
-The folder is self-contained. Upload the complete folder, preserving the
-figures subfolder. main.tex uses report_body_2.tex as the active report body;
-report_body.tex is the previous version retained for comparison. The annex is
-in report_annex.tex.
+This folder is self-contained. Upload the complete folder or ZIP, preserving
+the figures subfolder. report_body.tex is the corrected final report body, and
+report_annex.tex contains the annex. No alternate report body is included.

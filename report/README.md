@@ -4,10 +4,8 @@
   document.
 - `Chasing_the_Nines_ShareLaTeX_20260803.zip` is the authoritative upload
   bundle.
-- `source/` is the extracted, self-contained bundle for local inspection and
-  compilation. `source/main.tex` is the entry point and uses
-  `source/report_body_2.tex`; the previous body is retained as
-  `source/report_body.tex` for comparison.
+- `source/` is the clean, self-contained upload folder. `source/main.tex` is
+  the entry point and uses the single final body, `source/report_body.tex`.
 
 Build with pdfLaTeX through latexmk:
 
